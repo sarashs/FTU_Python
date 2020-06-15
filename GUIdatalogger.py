@@ -21,9 +21,6 @@ ser.write(b'yo')
 ser.flushInput() #clear queue to avoid data overlap
 
 #plotting settings
-plot_window = 500 #plot window width
-y_var = np.array(np.zeros([plot_window]))
-
 plt.ion() #interactive mode on
 
 #1st button
