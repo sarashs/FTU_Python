@@ -17,14 +17,14 @@ from tkinter import *
 
 #serial communication
 ser = serial.Serial('COM5',baudrate=9600)
-ser.write(b'yo')
-ser.flushInput() #clear queue to avoid data overlap
 
 #plotting settings
 plt.ion() #interactive mode on
 
 #1st button
-def log_data(value):
+#implement a flag to raise flag, if theres input 
+def log_data(value,data_col):
+    ser.reset_input_buffer() #clear buffer before plotting for extraneous data
     plot_window = 100 #plot window width
     y_var = np.array(np.zeros([plot_window]))
 
@@ -40,7 +40,7 @@ def log_data(value):
     while True:
         try:
             ser_bytes = ser.readline()
-            #time.sleep(sample_rate)
+            time.sleep(data_col)
             try:
                 decoded_bytes = float(ser_bytes[0:len(ser_bytes)-2].decode("utf-8"))
                 print(decoded_bytes)
@@ -66,35 +66,54 @@ def log_data(value):
 
 #Widgets
 master = Tk() #Main Window
-master.minsize(300,300) #dimensions
+master.minsize(200,200) #dimensions
 
 #entry for collection rate
-e = Entry(master)
-e.grid()
-sample_rate = e.get()
+data_col = IntVar()
+l1 = Label(master, text = "Enter collection rate in hz")
+l1.grid()
+e1 = Entry(master, textvariable = data_col)
+e1.grid()
+sample_rate = e1.get()
 
+#entry for arduino control
+onoff = StringVar()
+
+l2 = Label(master, text = "Enter H/L to turn LED on/off")
+l2.grid()
+
+e2 = Entry(master, textvariable = onoff)
+e2.grid()
+
+def setCheckButtonText():
+    if onoff.get() == 'H': 
+        ser.write(bytes('H', 'UTF-8'))
+    elif onoff.get() == 'L':
+        ser.write(bytes('L', 'UTF-8'))
+    else:
+        ser.close()
+        
 #selects radiobutton
 def func1():
     if v.get() == 1:
-        log_data(1)
-        return 0
+        log_data(1,data_col)
+
     else:
         log_data(2)
-        return 1
 
 #Data Logger Button Widget
 #Log
 v = IntVar()
-v.set(1)
 
 a = Radiobutton(master, text = 'Linear Plot', value = 1, variable = v)
 a.grid()
 b = Radiobutton(master, text = 'Logarithmic Plot', value = 2, variable = v)
 b.grid()
 
-button_sel = v.get() #get current value of v
-
 startlog = Button(master, text = 'Start logging data', command = func1)
 startlog.grid()
+
+led_button = Button(master, text = 'Turn led on/off', command = setCheckButtonText)
+led_button.grid()
 
 master.mainloop() 
