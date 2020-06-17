@@ -23,7 +23,7 @@ plt.ion() #interactive mode on
 
 #1st button
 #implement a flag to raise flag, if theres input 
-def log_data(value,data_col):
+def log_data(value,data_rate):
     ser.reset_input_buffer() #clear buffer before plotting for extraneous data
     plot_window = 100 #plot window width
     y_var = np.array(np.zeros([plot_window]))
@@ -39,8 +39,10 @@ def log_data(value,data_col):
     
     while True:
         try:
-            ser_bytes = ser.readline()
-            time.sleep(data_col)
+            ser_bytes = ser.readline()            
+            time.sleep(data_rate)
+
+            #ser.reset_input_buffer()
             try:
                 decoded_bytes = float(ser_bytes[0:len(ser_bytes)-2].decode("utf-8"))
                 print(decoded_bytes)
@@ -70,11 +72,11 @@ master.minsize(200,200) #dimensions
 
 #entry for collection rate
 data_col = IntVar()
-l1 = Label(master, text = "Enter collection rate in hz")
+l1 = Label(master, text = "Record data every n seconds")
 l1.grid()
+
 e1 = Entry(master, textvariable = data_col)
 e1.grid()
-sample_rate = e1.get()
 
 #entry for arduino control
 onoff = StringVar()
@@ -96,10 +98,10 @@ def setCheckButtonText():
 #selects radiobutton
 def func1():
     if v.get() == 1:
-        log_data(1,data_col)
+        log_data(1,data_col.get())
 
     else:
-        log_data(2)
+        log_data(2,data_col.get())
 
 #Data Logger Button Widget
 #Log
