@@ -1,6 +1,10 @@
 const float thresh_temp = 50.0;
 const float max_temp = 150.0;
 
+int incomingByte;
+int LEDG = 8;
+int LEDR = 9;
+int LEDB = 11; 
 enum State_enum {HEATER_IDLE,HEATER_HEATING_SAFE,HEATER_HEATING_UNSAFE,HEATER_MAX_IDLE,HEATER_COOLING_UNSAFE};
 
 //function declaration
@@ -20,42 +24,53 @@ uint8_t state = HEATER_IDLE;
 
 //state transition
 void heater_fsm(uint16_t current_temp) {
+  
+  if (Serial.available() > 0) {
+    // read the oldest byte in the serial buffer:
+    incomingByte = Serial.read();
+  } 
+  
   switch(state){
     case HEATER_IDLE:
-      if(//user input)                  //user input from GUI or serial
+      if(incomingByte == 'S'){                  //user input from GUI or serial
         state = HEATER_HEATING_SAFE;
+      }
       else{
         state = HEATER_IDLE;
       }
       break;
       
     case HEATER_HEATING_SAFE:
-      if(current_temp < thresh_temp)                  
+      if(current_temp < thresh_temp){                  
         state = HEATER_HEATING_SAFE;
+      }
       else{
         state = HEATER_HEATING_UNSAFE;
       }
       break;
       
     case HEATER_HEATING_UNSAFE:
-      if(current_temp == max_temp)                  
+      if(current_temp == max_temp){                  
         state = HEATER_MAX_IDLE;
+      }
       else{
         state = HEATER_HEATING_UNSAFE;
       }
       break;
       
     case HEATER_MAX_IDLE:
-      if(//user input) //user input to stop              
+      if(incomingByte == 'G'){    
         state = HEATER_COOLING_UNSAFE;
+      }
       else{
         state = HEATER_MAX_IDLE;
       }
       break;
       
     case HEATER_COOLING_UNSAFE:
-      if(current_temp < thresh_temp)                  
+      if(current_temp < thresh_temp){                  
         state = HEATER_IDLE;
+      }
       else{
         state = HEATER_COOLING_UNSAFE;
       }
@@ -112,9 +127,10 @@ void heater_fsm(uint16_t current_temp) {
   }
 void setup() {
   // put your setup code here, to run once:
-  pinmode(LEDG,OUTPUT);
-  pinmode(LEDB,OUTPUT);
-  pinmode(LEDR,OUTPUT);
+  Serial.begin(9600); 
+  pinMode(LEDG,OUTPUT);
+  pinMode(LEDB,OUTPUT);
+  pinMode(LEDR,OUTPUT);
 }
 
 
