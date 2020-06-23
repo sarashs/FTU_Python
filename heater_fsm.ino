@@ -116,7 +116,14 @@ void heater_fsm(uint16_t current_temp) {
   
   uint16_t read_temp(){
     //read temp sensor
+    //0.5V/50C
+    analogReadResolution(16);
+    volt = analogRead(A0);
+    mvolt = volt*1000/65535
+    temp = (mvolt-500)/10;
+    return temp;
   }
+
 
   uint16_t apply_pwm(){
     //apply pwm signal
