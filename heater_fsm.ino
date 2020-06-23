@@ -1,97 +1,125 @@
-#include "FunctionFSM.h"
-
 const float thresh_temp = 50.0;
-float current_temp; //get this temp from the sensor
+const float max_temp = 150.0;
 
-enum Trigger {
-  //check temp???
-  START_HEAT;
-  CHECK_TEMP;
-};
+enum State_enum {HEATER_IDLE,HEATER_HEATING_SAFE,HEATER_HEATING_UNSAFE,HEATER_MAX_IDLE,HEATER_COOLING_UNSAFE};
 
-void heater_idle(){
-  digitalWrite(LEDG,HIGH);
-  digitalWrite(LEDR,LOW);
-  digitalWrite(LEDB,HIGH);
-}
+//function declaration
+void heater_fsm(uint16_t current_temp);
+void heater_idle();
+void heater_heating_safe();
+void heater_heating_unsafe();
+void heater_max_idle();
+void heater_cooling_unsafe();
 
-void heater_heating_safe(){ //pwm starts
-  digitalWrite(LEDG,HIGH);
-  digitalWrite(LEDR,HIGH);
-  digitalWrite(LEDB,HIGH);
-}
+uint16_t read_temp();
+uint16_t apply_pwm();
+uint16_t stop_pwm();
 
-void heater_heating_unsafe(){
-  digitalWrite(LEDG,HIGH);
-  digitalWrite(LEDR,HIGH);
-  digitalWrite(LEDB,LOW);
-}
- 
+//state initialize
+uint8_t state = HEATER_IDLE;
 
-void heater_max_idle(){
-  digitalWrite(LEDG,HIGH);
-  digitalWrite(LEDR,HIGH);
-  digitalWrite(LEDB,LOW);
-}
-
-void heater_cooling_unsafe(){ //pwm stops
-  digitalWrite(LEDG,HIGH);
-  digitalWrite(LEDR,LOW);
-  digitalWrite(LEDB,LOW);
-}
-
-
-//fsm state declaration
-FunctionState heat_idle(&heater_idle, nullptr, nullptr);
-FunctionState heat_heating_safe(&heater_heating_safe, nullptr, nullptr);
-FunctionState heat_heating_unsafe(&heater_heating_unsafe, nullptr, nullptr);
-FunctionState heat_max_idle(&heater_max_idle, nullptr, nullptr);
-FunctionState heat_cooling_unsafe(&heater_cooling_unsafe, nullptr, nullptr);
-
-//first state
-FunctionFsm fsm(&heat_idle);
-
-//state transition logic
-void initfsm(){
-  fsm.add_transition(&heat_idle, &heat_heating_safe, START_HEAT, nullptr);
-  if(current_temp < thresh_temp){ 
-    fsm.add_transition(&heat_heating_safe, &heat_heating_unsafe, CHECK_TEMP, nullptr);
-  }
-  if(current_temp > thresh_temp){
-    fsm.add_transition(&heat_heating_unsafe, &heat_max_idle, CHECK_TEMP, nullptr);
-  }
-
-  while(current_temp != max_temp){
-    fsm.add_transition(&heat_max_idle, &heat_cooling_unsafe, SWITCH, nullptr);
-  }
-
-  while(current_temp >= max_temp){
-    fsm.add_transition(&heat_max_idle, &heat_cooling_unsafe, SWITCH, nullptr);
-  }
-
-  if(current_temp < thresh_temp){
-    fsm.add_transition(&heat_cooling_unsafe, &heat_idle, SWITCH, nullptr);
+//state transition
+void heater_fsm(uint16_t current_temp) {
+  switch(state){
+    case HEATER_IDLE:
+      if(//user input)                  //user input from GUI or serial
+        state = HEATER_HEATING_SAFE;
+      else{
+        state = HEATER_IDLE;
+      }
+      break;
+      
+    case HEATER_HEATING_SAFE:
+      if(current_temp < thresh_temp)                  
+        state = HEATER_HEATING_SAFE;
+      else{
+        state = HEATER_HEATING_UNSAFE;
+      }
+      break;
+      
+    case HEATER_HEATING_UNSAFE:
+      if(current_temp == max_temp)                  
+        state = HEATER_MAX_IDLE;
+      else{
+        state = HEATER_HEATING_UNSAFE;
+      }
+      break;
+      
+    case HEATER_MAX_IDLE:
+      if(//user input) //user input to stop              
+        state = HEATER_COOLING_UNSAFE;
+      else{
+        state = HEATER_MAX_IDLE;
+      }
+      break;
+      
+    case HEATER_COOLING_UNSAFE:
+      if(current_temp < thresh_temp)                  
+        state = HEATER_IDLE;
+      else{
+        state = HEATER_COOLING_UNSAFE;
+      }
+      break;
   }
 }
 
+  
+  void heater_idle(){
+    digitalWrite(LEDG,HIGH);
+    digitalWrite(LEDR,LOW);
+    digitalWrite(LEDB,HIGH);
+  }
+  
+  void heater_heating_safe(){ //pwm starts
+    apply_pwm();
+    digitalWrite(LEDG,HIGH);
+    digitalWrite(LEDR,HIGH);
+    digitalWrite(LEDB,HIGH);
+  }
+  
+  void heater_heating_unsafe(){
+    apply_pwm();
+    digitalWrite(LEDG,HIGH);
+    digitalWrite(LEDR,HIGH);
+    digitalWrite(LEDB,LOW);
+  }
+   
+  
+  void heater_max_idle(){
+    apply_pwm();
+    digitalWrite(LEDG,HIGH);
+    digitalWrite(LEDR,HIGH);
+    digitalWrite(LEDB,LOW);
+  }
+  
+  void heater_cooling_unsafe(){ //pwm stops
+    stop_pwm();
+    digitalWrite(LEDG,HIGH);
+    digitalWrite(LEDR,LOW);
+    digitalWrite(LEDB,LOW);
+  }
+  
+  uint16_t read_temp(){
+    //read temp sensor
+  }
+
+  uint16_t apply_pwm(){
+    //apply pwm signal
+  }
+  
+  uint16_t stop_pwm(){
+    //stop pwm signal
+  }
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  Serial.flush();
-  
   pinmode(LEDG,OUTPUT);
   pinmode(LEDB,OUTPUT);
   pinmode(LEDR,OUTPUT);
-  //init fsm
-  initfsm();
 }
 
 
 void loop() {
   // put your main code here, to run repeatedly:
-  fsm.run_machine();
-  if(Serial.available()){
-    Serial.println("\r\n");
-    Serial.read();
-  }
+  heater_fsm(read_temp()); //check_temp for fsm changes
+  delay(10);
 }
