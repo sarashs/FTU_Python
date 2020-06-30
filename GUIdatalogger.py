@@ -14,17 +14,18 @@ import matplotlib.pyplot as plt
 matplotlib.use("tkAgg")
 import numpy as np
 from tkinter import *
-from tqdm import tqdm
+import datetime
+from datetime import timedelta
 
 #serial communication
-ser = serial.Serial('COM5',baudrate=9600)
+ser = serial.Serial('COM3',baudrate=9600)
 
 #plotting settings
 plt.ion() #interactive mode on
 
 #1st button
 #implement a flag to raise flag, if theres input 
-def log_data(value,data_rate,data_dur):
+def log_data(value,data_rate,data_dur_hour,data_dur_min,data_dur_sec,max_volt,min_volt):
     ser.reset_input_buffer() #clear buffer before plotting for extraneous data
     plot_window = 100 #plot window width
     y_var = np.array(np.zeros([plot_window]))
@@ -32,7 +33,11 @@ def log_data(value,data_rate,data_dur):
     plt.ion() #interactive mode on
     fig, ax = plt.subplots()
     line, = ax.plot(y_var)
+
+    #take spinbox values and convert them to unix-time in seconds
+    time_del_obj = timedelta(hours = int(data_dur_hour), minutes = int(data_dur_min), seconds = int(data_dur_sec))
     
+    data_duration = time_del_obj.total_seconds() #duration in seconds
     start_time = time.time() #grab the time in unix at the the time log_data is executed
     
     if(value==1):
@@ -40,10 +45,9 @@ def log_data(value,data_rate,data_dur):
     else:
         ax.set_yscale('log')
 
-    pbar = tqdm(total = time.time() - start_time) #total is the number of expected iterations)
-    while(time.time() - start_time < data_dur): #while duration is greater than the difference of current and start time
-        try:
-            
+    num_logs = 0 #number of datapoints counter
+    while(time.time() - start_time < data_duration): #while duration is greater than the difference of current and start time
+        try: 
             ser_bytes = ser.readline()            
             time.sleep(data_rate) #collection rate controls the data.csv length
 
@@ -65,14 +69,18 @@ def log_data(value,data_rate,data_dur):
             ax.autoscale_view()
             fig.canvas.draw()
             fig.canvas.flush_events()
-            pbar.update(data_rate/data_dur) #we are manually updating the progress bar since we are wrapping the progress bar in a while loop
-                           #we know when to terminate the while loop but it's not wrapped under a for loop
-                          #since we need the try except branch to execute the keyboard interrupt
+            num_logs = num_logs + 1
             
         except KeyboardInterrupt: #ctrl+c to stop
             print('interrupted!')
             break
 
+    log_acc = num_logs/(data_duration/data_rate) * 100
+    lost_points =  (data_duration/data_rate) - num_logs
+    print("Total data points logged: ",num_logs)
+    print("Lost data points: ", lost_points)
+    print("Total logging accuracy: ", log_acc,"%")
+    
 #Widgets
 master = Tk() #Main Window
 master.minsize(200,200) #dimensions
@@ -80,26 +88,38 @@ master.minsize(200,200) #dimensions
 #entry for collection rate
 data_col = IntVar()
 record_data_label = Label(master, text = "Record data every n seconds")
-record_data_label.grid()
+record_data_label.grid(row=0,column=0)
 
 entry_datacol_box = Entry(master, textvariable = data_col)
-entry_datacol_box.grid()
+entry_datacol_box.grid(row=0,column=1)
 
 #entry for test duration // this doesn't log the right amount of points
-data_dur = IntVar()
-data_duration_label = Label(master, text = "Enter the test duration in seconds")
-data_duration_label.grid()
+label_1 = Label(master, text="Enter desired test duration")
+label_1.grid()
 
-entry_datadur_box = Entry(master, textvariable = data_dur)
-entry_datadur_box.grid()
+label_2 = Label(master, text="Hours")
+label_2.grid(row=2,column=0)
+data_dur_hour = Spinbox(master, from_ = 0, to = 1000)
+data_dur_hour.grid(row=2,column=1)
+
+label_3 = Label(master, text="Minutes")
+label_3.grid(row=3,column=0)
+data_dur_min = Spinbox(master, from_ = 0, to = 59)
+data_dur_min.grid(row=3,column=1)
+
+label_4 = Label(master, text="Seconds")
+label_4.grid(row=4,column=0)
+data_dur_sec = Spinbox(master, from_ = 0, to = 59)
+data_dur_sec.grid(row=4,column=1)
+
 
 #entry for test duration
 max_temp = DoubleVar()
 max_temp_label = Label(master, text = "Enter the maximum temperature of the test in Celsius")
-max_temp_label.grid()
+max_temp_label.grid(row=5,column=0)
 
 max_temp_box = Entry(master, textvariable = max_temp)
-max_temp_box.grid()
+max_temp_box.grid(row=5,column=1)
 
 
 #entry for arduino control
@@ -123,27 +143,42 @@ max_temp_box.grid()
 #selects radiobutton selection
 def radiobutsel():
     if v.get() == 1:
-        log_data(1,data_col.get(),data_dur.get())
+        log_data(1,data_col.get(),data_dur_hour.get(),data_dur_min.get(),data_dur_sec.get(),max_volt.get(),min_volt.get())
 
     else:
-        log_data(2,data_col.get(),data_dur.get())
+        log_data(1,data_col.get(),data_dur_hour.get(),data_dur_min.get(),data_dur_sec.get(),max_volt.get(),min_volt.get())
 
 
 #Data Logger Radio Button Widgets
 #Log
 v = IntVar()
 
-a = Radiobutton(master, text = 'Linear Plot', value = 1, variable = v)
-a.grid()
-b = Radiobutton(master, text = 'Logarithmic Plot', value = 2, variable = v)
-b.grid()
+rad_label = Label(master, text="Choose the plot format")
+rad_label.grid(row=6,column=0)
 
+a = Radiobutton(master, text = 'Linear Plot', value = 1, variable = v)
+a.grid(row=6,column=1)
+b = Radiobutton(master, text = 'Logarithmic Plot', value = 2, variable = v)
+b.grid(row=7,column=1)
 
 startlog = Button(master, text = 'Start logging data', command = radiobutsel)
 startlog.grid()
 
-#Forward and Reverse Voltage Test Radio Button Widgets
-#send a bit to select the voltage to apply
+#Forward and Reverse Voltage Test Widgets
+#entry for collection rate
+max_volt = DoubleVar()
+max_volt_label = Label(master, text = "Enter maximum voltage for the test to stop.")
+max_volt_label.grid(row=8,column=0)
+
+max_volt_box = Entry(master, textvariable = max_volt)
+max_volt_box.grid(row=8,column=1)
+
+min_volt = DoubleVar()
+min_volt_label = Label(master, text = "Enter minimum voltage for the test to stop.")
+min_volt_label.grid(row=9,column=0)
+
+min_volt_box = Entry(master, textvariable = min_volt)
+min_volt_box.grid(row=9,column=1)
 
 #stop data logging
 #led_button = Button(master, text = 'Turn led on/off', command = setCheckButtonText)
