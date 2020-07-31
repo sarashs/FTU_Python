@@ -20,6 +20,34 @@
 #define  YELLOWLED A5
 #define  ANALOG_PIN A6
 
+volatile float measured_voltage=0;
+
+/************************************************************************/
+/* PINS DESCRIPTIONS                                                    */
+/************************************************************************/
+
+
+#define CTRL_VSTR A0 //A0 the control signal for the voltage stress circuit, labeled CTRL_VSTR in figure 1
+#define HEATER_PWM A3 //A3 This is the control signal for the Helmholtz circuit
+#define HELMHOLTZ_PWM A4 //A4 This is the control signal for the Heater board
+#define _RESET_ADC 0          //D0 Should be configured as a digital output. Connected to *RESET on the ADC
+#define _PWDN_ADC 1           //D1 Should be configured as a digital output. Connected to *PWDN on the ADC
+#define START_ADC 2           //D2 Should be configured as a digital output. Connected to START on the ADC.
+#define _DRDY_ADC 3           //D3 Should be configured as a digital input. Connected to *DRDY on the ADC.
+#define RED_LED 4		      //D4 Should be configured as a digital output. Control signal for the red LED on the heater board.
+#define BLUE_LED 5            //D5 Should be configured as a digital output. Control signal for the Blue LED on the heater board.
+#define CLR_FREQ_DIVIDER 6    //D6 Should be configured as a digital output. The clear command for the frequency divider. labeled CLR in figure 1.
+#define _CS_ADC 7             //D7 Should be configured as a digital output. This is the *CS line for SPI communication with the ADC
+#define MOSI_ADC 8            //D8 Should be configured as a digital output. This is the MOSI line on the SPI bus. labeled DIN on the ADC.
+#define SCK_ADC 9             //D9 Should be configured as a digital output. This is the SCLK line on the SPI bus.
+#define MISO_ADC 10           //D10 Should be configured as a digital input. This is the MISO line on the SPI bus. labeled DOUT on the ADC.
+#define Q11_FREQ_COUNTER 11   //D11 Should be configured as a digital input. Connected to Q11 on the frequency divider
+#define Q12_FREQ_COUNTER 12   //D12 Should be configured as a digital input. Connected to Q12 on the frequency divider
+#define Q13_FREQ_COUNTER 13   //D13 Should be configured as a digital input. Connected to Q13 on the frequency divider
+#define Q14_FREQ_COUNTER 14   //D14 Should be configured as a digital input. Connected to Q14 on the frequency divider
+
+//A1, A2, A5, A6   4 MCU pins that are not used in the design and left disconnected. They will be accessible through the male/female headers mounted on the MCU board.
+
 //variables
 //volatile is for variables that can always change in the code
 volatile int TCC1_compare_value = 3905;  //compare value for 1sec default rate
@@ -29,25 +57,26 @@ volatile int converted_ADC_data [29]; //stores converted ADC values
 volatile int ADC_GAIN = 1;
 
 volatile int test_time_count = 0;     //seconds of test time elapsed
-volatile bool TEST_START = false;
-volatile bool TEST_STOP = false;
+volatile int System_fsm_state = 0;
 
 //Input data from the MCU
-volatile float desired_temperature = 0;     //in C
-volatile int desired_magnetic_field = 0;  //in mT
-volatile int desired_time_for_test = 0;	 //time in minutes
-volatile int desired_FPGA_voltage =0;     //in mV
-volatile int serial_output_rate=4000;                 //rate to read data in ms
+volatile bool TEST_START = false;
+volatile bool TEST_STOP = false;
+volatile float desired_temperature = 43;     //in C
+volatile float desired_magnetic_field = 0;  //in mT
+volatile int desired_time_for_test = 2;	 //time in minutes
+volatile float desired_FPGA_voltage =0;     //in mV
+volatile int serial_output_rate=1500;                 //rate to read data in ms
 
 //Variables for Magnetic field FSM
 volatile int measured_magnetic_field = 0; // in mT
 volatile int magnetic_PWM_duty = 0; //duty cycle value 0-255
-volatile char magnetic_fsm_state = 0; //idle state
+volatile int magnetic_fsm_state = 0; //idle state
 
 //Variables for heater FSM
 volatile float measured_temperature = 0; // in C
 volatile float heater_PWM_duty = 0; //duty cycle value 0-255
-volatile char heater_fsm_state = 0; //idle state
+volatile int heater_fsm_state = 0; //idle state
 volatile bool HEATER_START = false;
 
 void setup() {
@@ -59,16 +88,22 @@ void setup() {
 	pin_setup();
 	__enable_irq();
 	
+	//testing
 	Serial.begin(115200);
+	TEST_START = true;
+	
+	
 }
 
 // the loop function runs over and over again forever
 void loop() {
-	
- 		
- 		//delay(1000);                       // wait for a second
- 		//digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
- 		//delay(1000);                       // wait for a second
+		measured_voltage = (analogRead(ANALOG_PIN))*(3.3/1024);
+		measured_temperature = volt_to_temperature(1000*measured_voltage);
+		//measured_magnetic_field = magnetic_field_mT(1000*measured_voltage);
+		System_fsm_Run();
+		System_fsm_Transition();
+
+
 }
 
 /**
@@ -161,7 +196,7 @@ void init_TC5(){ //initialize T5 timer
 */
 void init_TC3(){ //initialize TC3 timer, this timer controls the rate at which serial data is sent
 	
-	REG_TC3_COUNT16_CC0 =  countervalue(1,1024,4000);                     // Set the TC3 CC0 register 
+	REG_TC3_COUNT16_CC0 =  countervalue(1,1024,1000);                     // Set the TC3 CC0 register 
 	while (TC3->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
 	
 	//Enabling interrupts
@@ -223,13 +258,36 @@ void TC5_Handler(){
 }
 
 void TC3_Handler(){
+	//If test is completed return test complete
+	if (TEST_STOP){
+		Serial.println("Test Completed");
+		return;
+	}
+	
 	// Check for match counter 1 (MC1) interrupt
 	if (TC3->COUNT16.INTFLAG.bit.OVF && TC3->COUNT16.INTENSET.bit.OVF)
 	{
 		//Overflow interrupt code here:
-		Serial.println(analogRead(ANALOG_PIN));
+		Serial.print(measured_voltage); //print voltage
+		Serial.println(" V");
+		
+		Serial.print(measured_temperature); //print the temperature
+		Serial.println(" C");
+		
 		Serial.print("Current test time in seconds ");
 		Serial.println(test_time_count);
+		
+		Serial.print("Current PWM duty % ");
+		Serial.println((heater_PWM_duty/255)*100);
+		
+		Serial.print("Current system FSM state");
+		Serial.println(System_fsm_state);
+		
+// 		Serial.print("Current Magnetic field in mT ");
+// 		Serial.println(measured_magnetic_field);
+// 		
+// 		Serial.print("Current magnetic PWM duty%");
+// 		Serial.println((magnetic_PWM_duty/255)*100);
 		
 		if (digitalRead(YELLOWLED)==HIGH)
 		{
@@ -261,37 +319,7 @@ int countervalue (float Clock_FrequencyMHz,float prescaler, float period_ms){
 \param[out] N/A
 */
 void pin_setup(void){
-	// initialize digital pin LED_BUILTIN as an output.
-	
-	
-	/************************************************************************/
-	/* PINS DESCRIPTIONS                                                    */
-	/************************************************************************/
-
-	
-	#define CTRL_VSTR A0 //A0 the control signal for the voltage stress circuit, labeled CTRL_VSTR in figure 1
-	#define HEATER_PWM A3 //A3 This is the control signal for the Helmholtz circuit
-	#define HELMHOLTZ_PWM A4 //A4 This is the control signal for the Heater board
-	#define _RESET_ADC 0          //D0 Should be configured as a digital output. Connected to *RESET on the ADC
-	#define _PWDN_ADC 1           //D1 Should be configured as a digital output. Connected to *PWDN on the ADC
-	#define START_ADC 2           //D2 Should be configured as a digital output. Connected to START on the ADC.
-	#define _DRDY_ADC 3           //D3 Should be configured as a digital input. Connected to *DRDY on the ADC.
-	#define RED_LED 4		      //D4 Should be configured as a digital output. Control signal for the red LED on the heater board.
-	#define BLUE_LED 5            //D5 Should be configured as a digital output. Control signal for the Blue LED on the heater board.
-	#define CLR_FREQ_DIVIDER 6    //D6 Should be configured as a digital output. The clear command for the frequency divider. labeled CLR in figure 1.
-	#define _CS_ADC 7             //D7 Should be configured as a digital output. This is the *CS line for SPI communication with the ADC
-	#define MOSI_ADC 8            //D8 Should be configured as a digital output. This is the MOSI line on the SPI bus. labeled DIN on the ADC.
-	#define SCK_ADC 9             //D9 Should be configured as a digital output. This is the SCLK line on the SPI bus.
-	#define MISO_ADC 10           //D10 Should be configured as a digital input. This is the MISO line on the SPI bus. labeled DOUT on the ADC.
-	#define Q11_FREQ_COUNTER 11   //D11 Should be configured as a digital input. Connected to Q11 on the frequency divider
-	#define Q12_FREQ_COUNTER 12   //D12 Should be configured as a digital input. Connected to Q12 on the frequency divider
-	#define Q13_FREQ_COUNTER 13   //D13 Should be configured as a digital input. Connected to Q13 on the frequency divider
-	#define Q14_FREQ_COUNTER 14   //D14 Should be configured as a digital input. Connected to Q14 on the frequency divider
-
-	//A1, A2, A5, A6   4 MCU pins that are not used in the design and left disconnected. They will be accessible through the male/female headers mounted on the MCU board.
-
-	
-	
+	// initialize digital pin LED_BUILTIN as an output.	
 	pinMode(REDLED,OUTPUT);
 	pinMode(BLUELED, OUTPUT);
 	pinMode(YELLOWLED,OUTPUT);
@@ -316,8 +344,6 @@ void pin_setup(void){
 	pinMode(Q14_FREQ_COUNTER,INPUT);
 	
 	return;
-	
-	
 }
 
 
@@ -399,9 +425,9 @@ Output: Magnetic field density in milli_Tesla (1G = 0.1mT)
 Data sheet: https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjxps3qg8PqAhXBo54KHUn5CvwQFjAAegQIBRAB&url=https%3A%2F%2Fwww.allegromicro.com%2F~%2Fmedia%2FFiles%2FDatasheets%2FA1318-A1319-Datasheet.ashx&usg=AOvVaw39zGCju7QuDLgpcH9PKde_
 */
 
-int magnetic_field_mT(int voltage){
+float magnetic_field_mT(float voltage){
 	#define QUIESCENT_VOLTAGE 1650              //1.65V Low->1.638, mean-> 1.65, high-> 1.662 measure this
-	#define MAGNETIC_SENSITIVITY 1.35           //1.35mv/G --> 13.5mV/mT Low->1.289, mean-> 1.3, high-> 1.411
+	#define MAGNETIC_SENSITIVITY 13.5           //1.35mv/G --> 13.5mV/mT Low->1.289, mean-> 1.3, high-> 1.411
 	#define TEMPERATURE_SENSITIVITY   0.12      //0.12%/C
 	#define magnetic_sesnor_ERROR 1.5							//1.5% ERROR
 	#define VOLTAGE_CLAMP_HIGH 2970			    //2.97V +40 mT
@@ -412,7 +438,7 @@ int magnetic_field_mT(int voltage){
 	if (voltage == '\0') return '\0';
 	else if (voltage == VOLTAGE_CLAMP_HIGH ) return MAX_MAGNETIC_FIELD ; //we can find some sort of error to throw here
 	else if (voltage == VOLTAGE_CLAMP_LOW) return MIN_MAGNETIC_FIELD ;
-	else return ((voltage-QUIESCENT_VOLTAGE)/MAGNETIC_SENSITIVITY);   //polarity depends on the direction of the field
+	else return (float)((voltage-QUIESCENT_VOLTAGE)/(float)MAGNETIC_SENSITIVITY);   //polarity depends on the direction of the field
 	
 }
 
@@ -426,7 +452,7 @@ Purpose : This state_machine runs the system
 
 //STATES {IDLE, SPI_UPDATE, serial_update, Heater_update, Magnetic_field_update}
 	
-void run_system_FSM (int state){
+void System_fsm_Run (void){
 	
 	#define IDLE 0 //idle state
 	#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
@@ -434,85 +460,95 @@ void run_system_FSM (int state){
 	#define Heater_Update 3 //running the heater_FSM and get the updates
 	#define Magnetic_Field_update 4 //running the magnetic field FSM and get the updates
 	
-	
-	
-	//Magnetic FSM variables
-	int measured_magnetic_field; // in mT
-	int magnetic_FSM_duty=0; //0-255
-	
 	//variables
-	int current_test_time = 0; //test time in minutes
+	float current_test_time = 0; //test time in minutes
+	float starting_test_count = 0;
 	
 	
-	switch (state){
+	switch (System_fsm_state){
 		case IDLE : {
-				/*If (START) {
-				- Set Voltage
-				- Set total time for test
-				- Start signal
-				- Set time interval for reading data
-				- Set desired Magnetic field value (Voltage) in mT
-				- Set desired temperature (Has to be converted to voltage) in C
-				- Set Threshold voltage, 
-				- Start timer 
-				*/
-				if (TEST_START && !TEST_STOP){
-					//1. secs/60 
-					current_test_time = test_time_count/60; 
+				if (TEST_STOP){
+					//clear and turn off all the outputs
+					//turn off heater click
+					//turn off magnetic field
 					
-					//2. Setting timer compare value from data rate 
+						digitalWrite(CTRL_VSTR,LOW);
+						analogWrite(HEATER_PWM,LOW);
+						analogWrite(HELMHOLTZ_PWM,LOW);
+						digitalWrite(_RESET_ADC,LOW);
+						digitalWrite(_PWDN_ADC,LOW);
+						digitalWrite(START_ADC,LOW);
+						digitalWrite(RED_LED,LOW);
+						digitalWrite(BLUE_LED,LOW);
+						digitalWrite(CLR_FREQ_DIVIDER,LOW);
+						digitalWrite(MOSI_ADC,LOW);
+						digitalWrite(SCK_ADC,LOW);
+						heater_PWM_duty = 0;
+						magnetic_PWM_duty = 0;
+				}
+				else if (TEST_START){
+					//1. Setting voltage for test
+					
+					//2. Setting total time for test
+					starting_test_count = test_time_count; //initializing starting point
+					current_test_time = (test_time_count - starting_test_count)/60; //current test time in minutes
+					
+					//3. Setting time interval for sending data rate
 					REG_TC3_COUNT16_CC0 =  countervalue(1,1024,serial_output_rate);                     // Set the TC3 CC0 register
-					while (TC3->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
+					while (TC3->COUNT16.STATUS.bit.SYNCBUSY);											// Wait for synchronization
+					
+					//4. Setting desired magnetic field in mT
+					//desired_magnetic_field = ;
+					
+					//5. Setting desired temperature in C
+					//desired_temperature = ;
+					Serial.println("Finished setting up");
 					
 				}
-				else if (TEST_STOP){
-				//clear and turn off everything
-				//turn off heater click
-				//turn off magnetic field
-				}
+				
 			}
 			break;
 		case ADC_UPDATE: {
 
 				//1. Update test timer and if time is hit, stop
-				if (current_test_time >= desired_time_for_test) TEST_STOP=true;
-			
+				current_test_time = (test_time_count - starting_test_count)/60;
+				if (current_test_time > desired_time_for_test) TEST_STOP=true;
+	
 				//2. Convert Raw ADC data to understandable values
-				ADC_array_convert();
-
-			
+				//ADC_array_convert();
 		}
 			break;
 		case SERIAL_UPDATE:{
 			//1. Set Data to be sent to the user from the ADC update, data is sent in intervals in an Interrupt service routine
 			
-			//out current_test_timer, ADC converted data at intervals
+			//out current_test_timer, ADC converted data at intervals 
 			
 		}
 			break;
 		case Heater_Update:{
 			//update actual and desired temperature, run heater click FSM
-			heater_fsm_transition();
+			HEATER_START = true;  //enable heater
 			heater_fsm_RUN();
+			heater_fsm_transition();
+			HEATER_START = false; //disable heater
 			
 		}
 			break;
 		case Magnetic_Field_update:{
 			//update actual and desired magnetic field, fun magnetic field FSM
-			//1. state_transtions
-			magnetic_fsm_transition();
-			//2.state_run
+			//1.state_run
 			magnetic_fsm_run();
-			
+			//2. state_transtions
+			magnetic_fsm_transition();
 			
 		}
 			break;
-		default :state = IDLE;
+		default :System_fsm_state = IDLE;
 	}
 	return;
 }
 
-int transition_system_FSM(bool fsm_start, bool fsm_stop, int state)
+void System_fsm_Transition(void)
 {
 	#define IDLE 0 //idle state
 	#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
@@ -520,36 +556,36 @@ int transition_system_FSM(bool fsm_start, bool fsm_stop, int state)
 	#define Heater_Update 3 //running the heater_FSM and get the updates
 	#define Magnetic_Field_update 4 //running the magnetic field FSM and get the updates
 
-	switch (state){
+	switch (System_fsm_state){
 		case IDLE : {
-			if (fsm_stop) state = IDLE;	//else state = idle
-			else if (fsm_start) state =ADC_UPDATE;
+			if (TEST_STOP) System_fsm_state = IDLE;	//else state = idle
+			else if (TEST_START) System_fsm_state =ADC_UPDATE;
 		}
 		break;
 		case ADC_UPDATE: {
-			if (fsm_stop) state = IDLE;
-			else state = SERIAL_UPDATE;
+			if (TEST_STOP) System_fsm_state = IDLE;
+			else System_fsm_state = SERIAL_UPDATE;
 		}
 		break;
 		case SERIAL_UPDATE:{
-			if (fsm_stop) state = IDLE;
-			else state = Heater_Update;
+			if (TEST_STOP) System_fsm_state = IDLE;
+			else System_fsm_state = Heater_Update;
 
 		}
 		break;
 		case Heater_Update:{
-			if (fsm_stop) state = IDLE;
-			else state = Magnetic_Field_update;
+			if (TEST_STOP) System_fsm_state = IDLE;
+			else System_fsm_state = Magnetic_Field_update;
 		}
 		break;
 		case Magnetic_Field_update:{
-			if (fsm_stop) state = IDLE;
-			else state = ADC_UPDATE;
+			if (TEST_STOP) System_fsm_state = IDLE;
+			else System_fsm_state = ADC_UPDATE;
 		}
 		break;
-		default :state = IDLE;
+		default :System_fsm_state = IDLE;
 	}
-	return state;
+	return;
 }
 
 /*
@@ -591,24 +627,53 @@ return;
 #define magnetic_fsm_idle_state 0
 #define magnetic_fsm_increase_state 1
 #define magnetic_fsm_decrease_state 2
-#define magnetic_error 0.015 //error is 1.5% gotten from the magnetic field data sheet
+#define magnetic_error 0.015 //error is 1.5% gotten from the magnetic field data sheet in mT
 
 void magnetic_fsm_transition(void)
 {
+	float magnetic_field_difference = (float) (measured_magnetic_field - desired_magnetic_field); //getting the error
+	
 	if (magnetic_fsm_state == magnetic_fsm_idle_state) 
 	{
-		if (measured_magnetic_field < (desired_magnetic_field*(1-magnetic_error)) ) magnetic_fsm_state = magnetic_fsm_increase_state;
-		else if (measured_magnetic_field > (desired_magnetic_field*(1 + magnetic_error)) ) magnetic_fsm_state = magnetic_fsm_decrease_state; //else if equal, state is unchanged
+// 		if (measured_magnetic_field < (desired_magnetic_field*(1-magnetic_error)) ) magnetic_fsm_state = magnetic_fsm_increase_state;
+// 		else if (measured_magnetic_field > (desired_magnetic_field*(1 + magnetic_error)) ) magnetic_fsm_state = magnetic_fsm_decrease_state; //else if equal, state is unchanged
+		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //cool temp is above desired + threshold
+		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain heat if it between 0.5C threshold
+		else magnetic_fsm_state = magnetic_fsm_increase_state; //heat up if is below the desired+threshold
 	}
 	else if (magnetic_fsm_state == magnetic_fsm_increase_state) 
 	{
-		if (measured_magnetic_field >= desired_magnetic_field) magnetic_fsm_state = magnetic_fsm_idle_state; //else state is unchanged
+		/*if (measured_magnetic_field >= desired_magnetic_field) magnetic_fsm_state = magnetic_fsm_idle_state; //else state is unchanged*/
+		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //cool temp is above desired + threshold
+		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain heat if it between 0.5C threshold
+		else magnetic_fsm_state = magnetic_fsm_increase_state; //heat up if is below the desired+threshold
 	}
 	else if (magnetic_fsm_state == magnetic_fsm_decrease_state) 
 	{
-		if (measured_magnetic_field <= desired_magnetic_field) magnetic_fsm_state = magnetic_fsm_idle_state; //else state is unchanged
+		/*if (measured_magnetic_field <= desired_magnetic_field) magnetic_fsm_state = magnetic_fsm_idle_state; //else state is unchanged*/
+		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //cool temp is above desired + threshold
+		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain heat if it between 0.5C threshold
+		else magnetic_fsm_state = magnetic_fsm_increase_state; //heat up if is below the desired+threshold
 	}
+	return;
 }
+
+/*
+float temperature_difference =  (float)(measured_temperature - desired_temperature);
+
+switch(heater_fsm_state){
+	case heater_fsm_OFF: {
+		heater_fsm_state = heater_fsm_idle;
+		break;
+	}
+	case heater_fsm_idle: {
+		if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
+		else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
+		else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
+		
+		break;
+*/
+
 void magnetic_fsm_run(void)
 {
 	if (magnetic_fsm_state == magnetic_fsm_idle_state){	} //no change
@@ -624,7 +689,7 @@ void magnetic_fsm_run(void)
 		if (magnetic_PWM_duty <= 0) magnetic_PWM_duty=0;
 		else magnetic_PWM_duty--;
 	}
-	//analogWrite(MG_pin, MG_duty); //write to the pin after changing the duty
+	analogWrite(HELMHOLTZ_PWM, magnetic_PWM_duty); //write to the pin after changing the duty
 }
 
 /************************************************************************/
@@ -637,38 +702,39 @@ void magnetic_fsm_run(void)
 	#define heater_fsm_idle 1 //state where temperature is maintained
 	#define heater_fsm_heating 2
 	#define heater_fsm_cooling 3
-	#define heater_fsm_margin 0.5 //error is +/- 1C as we are using integers
+	#define heater_fsm_margin 4 //error is +/- 1C as we are using integers
 	#define heater_threshold_temp 50 // above 40C is hot for human touch
 void heater_fsm_transition(void)
-{
-
-	float temparature_difference =  (float)(measured_temperature - desired_temperature);
-	
+{	
 	if (HEATER_START){
+		float temperature_difference =  (float)(measured_temperature - desired_temperature);
+		
 		switch(heater_fsm_state){
 			case heater_fsm_OFF: {
 				heater_fsm_state = heater_fsm_idle;
 				break;
 			}
+			case heater_fsm_cooling:
+			case heater_fsm_heating:
 			case heater_fsm_idle: {
-				if ( temparature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
-				else if ( abs(temparature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
+				if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
+				else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
 				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
 				
 				break;
 			}
-			case heater_fsm_heating: {
-				if ( temparature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
-				else if ( abs(temparature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
-				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
-				break;
-			}
-			case heater_fsm_cooling: {
-				if ( temparature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
-				else if ( abs(temparature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
-				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
-				break;
-			}
+// 			case heater_fsm_heating: {
+// 				if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
+// 				else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
+// 				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
+// 				break;
+// 			}
+// 			case heater_fsm_cooling: {
+// 				if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
+// 				else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
+// 				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
+// 				break;
+// 			}
 			default: heater_fsm_state = heater_fsm_OFF;
 		}
 	}
@@ -678,13 +744,13 @@ void heater_fsm_transition(void)
 }
 
 void heater_fsm_RUN(void){
-	if (measured_temperature < heater_threshold_temp) digitalWrite(BLUE_LED,HIGH);//turn on safe to touch LED
+	if (measured_temperature < heater_threshold_temp && digitalRead(BLUE_LED)!=HIGH) digitalWrite(BLUE_LED,HIGH);//turn on safe to touch LED if not high already
 	else digitalWrite(BLUE_LED,LOW);  //turn off safe to touch LED
 	
 	switch(heater_fsm_state){
 		case heater_fsm_OFF: {
 			//all pins off
-			digitalWrite(RED_LED, LOW); 
+			digitalWrite(RED_LED, LOW); //turn of heating signal
 			heater_PWM_duty =0;
 			break;
 		}
@@ -694,16 +760,19 @@ void heater_fsm_RUN(void){
 		}
 		case heater_fsm_heating: {
 			digitalWrite(RED_LED,HIGH); //turn on heating signal
-			heater_PWM_duty++;	
+			if (heater_PWM_duty >= 255) heater_PWM_duty=255;
+			else heater_PWM_duty++;	
 			break;
 		}
 		case heater_fsm_cooling: {
-			digitalWrite(RED_LED, LOW); 
-			heater_PWM_duty--;	
+			digitalWrite(RED_LED, LOW); //turn of heating signal
+			if (heater_PWM_duty <= 0) heater_PWM_duty=0;
+			else heater_PWM_duty--;	
 			break;
 		}
 		default: heater_fsm_state = heater_fsm_OFF;
 	}
-	//analogwrite(PIN,heater_PWM_duty);
+	
+	analogWrite(HEATER_PWM,heater_PWM_duty);
 	return;
 }
