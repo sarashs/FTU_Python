@@ -17,9 +17,19 @@ from tkinter import *
 import datetime
 from datetime import timedelta
 import json
+from pymongo import MongoClient
+from pymongo import ASCENDING
 
 #serial communication
-ser = serial.Serial('COM3',baudrate=9600)
+port = 'COM5'
+ser = serial.Serial(port,baudrate=9600)
+
+#start mongod on the command line then
+#create a MongoClient to the running mongod instance 
+client = MongoClient('mongodb://localhost:27017/')
+db = client.my_logs
+log_collection = db.log
+log_collection.create_index([("timestamp", ASCENDING)])
 
 #plotting settings
 plt.ion() #interactive mode on
@@ -59,10 +69,12 @@ def log_data(value,data_rate,data_dur_hour,data_dur_min,data_dur_sec,max_volt,mi
                 continue
             
             #data write
-            with open("test_data.csv","a") as f:
-                writer = csv.writer(f,delimiter=",")
-                writer.writerow([time.time(),decoded_bytes])
-                
+            """Log data to MongoDB log"""
+            entry = {}
+            entry['timestamp'] = datetime.datetime.utcnow()
+            entry['data'] = decoded_bytes
+            log_collection.insert_one(entry)
+            
             y_var = np.append(y_var,decoded_bytes)
             y_var = y_var[1:plot_window+1]
             line.set_ydata(y_var)
@@ -75,7 +87,7 @@ def log_data(value,data_rate,data_dur_hour,data_dur_min,data_dur_sec,max_volt,mi
             voltage = decoded_bytes*10 + 500
             print(voltage)
             
-            if(voltage > max_volt):
+            if(voltage > max_volt): #voltage bound logic
                 break
             elif(voltage < min_volt):
                 break
@@ -98,37 +110,32 @@ def log_data(value,data_rate,data_dur_hour,data_dur_min,data_dur_sec,max_volt,mi
 
 def fileDialogRead():
     #prompt browse file
-    filename = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("json files","*.json"),("all files","*.*")))
+    filename = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("json files",".json"),("all files",".*")))
     #read parameters in that file
     with open(filename, "r") as read_file:
         data = json.load(read_file) #deserialize json file into python object
 
-    #load values on the entry boxes/spinbox
-    load_rate = str(data.get('data_rate'))
-    entry_datacol_box.delete(0, END) #remove the existing 0 and load the value
-    entry_datacol_box.insert(0,load_rate) #with insert
-
-    load_hour = StringVar(master, value = str(data.get('data_dur_hour')))
-    data_dur_hour.config(textvariable = load_hour)
+    json_string = json.dumps(data) #encode into string with dumps
+   
+    json_string.replace('"','\\"') #add escape chars
     
-    load_minute = StringVar(master, value = str(data.get('data_dur_min')))
-    data_dur_min.config(textvariable = load_minute)
-
-    load_second = StringVar(master, value = str(data.get('data_dur_sec')))
-    data_dur_sec.config(textvariable = load_second)
-
-    load_max_volt = str(data.get('max_volt'))
-    max_volt_box.delete(0, END)
-    max_volt_box.insert(0,load_max_volt)
-
-    load_min_volt = str(data.get('min_volt'))
-    min_volt_box.delete(0, END)
-    min_volt_box.insert(0,load_min_volt)
-
-
-    print(data.get('data_rate'))
+    json_bytes = json_string.encode() #convert to bytes before sending
     
-    read_file.close()
+    print("String sent: ")
+    print(json_bytes)
+    print("\n")
+    ser.write(json_bytes) #write to serial
+    time.sleep(2) # with the port open, the response will be buffered 
+                  # so wait a bit longer for response here. without this line
+                  # the arduino will not send back anything.
+
+    # Serial read section
+
+    msg = ser.read(ser.inWaiting()) # read everything in the input buffer
+                                    # inWaiting gets the total number of bytes from the input buffer
+    print(msg)
+    
+    read_file.close() #close file
 
 #Widgets
 master = Tk() #Main Window
@@ -170,25 +177,6 @@ max_temp_label.grid(row=5,column=0)
 max_temp_box = Entry(master, textvariable = max_temp)
 max_temp_box.grid(row=5,column=1)
 
-
-#entry for arduino control
-
-#onoff = StringVar()
-
-#l2 = Label(master, text = "Enter H/L to turn LED on/off")
-#l2.grid()
-
-#e2 = Entry(master, textvariable = onoff)
-#e2.grid()
-
-#def setCheckButtonText():
-#    if onoff.get() == 'H': 
-#        ser.write(bytes('H', 'UTF-8'))
-#    elif onoff.get() == 'L':
-#        ser.write(bytes('L', 'UTF-8'))
-#    else:
-#        ser.close()
-        
 #selects radiobutton selection
 def radiobutsel():
     if v.get() == 1:
@@ -230,7 +218,10 @@ startlog = Button(master, text = 'Start logging data', command = radiobutsel)
 startlog.grid(row = 10, column = 0)
 
 #load data parameters
-data_load_button = Button(text = "Browse a file for test parameters", command = fileDialogRead)
+data_load_button = Button(text = "Browse a file to send test parameters", command = fileDialogRead)
 data_load_button.grid(row = 11, column = 0)
+
+##send_instruction_set = Button(text = "Browse a file to send over the serial", command = sendInstructionList)
+##send_instruction_set.grid(row = 12, column = 0)
 
 master.mainloop() 
