@@ -37,7 +37,7 @@ void loop() {
 // not used in this example 
 while (Serial.available()==0){ //wait for something at serial
   }
-message = Serial.readString();
+message = Serial.readStringUntil('\n');
 Serial.print("The command you have entered is : '");
 Serial.print(message); 
 Serial.println("'");
@@ -50,7 +50,7 @@ serializeJson(doc,Serial);
 Serial.println();
 
 }
-if (message=="data"){
+if (message.equals(displayjson)){
   doc.clear(); //clear the document as this frees up the memory
   // Add values to the document
   doc["test id"] = TEST_ID;
@@ -75,7 +75,7 @@ if (message=="data"){
   serializeJson(doc, Serial);
   // The above line prints:
   // {"sensor":"gps","time":1351824120,"data":[48.756080,2.302038]}
-  serializeJsonPretty(doc, Serial);
+  //serializeJsonPretty(doc, Serial);
   
 
   // Start a new line
