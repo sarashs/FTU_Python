@@ -65,6 +65,7 @@ while(1):
         ready_signal = 'ready'
         instruction2 = '''{"id": 0,"description": "Apply required stress for 2 hours, etcetera","test_values": {"temperature": 120, "v_stress": -400, "test_time": 5, "magnetic_field": 5, "Test_start": 1, "Test_stop":0, "serial_rate": 1500},"measurement_params": {"temperature": {"unit": "C"},"v_stress": {"unit": "mV"},"test_time": {"unit": "seconds"},"magnetic_field": {"unit": "mT"},"serial_rate": {"unit": "milliseconds"}}}'''
         
+        ser.reset_input_buffer() #clear serial buffer
         ser.write(instruction.encode())
         
         #check if arduino has sent ready signal
@@ -78,6 +79,7 @@ while(1):
         else :
             print(getValues())
             ser.close()
+
             raise Exception("no ready signal from arduino")
         
         #check if the instruction matches
