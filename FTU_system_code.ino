@@ -1,18 +1,13 @@
+//Author : Valentine Ssebuyungo
 #include "driver_init.h"
-/*
- * Sketch2.ino
- *
- * Created: 7/21/2020 8:58:43 AM
- * Author: hp
- */ 
-#include "sam.h"
-#include "core_cm0plus.h"
+#include "ArduinoJson.h"
+#include "ArduinoJson.hpp"
+#include "Arduino.h"
 #include "samd21/include/samd21g18a.h"
-
-#include <math.h>
-#include <stdio.h>
+#include "math.h"
+#include "string.h"
+#include "time.h"
 #include <stdbool.h>
-#include <time.h>
 
 //USED FOR TESTING
 #define  REDLED A1
@@ -28,8 +23,8 @@ volatile float measured_voltage=0;
 
 
 #define CTRL_VSTR A0 //A0 the control signal for the voltage stress circuit, labeled CTRL_VSTR in figure 1
-#define HEATER_PWM A3 //A3 This is the control signal for the Helmholtz circuit
-#define HELMHOLTZ_PWM A4 //A4 This is the control signal for the Heater board
+#define HEATER_PWM A3 //A3 This is the control signal for the Heater board
+#define HELMHOLTZ_PWM A4 //A4 This is the control signal for the Helmholtz circuit
 #define _RESET_ADC 0          //D0 Should be configured as a digital output. Connected to *RESET on the ADC
 #define _PWDN_ADC 1           //D1 Should be configured as a digital output. Connected to *PWDN on the ADC
 #define START_ADC 2           //D2 Should be configured as a digital output. Connected to START on the ADC.
@@ -53,20 +48,21 @@ volatile float measured_voltage=0;
 volatile int TCC1_compare_value = 3905;  //compare value for 1sec default rate
 
 volatile int raw_ADC_data [29];       //stores raw ADC values
-volatile int converted_ADC_data [29]; //stores converted ADC values
+volatile int converted_ADC_data [29] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28}; //stores converted ADC values
 volatile int ADC_GAIN = 1;
 
 volatile int test_time_count = 0;     //seconds of test time elapsed
 volatile int System_fsm_state = 0;
 
 //Input data from the MCU
+volatile int Test_ID = 0;
 volatile bool TEST_START = false;
 volatile bool TEST_STOP = false;
 volatile float desired_temperature = 43;     //in C
 volatile float desired_magnetic_field = 0;  //in mT
 volatile int desired_time_for_test = 2;	 //time in minutes
 volatile float desired_FPGA_voltage =0;     //in mV
-volatile int serial_output_rate=1500;                 //rate to read data in ms
+volatile int serial_output_rate=3000;                 //rate to read data in ms
 
 //Variables for Magnetic field FSM
 volatile int measured_magnetic_field = 0; // in mT
@@ -79,31 +75,144 @@ volatile float heater_PWM_duty = 0; //duty cycle value 0-255
 volatile int heater_fsm_state = 0; //idle state
 volatile bool HEATER_START = false;
 
+String message;
+String instruction = "instruction";
+volatile bool TEST_ERROR = false; 
+String error_message = ""; //Contains the error message to be sent to python
+volatile float current_test_time = 0; //test time in minutes
+volatile bool serial_signal = false;
+
+//preparing the JSON document to be used in the test
+// Allocate the JSON document
+//
+// StaticJsonObject allocates memory on the stack, it can be
+// replaced by DynamicJsonDocument which allocates in the heap.
+//1024 is the RAM dedicated to this document
+DynamicJsonDocument  doc(700);
+
 void setup() {
 	//setting up clocks
-	clock_setup(); //set up 1MHz clock for the timers
-	init_TC3();	
-	init_TC4();    //initialize TC4 timer  TCCO controls the PWM pins so we do not use this timer, TC4 is a 1 second counter, TC5 generates the ADC read interrupt, TC6 serial read interrupt
-	init_TC5();
-	pin_setup();
-	__enable_irq();
+	Serial.begin(9600); //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
+	while (!Serial) continue;//if not connected stall test until connected
+	clock_setup();           //set up 1MHz clock for the timers
+	//init_TC3();            //set up TC3 whose interrupt sends serial data 
+	init_TC4();              //initialize TC4 timer, TC4 generates the ADC read interrupt
+	init_TC5();              //TC5 is a 1 second counter
+	pin_setup();             //set up pins
+	__enable_irq();          //enable interrupts
 	
-	//testing
-	Serial.begin(115200);
-	TEST_START = true;
+	receive_test_instructions(); //run function for handshaking to receive instructions
 	
+	pinMode(LED_BUILTIN, OUTPUT);  //testing turn on LED if test starts
+	if (TEST_START) digitalWrite(LED_BUILTIN,HIGH);
 	
+	//Beginning handshaking so that instructions are read from python script on computer
+		
 }
 
 // the loop function runs over and over again forever
 void loop() {
-		measured_voltage = (analogRead(ANALOG_PIN))*(3.3/1024);
+		measured_voltage = (analogRead(ANALOG_PIN))*(5.0/1024);
 		measured_temperature = volt_to_temperature(1000*measured_voltage);
-		//measured_magnetic_field = magnetic_field_mT(1000*measured_voltage);
+		measured_magnetic_field = magnetic_field_mT(1000*measured_voltage);
 		System_fsm_Run();
-		System_fsm_Transition();
+		pass();
+		System_fsm_Transition();		
+}
 
+/**
+\Empty function for debugging
+\param[in] N/A
+\param[out] N/A
+*/
+void pass (void){
+	return;
+}
 
+/**
+\Function to receive test instructions from CPU
+\param[in] N/A
+\param[out] N/A
+*/
+void receive_test_instructions(void){
+	while (Serial.available()==0){ //wait for something at serial
+	}	
+	message = Serial.readStringUntil('\n'); //read till end of the line
+
+	while (Serial.available()==0){ //wait for instruction json at serial
+		if (message.equals(instruction)){
+			Serial.println("ready");
+		}
+	}
+	
+	message = Serial.readStringUntil('\n'); //
+	Serial.println(message); //send json back as string to to check if it is correct
+	
+	//change string to char array for JSON buffer simplicity
+	char charBuf[message.length() + 1];
+	message.toCharArray(charBuf, message.length()+1);
+
+	// De serialize the JSON document
+	DeserializationError error = deserializeJson(doc, charBuf);
+
+	// Test if parsing succeeds.
+	if (error) {
+		Serial.print(F("deserializeJson() failed: "));
+		Serial.println(error.c_str());
+		//raise error
+		error_message = error.c_str();
+		return;
+	}
+
+	Test_ID = doc["id"]; // 0
+	const char* description = doc["description"]; // "Apply required stress for 2 hours, etcetera"
+
+    //Setting test parameters
+	JsonObject test_values = doc["test_values"];
+	desired_temperature = test_values["temperature"]; // 120
+	desired_FPGA_voltage = test_values["v_stress"]; // -400
+	desired_time_for_test = test_values["test_time"]; // 5
+	desired_magnetic_field = test_values["magnetic_field"]; // 5
+	if (test_values["Test_start"] == 1) TEST_START= true; // 1
+	if (test_values["Test_stop"]==1) TEST_STOP = true; // 0
+	serial_output_rate = test_values["serial_rate"]; // 1500
+
+	JsonObject measurement_params = doc["measurement_params"];
+
+	const char* measurement_params_temperature_unit = measurement_params["temperature"]["unit"]; // "C"
+	const char* measurement_params_v_stress_unit = measurement_params["v_stress"]["unit"]; // "mV"
+	const char* measurement_params_test_time_unit = measurement_params["test_time"]["unit"]; // "seconds"
+	const char* measurement_params_magnetic_field_unit = measurement_params["magnetic_field"]["unit"]; // "mT"
+	const char* measurement_params_serial_rate_unit = measurement_params["serial_rate"]["unit"]; // "milliseconds"
+	
+}
+
+/**
+\Function to send data to Python script
+\param[in] N/A
+\param[out] N/A
+*/
+void send_data_to_serial(){
+	//tell python there is ready data
+	//send the data
+	//wait for confirmation
+   char userInput;	
+	if(Serial.available()> 0){
+		userInput = Serial.read();               // read user input
+		if(userInput == 'g'){                  // if we get expected value		
+			//printing the document
+			serializeJson(doc, Serial);
+			Serial.println();
+
+			while (Serial.available() == 0){
+				continue; //wait for confirmation
+			}
+			while (Serial.read() != 'd'){
+				continue;
+			}
+			Serial.println("done");	
+		}
+	}
 }
 
 /**
@@ -126,7 +235,7 @@ void clock_setup(){ //setting up the clock speeds
 	
 	REG_GCLK_CLKCTRL = GCLK_CLKCTRL_CLKEN |         // Enable GCLK4 to TC4 and TC5
 	GCLK_CLKCTRL_GEN_GCLK4 |     // Select GCLK4
-	GCLK_CLKCTRL_ID_TC4_TC5; // Feed the GCLK4 to TC4 and TC5  
+	GCLK_CLKCTRL_ID_TC4_TC5 ; // Feed the GCLK4 to TC4 and TC5  
 	while (GCLK->STATUS.bit.SYNCBUSY);	
 	
 	REG_GCLK_CLKCTRL = GCLK_CLKCTRL_CLKEN |         // Enable GCLK4 to TC4 and TC5
@@ -215,13 +324,20 @@ void init_TC3(){ //initialize TC3 timer, this timer controls the rate at which s
 	return;
 }
 
-
-void TC4_Handler()                              // Interrupt Service Routine (ISR) for timer TC4
+/**
+\Interrupt service routine for TC4, handles the ADC interrupt
+\param[in] N/A
+\param[out] N/A
+*/
+void TC4_Handler()                              // ADC interrupt
 {
 	// Check for OVF interrupt
 	if (TC4->COUNT16.INTFLAG.bit.OVF && TC4->COUNT16.INTENSET.bit.OVF)
 	{
 		//Overflow interrupt code here:
+		//ADC read code
+		
+		//testing
 		
 		if (digitalRead(REDLED)==LOW)
 		{
@@ -237,13 +353,19 @@ void TC4_Handler()                              // Interrupt Service Routine (IS
 	return;
 }
 
-void TC5_Handler(){
+void TC5_Handler(){ //counter interrupt
 	// Check for OVF interrupt
 	if (TC5->COUNT16.INTFLAG.bit.OVF && TC5->COUNT16.INTENSET.bit.OVF)
 	{
 		//Overflow interrupt code here:
 		
 		test_time_count++; //increment +1 every second
+		
+		if ((test_time_count*1000)%serial_output_rate == 0){
+			serial_signal = true;
+		}
+		
+		//testing
 		if (digitalRead(BLUELED)==HIGH)
 		{
 			digitalWrite(BLUELED,LOW);
@@ -252,7 +374,7 @@ void TC5_Handler(){
 		{
 			digitalWrite(BLUELED,HIGH);
 		}
-		REG_TC5_INTFLAG = TC_INTFLAG_OVF;        // Clear the MC1 interrupt flag
+		REG_TC5_INTFLAG = TC_INTFLAG_OVF;        // Clear the MC0 interrupt flag
 	}
 	return;
 }
@@ -260,43 +382,14 @@ void TC5_Handler(){
 void TC3_Handler(){
 	//If test is completed return test complete
 	if (TEST_STOP){
-		Serial.println("Test Completed");
+		//Serial.println("Test Completed");
 		return;
 	}
 	
 	// Check for match counter 1 (MC1) interrupt
-	if (TC3->COUNT16.INTFLAG.bit.OVF && TC3->COUNT16.INTENSET.bit.OVF)
+	if (TC3->COUNT16.INTFLAG.bit.OVF && TC3->COUNT16.INTENSET.bit.OVF && TEST_START)
 	{
-		//Overflow interrupt code here:
-		Serial.print(measured_voltage); //print voltage
-		Serial.println(" V");
-		
-		Serial.print(measured_temperature); //print the temperature
-		Serial.println(" C");
-		
-		Serial.print("Current test time in seconds ");
-		Serial.println(test_time_count);
-		
-		Serial.print("Current PWM duty % ");
-		Serial.println((heater_PWM_duty/255)*100);
-		
-		Serial.print("Current system FSM state");
-		Serial.println(System_fsm_state);
-		
-// 		Serial.print("Current Magnetic field in mT ");
-// 		Serial.println(measured_magnetic_field);
-// 		
-// 		Serial.print("Current magnetic PWM duty%");
-// 		Serial.println((magnetic_PWM_duty/255)*100);
-		
-		if (digitalRead(YELLOWLED)==HIGH)
-		{
-			digitalWrite(YELLOWLED,LOW);
-		}
-		else
-		{
-			digitalWrite(YELLOWLED,HIGH);
-		}
+
 		REG_TC3_INTFLAG = TC_INTFLAG_OVF;        // Clear the OVF interrupt flag
 	}
 	return;
@@ -398,7 +491,7 @@ int twos_complement_to_int (int value, int num_bits)
 
 /*
 Function: ADC_mV
-Purpose: converts ADV value into millivolts
+Purpose: converts ADC value into millivolts
 Input: int reading, int gain
 Return: int millivolts
 mV = ADC_data * range
@@ -461,7 +554,7 @@ void System_fsm_Run (void){
 	#define Magnetic_Field_update 4 //running the magnetic field FSM and get the updates
 	
 	//variables
-	float current_test_time = 0; //test time in minutes
+	
 	float starting_test_count = 0;
 	
 	
@@ -470,8 +563,7 @@ void System_fsm_Run (void){
 				if (TEST_STOP){
 					//clear and turn off all the outputs
 					//turn off heater click
-					//turn off magnetic field
-					
+					//turn off magnetic field				
 						digitalWrite(CTRL_VSTR,LOW);
 						analogWrite(HEATER_PWM,LOW);
 						analogWrite(HELMHOLTZ_PWM,LOW);
@@ -485,24 +577,58 @@ void System_fsm_Run (void){
 						digitalWrite(SCK_ADC,LOW);
 						heater_PWM_duty = 0;
 						magnetic_PWM_duty = 0;
+						
+						//
+						doc.clear(); //clear the document as this frees up the memory
+						// Add values to the document
+						doc["test id"] = Test_ID;
+						//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
+						
+						
+						//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
+						if (TEST_STOP) doc["test stop"] = 1;
+						else doc["test stop"] = 0;
+						//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
+						if (TEST_ERROR) doc["test error"]=1;
+						else doc["test error"]=0;
+						
+						doc["error message"] = error_message;
+						
+						// Add an array.
+						JsonArray ADCdata = doc.createNestedArray("ADC data");
+						for (int i =0; i < 29; i++){
+							ADCdata.add(converted_ADC_data[i]);
+						}
+						//add another array
+						JsonArray TESTdata = doc.createNestedArray("test data");
+
+						TESTdata.add(current_test_time); //current test time
+						TESTdata.add(measured_temperature); //temperature (C)
+						TESTdata.add(measured_magnetic_field); //magnetic field (mT)
+						//out current_test_timer, ADC converted data at intervals
+						
+						if (serial_signal) {
+							send_data_to_serial();
+							serial_signal = false;
+						}
 				}
 				else if (TEST_START){
 					//1. Setting voltage for test
 					
 					//2. Setting total time for test
 					starting_test_count = test_time_count; //initializing starting point
-					current_test_time = (test_time_count - starting_test_count)/60; //current test time in minutes
+					current_test_time = (test_time_count - starting_test_count);//   /60; //current test time in secs
 					
 					//3. Setting time interval for sending data rate
-					REG_TC3_COUNT16_CC0 =  countervalue(1,1024,serial_output_rate);                     // Set the TC3 CC0 register
-					while (TC3->COUNT16.STATUS.bit.SYNCBUSY);											// Wait for synchronization
+					//REG_TC3_COUNT16_CC0 =  countervalue(1,1024,serial_output_rate);                     // Set the TC3 CC0 register
+					//while (TC3->COUNT16.STATUS.bit.SYNCBUSY);											// Wait for synchronization
 					
 					//4. Setting desired magnetic field in mT
 					//desired_magnetic_field = ;
 					
 					//5. Setting desired temperature in C
 					//desired_temperature = ;
-					Serial.println("Finished setting up");
+					//Serial.println("Finished setting up");
 					
 				}
 				
@@ -511,8 +637,8 @@ void System_fsm_Run (void){
 		case ADC_UPDATE: {
 
 				//1. Update test timer and if time is hit, stop
-				current_test_time = (test_time_count - starting_test_count)/60;
-				if (current_test_time > desired_time_for_test) TEST_STOP=true;
+				current_test_time = (test_time_count - starting_test_count); //  /60; testing secs
+				if (current_test_time > desired_time_for_test*60) TEST_STOP=true;
 	
 				//2. Convert Raw ADC data to understandable values
 				//ADC_array_convert();
@@ -520,8 +646,40 @@ void System_fsm_Run (void){
 			break;
 		case SERIAL_UPDATE:{
 			//1. Set Data to be sent to the user from the ADC update, data is sent in intervals in an Interrupt service routine
+			//Preparing json file
 			
+			doc.clear(); //clear the document as this frees up the memory
+			// Add values to the document
+			doc["test id"] = Test_ID;
+			//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
+			
+			
+			//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
+			if (TEST_STOP) doc["test stop"] = 1;
+			else doc["test stop"] = 0;
+			//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
+			if (TEST_ERROR) doc["test error"]=1;
+			else doc["test error"]=0;
+			
+			doc["error message"] = error_message;
+			
+			// Add an array.
+			JsonArray ADCdata = doc.createNestedArray("ADC data");
+			for (int i =0; i < 29; i++){
+				ADCdata.add(converted_ADC_data[i]);
+			}
+			//add another array
+			JsonArray TESTdata = doc.createNestedArray("test data");
+
+			TESTdata.add(current_test_time); //current test time
+			TESTdata.add(measured_temperature); //temperature (C)
+			TESTdata.add(measured_magnetic_field); //magnetic field (mT)
 			//out current_test_timer, ADC converted data at intervals 
+			
+			if (serial_signal) {
+				send_data_to_serial();
+				serial_signal = false;
+			}
 			
 		}
 			break;
@@ -635,44 +793,24 @@ void magnetic_fsm_transition(void)
 	
 	if (magnetic_fsm_state == magnetic_fsm_idle_state) 
 	{
-// 		if (measured_magnetic_field < (desired_magnetic_field*(1-magnetic_error)) ) magnetic_fsm_state = magnetic_fsm_increase_state;
-// 		else if (measured_magnetic_field > (desired_magnetic_field*(1 + magnetic_error)) ) magnetic_fsm_state = magnetic_fsm_decrease_state; //else if equal, state is unchanged
-		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //cool temp is above desired + threshold
-		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain heat if it between 0.5C threshold
-		else magnetic_fsm_state = magnetic_fsm_increase_state; //heat up if is below the desired+threshold
+		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //reduce PWM duty if above desired + threshold
+		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain PWM if between threshold
+		else magnetic_fsm_state = magnetic_fsm_increase_state; //PWM duty increase if below the desired+threshold
 	}
 	else if (magnetic_fsm_state == magnetic_fsm_increase_state) 
 	{
-		/*if (measured_magnetic_field >= desired_magnetic_field) magnetic_fsm_state = magnetic_fsm_idle_state; //else state is unchanged*/
-		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //cool temp is above desired + threshold
-		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain heat if it between 0.5C threshold
-		else magnetic_fsm_state = magnetic_fsm_increase_state; //heat up if is below the desired+threshold
+		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //reduce PWM duty if above desired + threshold
+		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain PWM if between threshold
+		else magnetic_fsm_state = magnetic_fsm_increase_state; //PWM duty increase if below the desired+threshold
 	}
 	else if (magnetic_fsm_state == magnetic_fsm_decrease_state) 
 	{
-		/*if (measured_magnetic_field <= desired_magnetic_field) magnetic_fsm_state = magnetic_fsm_idle_state; //else state is unchanged*/
-		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //cool temp is above desired + threshold
-		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain heat if it between 0.5C threshold
-		else magnetic_fsm_state = magnetic_fsm_increase_state; //heat up if is below the desired+threshold
+		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //reduce PWM duty if above desired + threshold
+		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain PWM if between threshold
+		else magnetic_fsm_state = magnetic_fsm_increase_state; //PWM duty increase if below the desired+threshold
 	}
 	return;
 }
-
-/*
-float temperature_difference =  (float)(measured_temperature - desired_temperature);
-
-switch(heater_fsm_state){
-	case heater_fsm_OFF: {
-		heater_fsm_state = heater_fsm_idle;
-		break;
-	}
-	case heater_fsm_idle: {
-		if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
-		else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
-		else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
-		
-		break;
-*/
 
 void magnetic_fsm_run(void)
 {
@@ -774,5 +912,13 @@ void heater_fsm_RUN(void){
 	}
 	
 	analogWrite(HEATER_PWM,heater_PWM_duty);
+	return;
+}
+
+void raise_MCU_error(String error_text){
+	//This function raises and error
+	TEST_ERROR = true;
+	error_message = error_text;
+	
 	return;
 }
