@@ -1,11 +1,37 @@
-//Author : Valentine Ssebuyungo
+/*H**********************************************************************
+* FILENAME :        FTU_system_code.ino            DESIGN REF: 
+*
+* DESCRIPTION :
+*       This file controls a SAMD21G18A MCU on Arduino MKR1000   
+*		Used to run a HTOL Test (High-temperature operating life) for Accelerated Life Testing   
+*
+* NOTES : This code connects to a python script
+*       
+*
+* AUTHOR :    Valentine Ssebuyungo        START DATE :    1st June 2020
+*
+* CHANGES : TC3 timer removed
+*
+*
+* FUTURE IMPROVEMENTS:
+*							Add a header file to contain all data
+*							IoT communication
+*							RTC timer for time
+*							PID control for magnetic and heater system
+*							Emergency stop
+*						    WDT
+*							Faster Serial communication - 0.1uS
+*							Reset Arduino after test stops
+*H*/
+
 #include "driver_init.h"
 #include "ArduinoJson.h"
 #include "ArduinoJson.hpp"
 #include "Arduino.h"
 #include "samd21/include/samd21g18a.h"
 #include "math.h"
-#include "string.h"
+#include "strings.h"
+#include "WString.h"
 #include "time.h"
 #include <stdbool.h>
 
@@ -75,6 +101,7 @@ volatile float heater_PWM_duty = 0; //duty cycle value 0-255
 volatile int heater_fsm_state = 0; //idle state
 volatile bool HEATER_START = false;
 
+
 String message;
 String instruction = "instruction";
 volatile bool TEST_ERROR = false; 
@@ -92,7 +119,7 @@ DynamicJsonDocument  doc(700);
 
 void setup() {
 	//setting up clocks
-	Serial.begin(9600); //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
+	Serial.begin(256000); //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
 	while (!Serial) continue;//if not connected stall test until connected
 	clock_setup();           //set up 1MHz clock for the timers
 	//init_TC3();            //set up TC3 whose interrupt sends serial data 
@@ -113,6 +140,8 @@ void setup() {
 // the loop function runs over and over again forever
 void loop() {
 		measured_voltage = (analogRead(ANALOG_PIN))*(5.0/1024);
+// 		Serial.println(measured_voltage);
+// 		delay(2000);
 		measured_temperature = volt_to_temperature(1000*measured_voltage);
 		measured_magnetic_field = magnetic_field_mT(1000*measured_voltage);
 		System_fsm_Run();
@@ -160,7 +189,7 @@ void receive_test_instructions(void){
 		Serial.print(F("deserializeJson() failed: "));
 		Serial.println(error.c_str());
 		//raise error
-		error_message = error.c_str();
+		raise_MCU_error(error.c_str());
 		return;
 	}
 
@@ -329,7 +358,7 @@ void init_TC3(){ //initialize TC3 timer, this timer controls the rate at which s
 \param[in] N/A
 \param[out] N/A
 */
-void TC4_Handler()                              // ADC interrupt
+void TC4_Handler()// ADC interrupt handler
 {
 	// Check for OVF interrupt
 	if (TC4->COUNT16.INTFLAG.bit.OVF && TC4->COUNT16.INTENSET.bit.OVF)
@@ -339,14 +368,14 @@ void TC4_Handler()                              // ADC interrupt
 		
 		//testing
 		
-		if (digitalRead(REDLED)==LOW)
-		{
-			digitalWrite(REDLED,HIGH);
-		} 
-		else
-		{
-			digitalWrite(REDLED,LOW);
-		}	
+// 		if (digitalRead(REDLED)==LOW)
+// 		{
+// 			digitalWrite(REDLED,HIGH);
+// 		} 
+// 		else
+// 		{
+// 			digitalWrite(REDLED,LOW);
+// 		}	
 		// Clear the interrupt flag
 		REG_TC4_INTFLAG = TC_INTFLAG_OVF;         
 	}
@@ -365,21 +394,21 @@ void TC5_Handler(){ //counter interrupt
 			serial_signal = true;
 		}
 		
-		//testing
-		if (digitalRead(BLUELED)==HIGH)
-		{
-			digitalWrite(BLUELED,LOW);
-		}
-		else
-		{
-			digitalWrite(BLUELED,HIGH);
-		}
+// 		//testing
+// 				if (digitalRead(BLUELED)==HIGH)
+// 				{
+// 					digitalWrite(BLUELED,LOW);
+// 				}
+// 				else
+// 				{
+// 					digitalWrite(BLUELED,HIGH);
+// 				}
 		REG_TC5_INTFLAG = TC_INTFLAG_OVF;        // Clear the MC0 interrupt flag
 	}
 	return;
 }
 
-void TC3_Handler(){
+void TC3_Handler(){//Timer 3 interrupt handler, NOT USED
 	//If test is completed return test complete
 	if (TEST_STOP){
 		//Serial.println("Test Completed");
@@ -413,14 +442,20 @@ int countervalue (float Clock_FrequencyMHz,float prescaler, float period_ms){
 */
 void pin_setup(void){
 	// initialize digital pin LED_BUILTIN as an output.	
-	pinMode(REDLED,OUTPUT);
-	pinMode(BLUELED, OUTPUT);
-	pinMode(YELLOWLED,OUTPUT);
-	pinMode (ANALOG_PIN, INPUT);
+// 	pinMode(REDLED,OUTPUT);
+// 	pinMode(BLUELED, OUTPUT);
+// 	pinMode(YELLOWLED,OUTPUT);
+//  	pinMode (ANALOG_PIN, INPUT);
 	
 	pinMode(CTRL_VSTR,OUTPUT);
-	pinMode(HEATER_PWM,OUTPUT);
+	digitalWrite(CTRL_VSTR,HIGH); //should be 3.3V (maximum value), to minimize VSTR along with the current through R20
+	
+	pinMode(HEATER_PWM,OUTPUT); //CTRL_TEMP, should be tied low (0% duty cycle)
+	analogWrite(HEATER_PWM,0);
+	
 	pinMode(HELMHOLTZ_PWM,OUTPUT);
+	analogWrite(HELMHOLTZ_PWM,0);
+	
 	pinMode(_RESET_ADC,OUTPUT);
 	pinMode(_PWDN_ADC,OUTPUT);
 	pinMode(START_ADC,OUTPUT);
@@ -439,13 +474,12 @@ void pin_setup(void){
 	return;
 }
 
-
-/*
-Function :volt_to_temperature
-Input: Digital Voltage from ADC in millivolts
-Output: Temperature conversion in C from TMP235
-Formula : T = (V_out - V_offset)/Tc) + T_INFL
-Data sheet: https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235
+/**
+\Function :volt_to_temperature
+\Input: Digital Voltage from ADC in millivolts
+\Output: Temperature conversion in C from TMP235
+\Formula : T = (V_out - V_offset)/Tc) + T_INFL
+\Data sheet: https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235
 */
 float volt_to_temperature(float milli_volts)
 {
@@ -474,32 +508,27 @@ Purpose:Returns an integer value of a twos complement number
 Input: value and number of bits
 Output: integer
 */
-
 int twos_complement_to_int (int value, int num_bits)
 {
 	// msb =  value >> (num_bits-1); //collecting MSB
 	if (num_bits <= 2 || num_bits == '\0' || value > (pow(2,num_bits)-1)) return '\0'; //error checking
-
 	else if (value >> (num_bits-1)){	//if msb ==1, negative values
 		return (( value & (int)(pow(2,num_bits-1)-1)) - (pow(2,num_bits-1)));
 	}
-
 	else {	//positive values
 		return value;
 	}
 }
-
-/*
-Function: ADC_mV
-Purpose: converts ADC value into millivolts
-Input: int reading, int gain
-Return: int millivolts
-mV = ADC_data * range
-	 ----------------
-	 Gain * ADC_Resolution
-Source: http://scientific-solutions.com/products/faq/ssi_faq_adc_equations%20VER2.shtml#:~:text=2%27s%20Complement%20ADC%20Data%20with%208%2Dbit%20resolution
+/**
+\Function: ADC_mV
+\Purpose: converts ADC value into millivolts
+\Input: int reading, int gain
+\Return: int millivolts
+\mV = ADC_data * range
+\	 ----------------
+\	 Gain * ADC_Resolution
+\Source: http://scientific-solutions.com/products/faq/ssi_faq_adc_equations%20VER2.shtml#:~:text=2%27s%20Complement%20ADC%20Data%20with%208%2Dbit%20resolution
 */
-
 int ADC_mv(int ADC_reading, int adc_gain){
 	#define MAX_POSITIVE_VOLTAGE 0x7FFF
 	#define MAX_NEGATIVE_VOLTAGE 0x8000
@@ -517,7 +546,6 @@ Input: Voltage in millivolts
 Output: Magnetic field density in milli_Tesla (1G = 0.1mT)
 Data sheet: https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjxps3qg8PqAhXBo54KHUn5CvwQFjAAegQIBRAB&url=https%3A%2F%2Fwww.allegromicro.com%2F~%2Fmedia%2FFiles%2FDatasheets%2FA1318-A1319-Datasheet.ashx&usg=AOvVaw39zGCju7QuDLgpcH9PKde_
 */
-
 float magnetic_field_mT(float voltage){
 	#define QUIESCENT_VOLTAGE 1650              //1.65V Low->1.638, mean-> 1.65, high-> 1.662 measure this
 	#define MAGNETIC_SENSITIVITY 13.5           //1.35mv/G --> 13.5mV/mT Low->1.289, mean-> 1.3, high-> 1.411
@@ -535,18 +563,14 @@ float magnetic_field_mT(float voltage){
 	
 }
 
-/*
-Function: System_FSM
-input : Void
-Output : Void
-Purpose : This state_machine runs the system
-
-*/
-
-//STATES {IDLE, SPI_UPDATE, serial_update, Heater_update, Magnetic_field_update}
-	
-void System_fsm_Run (void){
-	
+/**
+\Function: System_FSM
+\input : Void
+\Output : Void
+\Purpose : This state_machine runs the system
+\ //STATES {IDLE, SPI_UPDATE, serial_update, Heater_update, Magnetic_field_update}
+*/	
+void System_fsm_Run (void){	
 	#define IDLE 0 //idle state
 	#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
 	#define SERIAL_UPDATE 2//sending data back to the computer through serial at intervals
@@ -652,8 +676,6 @@ void System_fsm_Run (void){
 			// Add values to the document
 			doc["test id"] = Test_ID;
 			//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
-			
-			
 			//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
 			if (TEST_STOP) doc["test stop"] = 1;
 			else doc["test stop"] = 0;
@@ -706,6 +728,13 @@ void System_fsm_Run (void){
 	return;
 }
 
+/**
+\Function: System_FSM_Transition
+\input : Void
+\Output : Void
+\Purpose : This function updates funtions for the System FSM
+\ //STATES {IDLE, SPI_UPDATE, serial_update, Heater_update, Magnetic_field_update}
+*/
 void System_fsm_Transition(void)
 {
 	#define IDLE 0 //idle state
@@ -746,12 +775,11 @@ void System_fsm_Transition(void)
 	return;
 }
 
-/*
-Function : ADC_array_convert
-Purpose : Converts raw_ADC_Data into converted_ADC_data
-Input: void
-Output: void
-
+/**
+\Function : ADC_array_convert
+\Purpose : Converts raw_ADC_Data into converted_ADC_data
+\Input: void
+\Output: void
 */
 void ADC_array_convert(void){
 	//0:23 is all in voltage
@@ -812,6 +840,12 @@ void magnetic_fsm_transition(void)
 	return;
 }
 
+/**
+\Function: heater_fsm_RUN
+\input : Void
+\Output : Void
+\Purpose : Function runs the magnetic helmholtz coil
+*/
 void magnetic_fsm_run(void)
 {
 	if (magnetic_fsm_state == magnetic_fsm_idle_state){	} //no change
@@ -842,6 +876,12 @@ void magnetic_fsm_run(void)
 	#define heater_fsm_cooling 3
 	#define heater_fsm_margin 4 //error is +/- 1C as we are using integers
 	#define heater_threshold_temp 50 // above 40C is hot for human touch
+	/**
+	\Function: heater_fsm_transition
+	\input : Void
+	\Output : Void
+	\Purpose : Function updates the heater FSM states
+	*/
 void heater_fsm_transition(void)
 {	
 	if (HEATER_START){
@@ -881,6 +921,12 @@ void heater_fsm_transition(void)
 	return;
 }
 
+/**
+\Function: heater_fsm_RUN
+\input : Void
+\Output : Void
+\Purpose : Function runs the heating system
+*/
 void heater_fsm_RUN(void){
 	if (measured_temperature < heater_threshold_temp && digitalRead(BLUE_LED)!=HIGH) digitalWrite(BLUE_LED,HIGH);//turn on safe to touch LED if not high already
 	else digitalWrite(BLUE_LED,LOW);  //turn off safe to touch LED
@@ -915,6 +961,12 @@ void heater_fsm_RUN(void){
 	return;
 }
 
+/**
+\Function: raise_MCU_error
+\input : Error message as String
+\Output : Void
+\Purpose : Function raises MCU error, updates the error message
+*/
 void raise_MCU_error(String error_text){
 	//This function raises and error
 	TEST_ERROR = true;
