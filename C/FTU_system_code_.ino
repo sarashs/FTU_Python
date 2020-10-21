@@ -18,13 +18,6 @@
 #include <stdbool.h>
 #include <time.h>
 
-// Macros ----------------------------------------------------------------------
-//USED FOR TESTING
-#define  REDLED A1
-#define  BLUELED A2
-#define  YELLOWLED A5
-#define  ANALOG_PIN A6
-
 // Variables -------------------------------------------------------------------
 volatile int TCC1_compare_value = 3905;  //compare value for 1sec default rate
 
