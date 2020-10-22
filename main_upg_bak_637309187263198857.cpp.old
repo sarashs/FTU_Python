@@ -1,0 +1,21 @@
+/*
+ * Sketch2.cpp
+ *
+ * Created: 7/21/2020 8:58:45 AM
+ * Author : hp
+ */ 
+
+
+#include "sam.h"
+
+
+int main(void)
+{
+    /* Initialize the SAM system */
+    SystemInit();
+
+    /* Replace with your application code */
+    while (1) 
+    {
+    }
+}
