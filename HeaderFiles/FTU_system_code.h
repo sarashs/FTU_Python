@@ -50,9 +50,9 @@
 #define CONFIG1_default 0x00
 #define MUXSCH_default 0x00
 #define MUXDIF_default 0x00
-#define MUXSG0_default 0xFF 
-#define MUXSG1_default 0x7F  
-#define SYSRED_default 0xFF 
+#define MUXSG0_default 0xFF
+#define MUXSG1_default 0x7F
+#define SYSRED_default 0xFF
 #define GPIOC_default 0x00
 #define GPIOD_default 0x00
 
@@ -60,5 +60,10 @@
 #define NUMBER_OF_BITS_ADC 16
 #define ADC_Register_Array_Size 9
 #define ADC_SPI_SPEED 6000000  //6MHZ -> Must be less than 0.5 adc_clk(15.7MHz)
-#define ANALOG_RESOLUTION 1023 
+#define ANALOG_RESOLUTION 1023
 
+// Pin Numbers ....................................................................................................
+#define  REDLED A1
+#define  BLUELED A2
+#define  YELLOWLED A5
+#define  ANALOG_PIN A6

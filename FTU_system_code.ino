@@ -1,12 +1,12 @@
 /*H**********************************************************************
-* FILENAME :        FTU_system_code.ino            DESIGN REF: 
+* FILENAME :        FTU_system_code.ino            DESIGN REF:
 *
 * DESCRIPTION :
-*       This file controls a SAMD21G18A MCU on Arduino MKR1000   
-*		Used to run a HTOL Test (High-temperature operating life) for Accelerated Life Testing   
+*       This file controls a SAMD21G18A MCU on Arduino MKR1000
+*		Used to run a HTOL Test (High-temperature operating life) for Accelerated Life Testing
 *
 * NOTES : This code connects to a python script
-*       
+*
 *
 * AUTHOR :    Valentine Ssebuyungo        START DATE :    1st June 2020
 *
@@ -27,11 +27,11 @@
 *							Frequency divider functionality
 *H*/
 
-/***********************************************************************************************
-
 // Includes --------------------------------------------------------------------------------
 // Local Includes - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "HeaderFiles/FTU_system_code.ino"
+#include "HeaderFiles/ADC_library.h"
+
 #include "driver_init.h"
 #include "ArduinoJson.h"
 #include "ArduinoJson.hpp"
@@ -41,7 +41,7 @@
 #include "strings.h"
 #include "WString.h"
 #include "time.h"
-// C Library includes - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// C Library includes - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include <stdbool.h>
 #include <SPI.h>
 
@@ -54,15 +54,34 @@
 /************************************************************************/
 
 /*************************************************************************
-* ToDo List: 
+* ToDo List:
 *		Rohit: Rename variables to prefix data type
+*		Rohit: Change global variable usage to inputs and outputs
 *
 **************************************************************************/
-uint8_t ADC_Register_Addresses[ADC_Register_Array_Size] = {CONFIG0_address,CONFIG1_address,MUXSCH_address,
-MUXDIF_address,MUXSG0_address,MUXSG1_address,SYSRED_address,GPIOC_address,GPIOD_address};
+uint8_t ADC_Register_Addresses[ADC_Register_Array_Size] = {
+																														CONFIG0_address,		// 0x00
+																														CONFIG1_address,		// 0x01
+																														MUXSCH_address,			// 0x02
+																														MUXDIF_address,			// 0x03
+																														MUXSG0_address,			// 0x04
+																														MUXSG1_address,			// 0x05
+																														SYSRED_address,			// 0x06
+																														GPIOC_address,			// 0x07
+																														GPIOD_address				// 0x08
+																													};
 
-uint8_t ADC_Register_Defaults[ADC_Register_Array_Size] = {CONFIG0_default,CONFIG1_default,MUXSCH_default,
-MUXDIF_default,MUXSG0_default,MUXSG1_default,SYSRED_default,GPIOC_default,GPIOD_default};
+uint8_t ADC_Register_Defaults[ADC_Register_Array_Size] = {
+																														CONFIG0_default,		// 0x02
+																														CONFIG1_default,		// 0x00
+																														MUXSCH_default,			// 0x00
+																														MUXDIF_default,			// 0x00
+																														MUXSG0_default,			// 0xFF
+																														MUXSG1_default,			// 0x7F
+																														SYSRED_default,			// 0xFF
+																														GPIOC_default,			// 0X00
+																														GPIOD_default				// 0x00
+																													};
 
 uint8_t CONFIG0_value = 0;
 uint8_t CONFIG1_value = 0;
@@ -87,14 +106,14 @@ Index 28 is CHID 29 -> External reference
 
 From Table 10 in data sheet
 BITS CHID[4:0]          PRIORITY        CHANNEL         DESCRIPTION
-00h                     1 (highest)     DIFF0 (AIN0–AIN1) Differential 0
-01h                     2               DIFF1 (AIN2–AIN3) Differential 1
-02h						3				DIFF2 (AIN4–AIN5) Differential 2
-03h				        4               DIFF3 (AIN6–AIN7) Differential 3
-04h						5			    DIFF4 (AIN8– AIN9) Differential 4
-05h						6				DIFF5 (AIN10–AIN11) Differential 5
-06h						7				DIFF6 (AIN12–AIN13) Differential 6
-07h						8				DIFF7 (AIN14–AIN15) Differential 7
+00h                     1 (highest)     DIFF0 (AIN0ï¿½AIN1) Differential 0
+01h                     2               DIFF1 (AIN2ï¿½AIN3) Differential 1
+02h						3				DIFF2 (AIN4ï¿½AIN5) Differential 2
+03h				        4               DIFF3 (AIN6ï¿½AIN7) Differential 3
+04h						5			    DIFF4 (AIN8ï¿½ AIN9) Differential 4
+05h						6				DIFF5 (AIN10ï¿½AIN11) Differential 5
+06h						7				DIFF6 (AIN12ï¿½AIN13) Differential 6
+07h						8				DIFF7 (AIN14ï¿½AIN15) Differential 7
 08h						9				AIN0 Single-ended 0
 09h						10				AIN1 Single-ended 1
 0Ah						11				AIN2 Single-ended 2
@@ -112,7 +131,7 @@ BITS CHID[4:0]          PRIORITY        CHANNEL         DESCRIPTION
 16h						23				AIN14 Single-ended 14
 17h						24			    AIN15 Single-ended 15
 18h						25				OFFSET Offset
-1Ah						26				VCC AVDD – AVSS supplies
+1Ah						26				VCC AVDD ï¿½ AVSS supplies
 1Bh						27				TEMP Temperature
 1Ch						28				GAIN Gain
 1Dh						29 (lowest)		REF External reference
@@ -150,7 +169,7 @@ volatile bool HEATER_START = false;
 
 String message;
 String instruction = "instruction";  //This will be a json instruction in string format from the CPU Python script
-volatile bool TEST_ERROR = false; 
+volatile bool TEST_ERROR = false;
 String error_message = ""; //Contains the error message to be sent to python, this catches errors
 volatile float current_test_time = 0; //test time in minutes
 volatile bool serial_signal = false;
@@ -170,19 +189,28 @@ DynamicJsonDocument  doc(700);
 /************************************************************************/
 /* TESTING VARIABLES AND CONSTANTS                                      */
 /************************************************************************/
-#define  REDLED A1
-#define  BLUELED A2
-#define  YELLOWLED A5
-#define  ANALOG_PIN A6
 
 volatile float measured_voltage=0;
 
+// Functions -------------------------------------------------------------
+/*************************************************************************
+*
+*		Function Name: setup()
+*
+*		Inputs: None
+*		Outputs: None
+*
+*		Description: This function runs once upon execution
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 void setup() {
 	//setting up clocks
 	Serial.begin(256000); //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
 	while (!Serial) continue;//if not connected stall test until connected
 	clock_setup();           //set up 1MHz clock for the timers
-	//init_TC3();            //set up TC3 whose interrupt sends serial data 
+	//init_TC3();            //set up TC3 whose interrupt sends serial data
 	init_TC4();              //initialize TC4 timer, TC4 generates the ADC read interrupt
 	init_TC5();              //TC5 is a 1 second counter
 	pin_setup();             //set up pins
@@ -191,47 +219,80 @@ void setup() {
 	analogWriteResolution(10); //Sets default to resolution
 	analogReference(AR_DEFAULT); //sets 3.3V reference
 	receive_test_instructions(); //run function for handshaking to receive instructions
-	
+
 // 	pinMode(LED_BUILTIN, OUTPUT);  //testing turn on LED if test starts
 // 	if (TEST_START) digitalWrite(LED_BUILTIN,HIGH);
-		
+
 }
 
-// the loop function runs over and over again forever
+/*************************************************************************
+*
+*		Function Name: loop()
+*
+*		Inputs: None
+*		Outputs: None
+*
+*		Description: This function runs repeatedly after setup()
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 void loop() {
 		System_fsm_Run();
 		pass();
-		System_fsm_Transition();		
+		System_fsm_Transition();
 }
 
-/**
-\Empty function for debugging
-\param[in] N/A
-\param[out] N/A
-*/
+/*************************************************************************
+*
+*		Function Name: pass()
+*
+*		Inputs: None
+*		Outputs: None
+*
+*		Description: Empty function for debugging
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 void pass (void){
 	return;
 }
 
-/**
-\Function to receive test instructions from CPU
-\param[in] N/A
-\param[out] N/A
-*/
+/*************************************************************************
+*
+*		Function Name: receieve_test_instructions()
+*
+*		Inputs: None
+*		Outputs: None
+*
+*		Description: This function receives test instructions from cpu
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 void receive_test_instructions(void){
-	while (Serial.available()==0){ //wait for something at serial
-	}	
+	while (Serial.available()==0)
+	{
+		pass();																//wait for something at serial
+	}
 	message = Serial.readStringUntil('\n'); //read till end of the line
 
-	while (Serial.available()==0){ //wait for instruction json at serial
-		if (message.equals(instruction)){
+	while (Serial.available()==0)
+	{
+		if (message.equals(instruction))
+		{
 			Serial.println("ready");
 		}
+		else
+		{
+			pass();															//wait for instruction json at serial
+		}
 	}
-	
-	message = Serial.readStringUntil('\n'); //
+
+	message = Serial.readStringUntil('\n');
 	Serial.println(message); //send json back as string to to check if it is correct
-	
+
 	//change string to char array for JSON buffer simplicity
 	char charBuf[message.length() + 1];
 	message.toCharArray(charBuf, message.length()+1);
@@ -268,22 +329,29 @@ void receive_test_instructions(void){
 	const char* measurement_params_test_time_unit = measurement_params["test_time"]["unit"]; // "seconds"
 	const char* measurement_params_magnetic_field_unit = measurement_params["magnetic_field"]["unit"]; // "mT"
 	const char* measurement_params_serial_rate_unit = measurement_params["serial_rate"]["unit"]; // "milliseconds"
-	
+
 }
 
-/**
-\Function to send data to Python script
-\param[in] N/A
-\param[out] N/A
-*/
-void send_data_to_serial(){
-	//tell python there is ready data
-	//send the data
-	//wait for confirmation
-   char userInput;	
+/*************************************************************************
+*
+*		Function Name: send_data_to_serial()
+*
+*		Inputs: None
+*		Outputs: None
+*
+*		Description: This function sends test data to serial port by these steps
+*										1. Tell python there is ready Data
+*										2. Send the data
+*										3. Wait for confirmation
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
+void send_data_to_serial(void){
+  char userInput;
 	if(Serial.available()> 0){
 		userInput = Serial.read();               // read user input
-		if(userInput == 'g'){                  // if we get expected value		
+		if(userInput == 'g'){                  // if we get expected value
 			//printing the document
 			serializeJson(doc, Serial);
 			Serial.println();
@@ -294,125 +362,23 @@ void send_data_to_serial(){
 			while (Serial.read() != 'd'){
 				continue;
 			}
-			Serial.println("done");	
+			Serial.println("done");
 		}
 	}
 }
 
-/**
-\brief Sets up 1MHz clock used by TC3,TC4,TCC2,TC5
-\param[in] N/A
-\param[out] N/A
-*/
-void clock_setup(){ //setting up the clock speeds
-	
-	// Set up the generic clock (GCLK4) used to clock timers
-	REG_GCLK_GENDIV = GCLK_GENDIV_DIV(48) |          // Divide the 48MHz clock source by divisor 8: 8MHz/8=1MHz
-	GCLK_GENDIV_ID(4);            // Select Generic Clock (GCLK) 4
-	while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
-
-	REG_GCLK_GENCTRL = GCLK_GENCTRL_IDC |           // Set the duty cycle to 50/50 HIGH/LOW
-	GCLK_GENCTRL_GENEN |         // Enable GCLK4
-	GCLK_GENCTRL_SRC_DFLL48M |   // Set the 48MHz clock source
-	GCLK_GENCTRL_ID(4);          // Select GCLK4
-	while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
-	
-	REG_GCLK_CLKCTRL = GCLK_CLKCTRL_CLKEN |         // Enable GCLK4 to TC4 and TC5
-	GCLK_CLKCTRL_GEN_GCLK4 |     // Select GCLK4
-	GCLK_CLKCTRL_ID_TC4_TC5 ; // Feed the GCLK4 to TC4 and TC5  
-	while (GCLK->STATUS.bit.SYNCBUSY);	
-	
-	REG_GCLK_CLKCTRL = GCLK_CLKCTRL_CLKEN |         // Enable GCLK4 to TC4 and TC5
-	GCLK_CLKCTRL_GEN_GCLK4 |     // Select GCLK4
-	GCLK_CLKCTRL_ID_TCC2_TC3; // Feed the GCLK4 to TC4 and TC5
-	while (GCLK->STATUS.bit.SYNCBUSY);
-	
-	return;
-}
-
-/**
-\brief Sets up TC4
-\param[in] N/A
-\param[out] N/A
-*/
-void init_TC4(){ //initialize TC4 timer
-	// Configure TC4 (16 bit counter by default)
-	REG_TC4_COUNT16_CC0 = countervalue(1,256,200);  //set period for timer
-	while (TC4->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
-	
-	//Enabling interrupts
-	NVIC_EnableIRQ(TC4_IRQn);         // Connect TC4 to Nested Vector Interrupt Controller (NVIC)
-	
-	REG_TC4_INTFLAG |= TC_INTFLAG_OVF; //TC_INTFLAG_MC1 | TC_INTFLAG_MC0 ;        // Clear the interrupt flags (overflow flag)
-	REG_TC4_INTENSET |= TC_INTENSET_OVF; //TC_INTENSET_MC1 | TC_INTENSET_MC0 ;     // Enable TC4 counter interrupts
-	// REG_TC4_INTENCLR = TC_INTENCLR_MC1 | TC_INTENCLR_MC0 ;     // Disable TC4 interrupts
-
-	REG_TC4_CTRLA = TC_CTRLA_WAVEGEN_MFRQ | //this makes CC0 register have the top  value before the overflow interrupt
-	TC_CTRLA_MODE_COUNT16 |         //set as a 16 bit counter
-	TC_CTRLA_PRESCALER_DIV256 |     // Set prescaler to 256,
-	TC_CTRLA_ENABLE;               // Enable TC4
-	while (TC4->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
-	
-	return;
-}
-
-/**
-\brief Sets up TC5
-\param[in] N/A
-\param[out] N/A
-*/
-void init_TC5(){ //initialize T5 timer
-
-	REG_TC5_COUNT16_CC0 =  countervalue(1,64,1000);                     // Set the TC4 CC1 register to  decimal 3905, 1 sec
-	while (TC5->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
-	
-	//Enabling interrupts
-	NVIC_EnableIRQ(TC5_IRQn);         // Connect TC4 to Nested Vector Interrupt Controller (NVIC)
-	NVIC_SetPriority(TC5_IRQn,0);
-
-	REG_TC5_INTFLAG |= TC_INTFLAG_OVF;        // Clear the interrupt flags
-	REG_TC5_INTENSET |= TC_INTENSET_OVF;     // Enable TC5 Match CC0 and CC1 interrupts
-	// REG_TC5_INTENCLR = TC_INTENCLR_MC1 | TC_INTENCLR_MC0 ;     // Disable TC5 interrupts
-
-	REG_TC5_CTRLA = TC_CTRLA_WAVEGEN_MFRQ | //this makes CC0 register have the top  value before the overflow interrupt
-	TC_CTRLA_MODE_COUNT16 |        //set as a 16 bit counter
-	TC_CTRLA_PRESCALER_DIV64 |     // Set prescaler to 256,
-	TC_CTRLA_ENABLE;               // Enable TC5
-	while (TC5->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
-	
-	return;
-}
-/**
-\brief Sets up TC3
-\param[in] N/A
-\param[out] N/A
-*/
-void init_TC3(){ //initialize TC3 timer, this timer controls the rate at which serial data is sent
-	
-	REG_TC3_COUNT16_CC0 =  countervalue(1,1024,1000);                     // Set the TC3 CC0 register 
-	while (TC3->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
-	
-	//Enabling interrupts
-	NVIC_EnableIRQ(TC3_IRQn);         // Connect TC3 to Nested Vector Interrupt Controller (NVIC)
-
-	REG_TC3_INTFLAG |= TC_INTFLAG_OVF;        // Clear the interrupt flags
-	REG_TC3_INTENSET |= TC_INTENSET_OVF;     // Enable TC3 Match CC0 and CC1 interrupts
-	// REG_TC3_INTENCLR = TC_INTENCLR_MC1 | TC_INTENCLR_MC0 ;     // Disable TC3 interrupts
-
-	REG_TC3_CTRLA = TC_CTRLA_WAVEGEN_MFRQ | //this makes CC0 register have the top  value before the overflow interrupt
-	TC_CTRLA_MODE_COUNT16 |        //set as a 16 bit counter
-	TC_CTRLA_PRESCALER_DIV1024 |     // Set prescaler to 1024, with a 1Mhz clock 67 seconds is the slowest we can go
-	TC_CTRLA_ENABLE;               // Enable TC3
-	while (TC3->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
-	
-	return;
-}
-
-/**
-\Interrupt service routine for TC4, handles the ADC interrupt
-\param[in] N/A
-\param[out] N/A
-*/
+/*************************************************************************
+*
+*		Function Name: TC4_Handler()
+*
+*		Inputs: None
+*		Outputs: None
+*
+*		Description: Service routine for TC4 handles ADC interrupt
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 void TC4_Handler()// ADC interrupt handler
 {
 	// Check for OVF interrupt
@@ -420,35 +386,47 @@ void TC4_Handler()// ADC interrupt handler
 	{
 		//Overflow interrupt code here:
 		//ADC read code
-		
+
 		//testing
-		
+
 // 		if (digitalRead(REDLED)==LOW)
 // 		{
 // 			digitalWrite(REDLED,HIGH);
-// 		} 
+// 		}
 // 		else
 // 		{
 // 			digitalWrite(REDLED,LOW);
-// 		}	
+// 		}
 		// Clear the interrupt flag
-		REG_TC4_INTFLAG = TC_INTFLAG_OVF;         
+		REG_TC4_INTFLAG = TC_INTFLAG_OVF;
 	}
 	return;
 }
 
+/*************************************************************************
+*
+*		Function Name: TC5_Handler()
+*
+*		Inputs: None
+*		Outputs: None
+*
+*		Description: Service routine for TC5 handles ADC interrupt
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 void TC5_Handler(){ //counter interrupt
 	// Check for OVF interrupt
 	if (TC5->COUNT16.INTFLAG.bit.OVF && TC5->COUNT16.INTENSET.bit.OVF)
 	{
 		//Overflow interrupt code here:
-		
+
 		test_time_count++; //increment +1 every second
-		
+
 		if ((test_time_count*1000)%serial_output_rate == 0){
 			serial_signal = true;
 		}
-		
+
 // 		//testing
 // 				if (digitalRead(BLUELED)==HIGH)
 // 				{
@@ -469,7 +447,7 @@ void TC3_Handler(){//Timer 3 interrupt handler, NOT USED
 		//Serial.println("Test Completed");
 		return;
 	}
-	
+
 	// Check for match counter 1 (MC1) interrupt
 	if (TC3->COUNT16.INTFLAG.bit.OVF && TC3->COUNT16.INTENSET.bit.OVF && TEST_START)
 	{
@@ -479,70 +457,36 @@ void TC3_Handler(){//Timer 3 interrupt handler, NOT USED
 	return;
 }
 
-/**
-\brief Returns value for the overflow counter
-\param[in] Clock Frequency in MHz, prescaler value, period of timer in milliseconds
-\param[out] integer count value
-*/
+/*************************************************************************
+*
+*		Function Name: countervalue()
+*
+*		Inputs: Clock Frequency in MHz, prescaler value, period of timer in milliseconds
+*		Outputs: integer count value
+*
+*		Description: Returns value for the overflow counter
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 int countervalue (float Clock_FrequencyMHz,float prescaler, float period_ms){
 	return (int) (( (Clock_FrequencyMHz*1000*period_ms) / (prescaler) )-1) ;
-	
+
 }
 
-/*
-* Name        : pin_setup
-* Purpose     : This function configures PINS for the MCU
-* Description : ...
-* Input       : VOID
-* Output      : VOID
-*/
-void pin_setup(void){
-	// initialize digital pin LED_BUILTIN as an output.
-	pinMode(REDLED,OUTPUT);
-	pinMode(BLUELED, OUTPUT);
-	pinMode(YELLOWLED,OUTPUT);
-	pinMode (ANALOG_PIN, INPUT);
-	
-	pinMode(CTRL_VSTR,OUTPUT);
-	analogWriteResolution(10); //the second point says to apply 0V from the DAC and use the trimmer so that -0.5V is visible on the output. But the DAC should be set to 3.3V because CTRL_VSTR and VSTR are inversely related
-	analogWrite(CTRL_VSTR,setDAC(3200)); //set to 1023, 3.3V
-	
-	pinMode(HEATER_PWM,OUTPUT);
-	pinMode(HELMHOLTZ_PWM,OUTPUT);
-	pinMode(_RESET_ADC,OUTPUT); //active low
-	digitalWrite(_RESET_ADC,HIGH); //setting it off
-	
-	pinMode(_PWDN_ADC,OUTPUT); //active low
-	digitalWrite(_PWDN_ADC,LOW); //setting it off
-	
-	pinMode(START_ADC,OUTPUT); //active high
-	digitalWrite(START_ADC,LOW); //setting it off
-	
-	pinMode(_DRDY_ADC,INPUT);
-	pinMode(RED_LED,OUTPUT);
-	pinMode(BLUE_LED,OUTPUT);
-	pinMode(CLR_FREQ_DIVIDER,OUTPUT);
-	pinMode(_CS_ADC,OUTPUT);
-
-	//SPI pins are already initialized by Arduino
-	pinMode(MOSI_ADC,OUTPUT);
-	pinMode(SCK_ADC,OUTPUT);
-	pinMode(MISO_ADC,INPUT);
-	pinMode(Q11_FREQ_COUNTER,INPUT);
-	pinMode(Q12_FREQ_COUNTER,INPUT);
-	pinMode(Q13_FREQ_COUNTER,INPUT);
-	pinMode(Q14_FREQ_COUNTER,INPUT);
-	
-	return;
-}
-
-/**
-\Function :volt_to_temperature
-\Input: Digital Voltage from ADC in millivolts
-\Output: Temperature conversion in C from TMP235
-\Formula : T = (V_out - V_offset)/Tc) + T_INFL
-\Data sheet: https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235
-*/
+/*************************************************************************
+*
+*		Function Name: countervalue()
+*
+*		Inputs: Digital Voltage from ADC in millivolts
+*		Outputs: Temperature conversion in C from TMP235
+*
+*		Description: T = (V_out - V_offset)/Tc) + T_INFL
+*			 https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 float volt_to_temperature(float milli_volts)
 {
 	#define V_OFFSET_0 500
@@ -558,9 +502,9 @@ float volt_to_temperature(float milli_volts)
 	#define T_COEFF_125 10.6
 
 	if (milli_volts < V_OFFSET_100) return (((milli_volts - V_OFFSET_0)/T_COEFF_0) + T_INFL_0); // -40 to 100C
-	
+
 	else if (milli_volts >= V_OFFSET_100 && milli_volts <= V_OFFSET_125) return (((milli_volts - V_OFFSET_100)/T_COEFF_100) + T_INFL_100); // 100 to 125C
-	
+
 	else return (((milli_volts - V_OFFSET_125)/T_COEFF_125) + T_INFL_125); // 125 to 150C
 }
 
@@ -580,12 +524,12 @@ float magnetic_field_mT(float voltage){
 	#define VOLTAGE_CLAMP_LOW 0.33			    //2.97V -40mT
 	#define MAX_MAGNETIC_FIELD 40              //40mT
 	#define MIN_MAGNETIC_FIELD -40              //-40mT
-	
+
 	if (voltage == '\0') return '\0';
 	else if (voltage == VOLTAGE_CLAMP_HIGH ) return MAX_MAGNETIC_FIELD ; //we can find some sort of error to throw here
 	else if (voltage == VOLTAGE_CLAMP_LOW) return MIN_MAGNETIC_FIELD ;
 	else return (float)((voltage-QUIESCENT_VOLTAGE)/(float)MAGNETIC_SENSITIVITY);   //polarity depends on the direction of the field
-	
+
 }
 
 /**
@@ -594,25 +538,25 @@ float magnetic_field_mT(float voltage){
 \Output : Void
 \Purpose : This state_machine runs the system
 \ //STATES {IDLE, SPI_UPDATE, serial_update, Heater_update, Magnetic_field_update}
-*/	
-void System_fsm_Run (void){	
+*/
+void System_fsm_Run (void){
 	#define IDLE 0 //idle state
 	#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
 	#define SERIAL_UPDATE 2//sending data back to the computer through serial at intervals
 	#define Heater_Update 3 //running the heater_FSM and get the updates
 	#define Magnetic_Field_update 4 //running the magnetic field FSM and get the updates
-	
+
 	//variables
-	
+
 	float starting_test_count = 0;
-	
-	
+
+
 	switch (System_fsm_state){
 		case IDLE : {
 				if (TEST_STOP){
 					//clear and turn off all the outputs
 					//turn off heater click
-					//turn off magnetic field				
+					//turn off magnetic field
 						digitalWrite(CTRL_VSTR,LOW);
 						analogWrite(HEATER_PWM,LOW);
 						analogWrite(HELMHOLTZ_PWM,LOW);
@@ -626,23 +570,23 @@ void System_fsm_Run (void){
 						digitalWrite(SCK_ADC,LOW);
 						heater_PWM_duty = 0;
 						magnetic_PWM_duty = 0;
-						
+
 						//
 						doc.clear(); //clear the document as this frees up the memory
 						// Add values to the document
 						doc["test id"] = Test_ID;
 						//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
-						
-						
+
+
 						//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
 						if (TEST_STOP) doc["test stop"] = 1;
 						else doc["test stop"] = 0;
 						//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
 						if (TEST_ERROR) doc["test error"]=1;
 						else doc["test error"]=0;
-						
+
 						doc["error message"] = error_message;
-						
+
 						// Add an array.
 						JsonArray ADCdata = doc.createNestedArray("ADC data");
 						for (int i =0; i < 29; i++){
@@ -655,7 +599,7 @@ void System_fsm_Run (void){
 						TESTdata.add(measured_temperature); //temperature (C)
 						TESTdata.add(measured_magnetic_field); //magnetic field (mT)
 						//out current_test_timer, ADC converted data at intervals
-						
+
 						if (serial_signal) {
 							send_data_to_serial();
 							serial_signal = false;
@@ -664,22 +608,22 @@ void System_fsm_Run (void){
 				else if (TEST_START){
 					//1. Setting voltage for test
 					analogWrite(CTRL_VSTR,setDAC(desired_FPGA_voltage));
-					
+
 					//2. Setting total time for test
 					starting_test_count = test_time_count; //initializing starting point
 					current_test_time = (test_time_count - starting_test_count);//   /60; //current test time in secs
-					
+
 					//3. Setting time interval for sending data rate
-					//Temporarily changed to counter file 
+					//Temporarily changed to counter file
 					//REG_TC3_COUNT16_CC0 =  countervalue(1,1024,serial_output_rate);                     // Set the TC3 CC0 register
 					//while (TC3->COUNT16.STATUS.bit.SYNCBUSY);											// Wait for synchronization
-					
+
 					//4. Setting desired magnetic field in mT
-					//This is set in "receiving instructions function"		
+					//This is set in "receiving instructions function"
 					//5. Setting desired temperature in C
-					//This is set in "receiving instructions function"					
+					//This is set in "receiving instructions function"
 				}
-				
+
 			}
 			break;
 		case ADC_UPDATE: {
@@ -687,7 +631,7 @@ void System_fsm_Run (void){
 				//1. Update test timer and if time is hit, stop
 				current_test_time = (test_time_count - starting_test_count); //  /60; testing secs
 				if (current_test_time > desired_time_for_test*60) TEST_STOP=true;
-	
+
 				//2. Convert Raw ADC data to understandable values
 				ADC_Auto_Scan(); //converting ADC data
 				ADC_array_convert(); //converts the ADC array data
@@ -696,7 +640,7 @@ void System_fsm_Run (void){
 		case SERIAL_UPDATE:{
 			//1. Set Data to be sent to the user from the ADC update, data is sent in intervals in an Interrupt service routine
 			//Preparing json file
-			
+
 			doc.clear(); //clear the document as this frees up the memory
 			// Add values to the document
 			doc["test id"] = Test_ID;
@@ -707,9 +651,9 @@ void System_fsm_Run (void){
 			//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
 			if (TEST_ERROR) doc["test error"]=1;
 			else doc["test error"]=0;
-			
+
 			doc["error message"] = error_message;
-			
+
 			// Add an array.
 			JsonArray ADCdata = doc.createNestedArray("ADC data");
 			for (int i =0; i < 29; i++){
@@ -721,13 +665,13 @@ void System_fsm_Run (void){
 			TESTdata.add(current_test_time); //current test time
 			TESTdata.add(measured_temperature); //temperature (C)
 			TESTdata.add(measured_magnetic_field); //magnetic field (mT)
-			//out current_test_timer, ADC converted data at intervals 
-			
+			//out current_test_timer, ADC converted data at intervals
+
 			if (serial_signal) {
 				send_data_to_serial(); //function to send json packet to serial port
 				serial_signal = false; //turn off the serial_signal flag
 			}
-			
+
 		}
 			break;
 		case Heater_Update:{
@@ -736,7 +680,7 @@ void System_fsm_Run (void){
 			heater_fsm_RUN();
 			heater_fsm_transition();
 			HEATER_START = false; //disable heater
-			
+
 		}
 			break;
 		case Magnetic_Field_update:{
@@ -745,7 +689,7 @@ void System_fsm_Run (void){
 			magnetic_fsm_run();
 			//2. state_transtions
 			magnetic_fsm_transition();
-			
+
 		}
 			break;
 		default :System_fsm_state = IDLE;
@@ -753,13 +697,23 @@ void System_fsm_Run (void){
 	return;
 }
 
-/**
-\Function: System_FSM_Transition
-\input : Void
-\Output : Void
-\Purpose : This function updates funtions for the System FSM
-\ //STATES {IDLE, SPI_UPDATE, serial_update, Heater_update, Magnetic_field_update}
-*/
+
+/*************************************************************************
+*
+*		Function Name: System_FSM_Transition()
+*
+*		Inputs: None
+*		Outputs: None
+*
+*		Description: This function updates funtions for the System FSM
+*
+*									STATES {IDLE, SPI_UPDATE, serial_update,
+*													Heater_update, Magnetic_field_update}
+*
+*
+*		Function Author: Valentine
+*
+**************************************************************************/
 void System_fsm_Transition(void)
 {
 	#define IDLE 0 //idle state
@@ -800,7 +754,6 @@ void System_fsm_Transition(void)
 	return;
 }
 
-
 /************************************************************************/
 /* ADC FUNCTIONS                                                        */
 /************************************************************************/
@@ -818,14 +771,14 @@ uint8_t ADC_CHID_STATUS(uint8_t STATUS_byte){
 /*
 Name        : ADC_NEW_STATUS_BIT
 Purpose		: Checks if the NEW bit is set in the STATUS_byte byte
-Description : The NEW bit is set when the results of a Channel Data Read Command returns new channel data. 
+Description : The NEW bit is set when the results of a Channel Data Read Command returns new channel data.
 			  The bit remains set indefinitely until the channel data are read
 Input	    : STATUS_byte Byte
-Output		: TRUE if bit is set, FALSE if bit is not set 
+Output		: TRUE if bit is set, FALSE if bit is not set
 */
 boolean ADC_NEW_STATUS_BIT(uint8_t STATUS_byte){
 		//STATUS_byte BIT
-		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |	
+		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |
 		uint8_t NEW_bit = (STATUS_byte & 0b10000000)>>7;
 		if (NEW_bit == 0){
 			return false;
@@ -839,10 +792,10 @@ boolean ADC_NEW_STATUS_BIT(uint8_t STATUS_byte){
 * Purpose     : Checks if the OVF bit is set in the STATUS_byte byte
 * Description : When this bit is set, it indicates that the differential voltage applied to the ADC inputs have exceeded the range
 				of the converter |VIN| > 1.06VREF. During over-range, the output code of the converter clips to either positive FS
-				(VIN ? 1.06 × VREF) or negative FS (VIN ? –1.06 × VREF). This bit, with the MSB of the data, can be used to
+				(VIN ? 1.06 ï¿½ VREF) or negative FS (VIN ? ï¿½1.06 ï¿½ VREF). This bit, with the MSB of the data, can be used to
 				detect positive or negative over-range conditions
 * Input       : STATUS_byte Byte
-* Output      : TRUE if bit is set, FALSE if bit is not set 
+* Output      : TRUE if bit is set, FALSE if bit is not set
 */
 boolean ADC_OVF_STATUS_BIT(uint8_t STATUS_byte){
 		//STATUS_byte BIT
@@ -858,15 +811,15 @@ boolean ADC_OVF_STATUS_BIT(uint8_t STATUS_byte){
 /*
 * Name        : ADC_SUPPLY_STATUS_BIT
 * Purpose     : Checks if the SUPPLY bit is set in the STATUS_byte byte
-* Description : This bit indicates that the analog power-supply voltage (AVDD – AVSS) is below a preset limit. The SUPPLY bit
+* Description : This bit indicates that the analog power-supply voltage (AVDD ï¿½ AVSS) is below a preset limit. The SUPPLY bit
 				is set when the value falls below 4.3V (typically) and is reset when the value rises 50mV higher (typically) than
 				the lower trip point. The output data of the ADC may not be valid under low power-supply conditions.
 * Input       : STATUS_byte Byte
-* Output      : TRUE if bit is set, FALSE if bit is not set 
+* Output      : TRUE if bit is set, FALSE if bit is not set
 */
 boolean ADC_SUPPLY_STATUS_BIT(uint8_t STATUS_byte){
 		//STATUS_byte BIT
-		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |	
+		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |
 		uint8_t SUPPLY_bit = (STATUS_byte & 0b00100000)>>5;
 		if (SUPPLY_bit == 0){
 			return false;
@@ -888,18 +841,18 @@ void ADC_RegisterWrite(uint8_t REG_address, uint8_t Value){
   digitalWrite(_CS_ADC,LOW);
   delayMicroseconds(20);
   SPI.transfer(command); // send the command byte
-  SPI.transfer(Value);   // send the value of register 
+  SPI.transfer(Value);   // send the value of register
   delayMicroseconds(20);
   digitalWrite(_CS_ADC,HIGH);
   SPI.endTransaction();
-    
+
   }
 /*
 Name : ADCregisterRead
 Purpose : Reads 8bit value stored in register
 Input : Register address
 Output : Value in register
-*/	
+*/
 uint8_t ADC_RegisterRead(uint8_t REG_address){
 	uint8_t command = 0x40 | REG_address;
 	uint8_t REG_Value = NULL;
@@ -912,7 +865,7 @@ uint8_t ADC_RegisterRead(uint8_t REG_address){
 	delayMicroseconds(20);
 	digitalWrite(_CS_ADC,HIGH);
 	SPI.endTransaction();
-	
+
 	return REG_Value;
 }
 /*
@@ -924,40 +877,40 @@ Output : Converted value in a 32bit data, [31:24] Don't care, [23:16] STATUS byt
 */
 uint32_t ADCchannelRead_registerFormat(void){
 	ADC_toggle_start_pin(); //Pulse the start pin, this moves ADC the conversion to the next channel to be converted
-			
+
 	//Channel data read - register format
 	uint8_t command = 0x30;
 	uint32_t STATUS_byte = 0xFFFFFFFF;    //STATUS_byte byte
 	uint32_t MSB_data = 0xFFFFFFFF;  //upper 8 bits
 	uint32_t LSB_data = 0xFFFFFFFF;  //lower 8 bits
 	uint32_t Channel_data = 0;
-			
+
 	SPI.begin(); //initialize SPI pins
 	SPI.beginTransaction (SPISettings (ADC_SPI_SPEED, MSBFIRST, SPI_MODE0));
 	digitalWrite(_CS_ADC,LOW);
 	delayMicroseconds(20);
-			
+
 	SPI.transfer(command); // send command
 	STATUS_byte = SPI.transfer(0x0);   // Read STATUS_byte byte
 	MSB_data = SPI.transfer(0x0); // Read MSB byte
 	LSB_data = SPI.transfer(0x0); // Read LSB byte
-			
+
 	Serial.println("\n\n");
 	delayMicroseconds(20);
 	digitalWrite(_CS_ADC,HIGH);
 	SPI.endTransaction();
-	
+
 	//add STATUS_byte byte to positions [23:16]
 	//add MSB to [15:8];
 	//add LSB to [7:0]
 	Channel_data |= (STATUS_byte<<16)|(MSB_data<<8)|LSB_data;
 	return Channel_data;
-	
+
 }
 /*
 * Name        : ADC_Setup
 * Purpose     : This functions sets up the ADC
-* Description : 
+* Description :
 * Input       : VOID
 * Output      : VOID
 */
@@ -966,7 +919,7 @@ void ADC_Setup(){
 	  converted_ADC_data[27] = 1;
 	  //ADC Vref in mV
 	  converted_ADC_data[28] = 3330; //Vref = 3.33V
-	  
+
 	  delay(50);
 	  //Setting up ADC
 	  digitalWrite(_PWDN_ADC,HIGH); //setting it off
@@ -985,7 +938,7 @@ void ADC_Setup(){
 	  for (int i = 0; i < ADC_Register_Array_Size; i++){
 		  ADC_RegisterWrite(ADC_Register_Addresses[i],ADC_Register_Defaults[i]); //write values in registers
 	  }
-	  
+
 	  //5. Check register values
 	  for (int j = 0; j < ADC_Register_Array_Size; j++){
 		  if (ADC_RegisterRead(ADC_Register_Addresses[j]) != ADC_Register_Defaults[j]){
@@ -1000,7 +953,7 @@ void ADC_Setup(){
 		  ADC_Auto_Scan();
 		  delay(100);
 	  }
-	  
+
 }
 /*
 * Name        : ADC_RESET
@@ -1042,7 +995,7 @@ uint16_t ADC_RETURN_RAWDATA(uint32_t RAW_CHANNEL_REGISTER_READ_DATA){
 /*
 * Name        : ADC_Auto_Scan
 * Purpose     : Reads all the ADC channels selected in configuration settings(Registers MUXDIF,MUXSG0,MUXSG1) and stores the RAW data in the ADC_raw_data_array, the Channel ID is the corresponding index
-* Description : 
+* Description :
 * Input       : VOID
 * Output      : VOID
 */
@@ -1063,13 +1016,13 @@ void ADC_Auto_Scan(){
 		uint8_t Status_byte = ADC_RETURN_STATUSBYTE(Channel_data);
 		int CHID = ADC_CHID_STATUS(Status_byte);
 		uint16_t Raw_data = ADC_RETURN_RAWDATA(Channel_data);
-	
+
 		if ((ADC_NEW_STATUS_BIT(Status_byte) == true) && (ADC_SUPPLY_STATUS_BIT(Status_byte)== false) && (ADC_OVF_STATUS_BIT(Status_byte) == false))
 		{
 			//store the data in the array
 			if (CHID > 0x19) //for some reason CHID skips address 0x19h
 			{
-				raw_ADC_data[CHID-1] = Raw_data; 
+				raw_ADC_data[CHID-1] = Raw_data;
 			}
 			else {
 				raw_ADC_data[CHID] = Raw_data; //store the value
@@ -1084,8 +1037,8 @@ void ADC_Auto_Scan(){
 	}
 }
 
-/* Function to get no of set bits in binary 
- *representation of passed binary no. 
+/* Function to get no of set bits in binary
+ *representation of passed binary no.
  */
 unsigned int countSetBits(int n){
 	unsigned int count = 0;
@@ -1094,7 +1047,7 @@ unsigned int countSetBits(int n){
 		count++;
 	}
 	return count;
-} 
+}
 /*Function: ADC_toggle_start_pin
 *Purpose : Toggles the start pin on the ADC
 Definition: Start PIN -> Start conversion input: active high.
@@ -1150,7 +1103,7 @@ int ADC_mv(int ADC_reading){
 	#define ADC_RESOLUTION 32768 //2^15 bits as 16th bit is used for 2's complement
 	#define ADC_RANGE 4900 //4900mV (-1.6V to 3.3V)
 	#define VREF 3340 //3.3V //this is VREFP-VREFN
-	
+
 	//converted_ADC_data[28] == Vref
 	//converted_ADC_data[27] == ADC gain
 	//return ADC_reading*(VREF/(float)0x7800);
@@ -1184,7 +1137,7 @@ void ADC_array_convert(void){
 	{
 		converted_ADC_data[i] = ADC_mv(twos_complement_to_int(raw_ADC_data[i],NUMBER_OF_BITS_ADC)); //converting all the voltages to millivolts
 	}
-	
+
 	return;
 }
 
@@ -1202,20 +1155,20 @@ void ADC_array_convert(void){
 void magnetic_fsm_transition(void)
 {
 	float magnetic_field_difference = (float) (measured_magnetic_field - desired_magnetic_field); //getting the error
-	
-	if (magnetic_fsm_state == magnetic_fsm_idle_state) 
+
+	if (magnetic_fsm_state == magnetic_fsm_idle_state)
 	{
 		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //reduce PWM duty if above desired + threshold
 		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain PWM if between threshold
 		else magnetic_fsm_state = magnetic_fsm_increase_state; //PWM duty increase if below the desired+threshold
 	}
-	else if (magnetic_fsm_state == magnetic_fsm_increase_state) 
+	else if (magnetic_fsm_state == magnetic_fsm_increase_state)
 	{
 		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //reduce PWM duty if above desired + threshold
 		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain PWM if between threshold
 		else magnetic_fsm_state = magnetic_fsm_increase_state; //PWM duty increase if below the desired+threshold
 	}
-	else if (magnetic_fsm_state == magnetic_fsm_decrease_state) 
+	else if (magnetic_fsm_state == magnetic_fsm_decrease_state)
 	{
 		if ( magnetic_field_difference > magnetic_error) magnetic_fsm_state = magnetic_fsm_decrease_state; //reduce PWM duty if above desired + threshold
 		else if ( abs(magnetic_field_difference) <= magnetic_error) magnetic_fsm_state = magnetic_fsm_idle_state; //maintain PWM if between threshold
@@ -1233,13 +1186,13 @@ void magnetic_fsm_transition(void)
 void magnetic_fsm_run(void)
 {
 	if (magnetic_fsm_state == magnetic_fsm_idle_state){	} //no change
-	else if (magnetic_fsm_state == magnetic_fsm_increase_state) 
+	else if (magnetic_fsm_state == magnetic_fsm_increase_state)
 	{
 		//PWM is increased until desired state
 		if (magnetic_PWM_duty >= ANALOG_RESOLUTION) magnetic_PWM_duty=ANALOG_RESOLUTION;
 		else magnetic_PWM_duty++;
 	}
-	else if (magnetic_fsm_state == magnetic_fsm_decrease_state) 
+	else if (magnetic_fsm_state == magnetic_fsm_decrease_state)
 	{
 		//PWM is decreased until desired state
 		if (magnetic_PWM_duty <= 0) magnetic_PWM_duty=0;
@@ -1267,10 +1220,10 @@ void magnetic_fsm_run(void)
 	\Purpose : Function updates the heater FSM states
 	*/
 void heater_fsm_transition(void)
-{	
+{
 	if (HEATER_START){
 		float temperature_difference =  (float)(measured_temperature - desired_temperature);
-		
+
 		switch(heater_fsm_state){
 			case heater_fsm_OFF: {
 				heater_fsm_state = heater_fsm_idle;
@@ -1282,7 +1235,7 @@ void heater_fsm_transition(void)
 				if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
 				else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
 				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
-				
+
 				break;
 			}
 // 			case heater_fsm_heating: {
@@ -1301,7 +1254,7 @@ void heater_fsm_transition(void)
 		}
 	}
 	else heater_fsm_state = heater_fsm_OFF; //if the heater is stopped at any moment, it goes off
-	
+
 	return;
 }
 
@@ -1314,7 +1267,7 @@ void heater_fsm_transition(void)
 void heater_fsm_RUN(void){
 	if (measured_temperature < heater_threshold_temp && digitalRead(BLUE_LED)!=HIGH) digitalWrite(BLUE_LED,HIGH);//turn on safe to touch LED if not high already
 	else digitalWrite(BLUE_LED,LOW);  //turn off safe to touch LED
-	
+
 	switch(heater_fsm_state){
 		case heater_fsm_OFF: {
 			//all pins off
@@ -1323,24 +1276,24 @@ void heater_fsm_RUN(void){
 			break;
 		}
 		case heater_fsm_idle: {
-			digitalWrite(RED_LED, LOW); 
+			digitalWrite(RED_LED, LOW);
 			break;
 		}
 		case heater_fsm_heating: {
 			digitalWrite(RED_LED,HIGH); //turn on heating signal
 			if (heater_PWM_duty >= ANALOG_RESOLUTION) heater_PWM_duty=ANALOG_RESOLUTION;
-			else heater_PWM_duty++;	
+			else heater_PWM_duty++;
 			break;
 		}
 		case heater_fsm_cooling: {
 			digitalWrite(RED_LED, LOW); //turn of heating signal
 			if (heater_PWM_duty <= 0) heater_PWM_duty=0;
-			else heater_PWM_duty--;	
+			else heater_PWM_duty--;
 			break;
 		}
 		default: heater_fsm_state = heater_fsm_OFF;
 	}
-	
+
 	analogWrite(HEATER_PWM,heater_PWM_duty);
 	return;
 }
@@ -1371,6 +1324,6 @@ void raise_MCU_error(String error_text){
 	//This function raises and error
 	TEST_ERROR = true;
 	error_message = error_text;
-	
+
 	return;
 }
