@@ -1,0 +1,5 @@
+{"Test_ID":"ABC123456","Test_Description":"testing_FUT","data":[1,0,-1000,5,55,20,1500]}
+
+//{"Test_ID":"ABC123456","Test_Description":"testing_FUT",
+//"data":[Test_start,Test_stop,FPGA voltage in mV(int),test magnetic field in mT(float),temperature in C(int),test time in minutes(int),serial output rate in milliseconds(int)]}
+//Test start and Test stop : 0- False, 1 - True
