@@ -10,5 +10,5 @@ Contacts.txt -> file containing e-mails
 
 ## E-MAIL CONTACTS
 - Place E-mail contacts in contacts.txt.
-- Each e-mail on a different line
+- Each e-mail on a different line.
 
