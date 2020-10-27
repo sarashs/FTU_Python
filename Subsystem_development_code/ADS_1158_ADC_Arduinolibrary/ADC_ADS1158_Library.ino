@@ -86,14 +86,14 @@ Index 28 is CHID 29 -> External reference
 
 From Table 10 in data sheet
 BITS CHID[4:0]          PRIORITY        CHANNEL         DESCRIPTION
-00h                     1 (highest)     DIFF0 (AIN0–AIN1) Differential 0
-01h                     2               DIFF1 (AIN2–AIN3) Differential 1
-02h						3				DIFF2 (AIN4–AIN5) Differential 2
-03h				        4               DIFF3 (AIN6–AIN7) Differential 3
-04h						5			    DIFF4 (AIN8– AIN9) Differential 4
-05h						6				DIFF5 (AIN10–AIN11) Differential 5
-06h						7				DIFF6 (AIN12–AIN13) Differential 6
-07h						8				DIFF7 (AIN14–AIN15) Differential 7
+00h                     1 (highest)     DIFF0 (AIN0ï¿½AIN1) Differential 0
+01h                     2               DIFF1 (AIN2ï¿½AIN3) Differential 1
+02h						3				DIFF2 (AIN4ï¿½AIN5) Differential 2
+03h				        4               DIFF3 (AIN6ï¿½AIN7) Differential 3
+04h						5			    DIFF4 (AIN8ï¿½ AIN9) Differential 4
+05h						6				DIFF5 (AIN10ï¿½AIN11) Differential 5
+06h						7				DIFF6 (AIN12ï¿½AIN13) Differential 6
+07h						8				DIFF7 (AIN14ï¿½AIN15) Differential 7
 08h						9				AIN0 Single-ended 0
 09h						10				AIN1 Single-ended 1
 0Ah						11				AIN2 Single-ended 2
@@ -111,7 +111,7 @@ BITS CHID[4:0]          PRIORITY        CHANNEL         DESCRIPTION
 16h						23				AIN14 Single-ended 14
 17h						24			    AIN15 Single-ended 15
 18h						25				OFFSET Offset
-1Ah						26				VCC AVDD – AVSS supplies
+1Ah						26				VCC AVDD ï¿½ AVSS supplies
 1Bh						27				TEMP Temperature
 1Ch						28				GAIN Gain
 1Dh						29 (lowest)		REF External reference
@@ -213,7 +213,7 @@ boolean ADC_NEW_STATUS_BIT(uint8_t STATUS_byte){
 * Purpose     : Checks if the OVF bit is set in the STATUS_byte byte
 * Description : When this bit is set, it indicates that the differential voltage applied to the ADC inputs have exceeded the range
 				of the converter |VIN| > 1.06VREF. During over-range, the output code of the converter clips to either positive FS
-				(VIN ? 1.06 × VREF) or negative FS (VIN ? –1.06 × VREF). This bit, with the MSB of the data, can be used to
+				(VIN ? 1.06 ï¿½ VREF) or negative FS (VIN ? ï¿½1.06 ï¿½ VREF). This bit, with the MSB of the data, can be used to
 				detect positive or negative over-range conditions
 * Input       : STATUS_byte Byte
 * Output      : TRUE if bit is set, FALSE if bit is not set 
@@ -232,7 +232,7 @@ boolean ADC_OVF_STATUS_BIT(uint8_t STATUS_byte){
 /*
 * Name        : ADC_SUPPLY_STATUS_BIT
 * Purpose     : Checks if the SUPPLY bit is set in the STATUS_byte byte
-* Description : This bit indicates that the analog power-supply voltage (AVDD – AVSS) is below a preset limit. The SUPPLY bit
+* Description : This bit indicates that the analog power-supply voltage (AVDD ï¿½ AVSS) is below a preset limit. The SUPPLY bit
 				is set when the value falls below 4.3V (typically) and is reset when the value rises 50mV higher (typically) than
 				the lower trip point. The output data of the ADC may not be valid under low power-supply conditions.
 * Input       : STATUS_byte Byte
