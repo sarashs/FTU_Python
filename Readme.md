@@ -1,4 +1,4 @@
-============RUNNING THE TEST==============
+#RUNNING THE TEST
 - Place all files in same directory
 	- When running a new test delete any other files other than script.py and contacts.txt
 - Ensure ArduinoMKR1000 is connected to COM3
@@ -8,8 +8,7 @@
 Ensure to have 
 Contacts.txt -> file containing e-mails
 
-
-==============E-MAIL CONTACTS=============
+#E-MAIL CONTACTS
 Place E-mail contacts in contacts.txt.
 Different E-mails on a different line
 
