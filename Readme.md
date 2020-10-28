@@ -1,14 +1,14 @@
-# RUNNING THE TEST
-- Place all files in same directory
-	- When running a new test delete any other files other than script.py and contacts.txt
-- Ensure ArduinoMKR1000 is connected to correct COMPORT eg COM6
-	- If not correct COMPORT, change the COM port in the script
-- Try to run script as administrator, if not this is okay
+# REPOSITORY FOR DR. IVANOV 2020 FTU SYSTEM
+## FTU - Failure Test unit
 
-## Ensure to have 
-Contacts.txt -> file containing e-mails
+### Main System Code
+- This contains the working files needed to fun the system on both the CPU and the Microcontroller
 
-## E-MAIL CONTACTS
-- Place E-mail contacts in contacts.txt.
-- Each e-mail on a different line.
+### Subsytem Development
+- This folder contains development files for each of the subsystems in the FTU system
 
+### Test Results
+- This folder contains results from various tests
+
+### Testing
+- This folder contains files used to test the FTU system
