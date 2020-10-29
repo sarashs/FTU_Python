@@ -10,7 +10,7 @@
 #### Test Results
 - This folder contains results from various tests
 
-#### Testing
+### Testing
 - This folder contains files used to test the FTU system
 
 ## Change Log
