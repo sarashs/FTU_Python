@@ -3,30 +3,40 @@
 /************************************************************************/
 
 /*H**********************************************************************
-* FILENAME :        FTU_system_code.ino            DESIGN REF:
+* \@filename :        
+* FTU_system_code.ino            
 *
-* DESCRIPTION :
-*       This file controls a SAMD21G18A MCU on Arduino MKR1000
-*		Used to run a HTOL Test (High-temperature operating life) for Accelerated Life Testing
+* \@description :
+* This file controls a SAMD21G18A MCU on Arduino MKR1000
+* Used to run a HTOL Test (High-temperature operating life) for Accelerated Life Testing
 *
-* NOTES : This code connects to a python script
-*
-*
-* AUTHOR :    Valentine Ssebuyungo        START DATE :    1st June 2020
-*
-* CHANGES : TC3 timer removed
+* \@notes : 
+* This code connects to a python script
 *
 *
-* FUTURE IMPROVEMENTS:
-*							Add a header file to contain all data
-*							IoT communication
-*							RTC timer for time
-*							PID control for magnetic and heater system
-*							Emergency stop
-*						    WDT
-*							Faster Serial communication - 0.1uS
-*							Reset Arduino after test stops
-*							Frequency divider functionality
+* \@authors :    
+* 1. Valentine Ssebuyungo        
+*
+* \@start_date : 1st June 2020
+*
+* \@change_log : 
+* tc3 timer removed
+*
+* \@documentation_style :	 
+* 1. "https://developer.lsst.io/cpp/api-docs.html#cpp-doxygen-see-also"
+* 2. "http://www.edparrish.net/common/cppdoc.html#functioncomment"
+*
+* \@future_improvements :
+*Add a header file to contain all data
+*IoT communication
+*RTC timer for time
+*PID control for magnetic and heater system
+*Emergency stop
+*WDT
+*Faster Serial communication - 0.1uS
+*Reset Arduino after test stops
+*Frequency divider functionality
+*
 *H*/
 #include "SPI.h"
 #include "ArduinoJson.h"
@@ -195,7 +205,7 @@ volatile bool serial_signal = false;
 /* USING JSON LIBRARY TO SEND COMMUNICATE WITH PYTHON SCRIPT            */
 /************************************************************************/
 /**
-* @see Original source : https://arduinojson.org/
+* @see Original source : "https://arduinojson.org/"
 * preparing the JSON document to be used in the test
 * Allocate the JSON document
 
@@ -426,7 +436,7 @@ uint32_t adc_channel_read_register_format(void){
 /**
  * \@brief This functions sets up the ADC
  *         STEPS : 1. Reset the SPI Interface, 2.Stop the converter, 3.Reset the Converter, 4.Configure the registers, 5.Verify Register Data, 6.Start the converter, 7.Read Channel Data
- * \@see Page 40 configuration guide.
+ * \@see Page 40 configuration guide. "https://www.ti.com/lit/ds/symlink/ads1158.pdf?ts=1603990103929&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FADS1158"
  * 
  * 
  * \@return void
@@ -781,7 +791,7 @@ int twos_complement_to_int (int value, int num_bits)
  *				----------------
  *				Gain * ADC_Resolution 
  *
- * \@see http://scientific-solutions.com/products/faq/ssi_faq_adc_equations%20VER2.shtml#:~:text=2%27s%20Complement%20ADC%20Data%20with%208%2Dbit%20resolution
+ * \@see "http://scientific-solutions.com/products/faq/ssi_faq_adc_equations%20VER2.shtml#:~:text=2%27s%20Complement%20ADC%20Data%20with%208%2Dbit%20resolution"
  * \@param ADC_reading
  * 
  * \@return int millivolts of ADC value
@@ -1134,7 +1144,7 @@ int counter_value (float clock_frequency_MHz,float prescaler, float period_ms){
  * \@brief   Function converts millivolts from the temperature sensor output to temperature in Celcius
  *			Formula : T = (V_out - V_offset)/Tc) + T_INFL
  * 
- * \@see Data sheet: https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235
+ * \@see Data sheet: "https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235"
  *
  * \@param milli_volts -> Digital Voltage from ADC
  * 
@@ -1165,7 +1175,7 @@ float millivolt_to_celcius(float milli_volts)
 /**
  * \@brief  Converts voltage to corresponding magnetic field (reference is for the  magnetic sensor)
  *
- * \@see Data sheet: https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjxps3qg8PqAhXBo54KHUn5CvwQFjAAegQIBRAB&url=https%3A%2F%2Fwww.allegromicro.com%2F~%2Fmedia%2FFiles%2FDatasheets%2FA1318-A1319-Datasheet.ashx&usg=AOvVaw39zGCju7QuDLgpcH9PKde_
+ * \@see Data sheet: "https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjxps3qg8PqAhXBo54KHUn5CvwQFjAAegQIBRAB&url=https%3A%2F%2Fwww.allegromicro.com%2F~%2Fmedia%2FFiles%2FDatasheets%2FA1318-A1319-Datasheet.ashx&usg=AOvVaw39zGCju7QuDLgpcH9PKde_"
  * 
  * \@param milli_volts
  * 
