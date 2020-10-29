@@ -266,10 +266,10 @@ void loop() {
  * 
  * \@return uint8_t, 8 bit value representing the channel ID from where the data is read
  */
-uint8_t adc_chid_status(uint8_t STATUS_byte){
+uint8_t adc_chid_status(uint8_t status_byte){
 		//STATUS_byte BIT
 		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |
-		return (uint8_t) (STATUS_byte & 0b00011111); //return last 5 bits of STATUS_byte byte
+		return (uint8_t) (status_byte & 0b00011111); //return last 5 bits of STATUS_byte byte
 }
 
 /**
@@ -280,10 +280,10 @@ uint8_t adc_chid_status(uint8_t STATUS_byte){
  * 
  * \@return boolean
  */
-boolean adc_new_status_bit(uint8_t STATUS_byte){
+boolean adc_new_status_bit(uint8_t status_byte){
 		//STATUS_byte BIT
 		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |	
-		uint8_t NEW_bit = (STATUS_byte & 0b10000000)>>7;
+		uint8_t NEW_bit = (status_byte & 0b10000000)>>7;
 		if (NEW_bit == 0){
 			return false;
 		}
@@ -303,10 +303,10 @@ boolean adc_new_status_bit(uint8_t STATUS_byte){
  * 
  * \@return boolean true if bit is set, false if bit is not set 
  */
-boolean adc_ovf_status_bit(uint8_t STATUS_byte){
+boolean adc_ovf_status_bit(uint8_t status_byte){
 		//STATUS_byte BIT
 		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |
-		uint8_t OVF_bit = (STATUS_byte & 0b01000000)>>6;
+		uint8_t OVF_bit = (status_byte & 0b01000000)>>6;
 		if (OVF_bit == 0){
 			return false;
 		}
@@ -325,10 +325,10 @@ boolean adc_ovf_status_bit(uint8_t STATUS_byte){
  * 
  * \@return boolean true if bit is set, false if bit is not set 
  */
-boolean adc_supply_status_bit(uint8_t STATUS_byte){
+boolean adc_supply_status_bit(uint8_t status_byte){
 		//STATUS_byte BIT
 		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |	
-		uint8_t SUPPLY_bit = (STATUS_byte & 0b00100000)>>5;
+		uint8_t SUPPLY_bit = (status_byte & 0b00100000)>>5;
 		if (SUPPLY_bit == 0){
 			return false;
 		}
@@ -345,14 +345,14 @@ boolean adc_supply_status_bit(uint8_t STATUS_byte){
  * 
  * \@return void
  */
-void adc_register_write(uint8_t REG_address, uint8_t Value){
-  uint8_t command = 0x60| REG_address; // 8b'0100_0000 | REG_address
+void adc_register_write(uint8_t reg_address, uint8_t value){
+  uint8_t command = 0x60| reg_address; // 8b'0100_0000 | REG_address
   SPI.begin(); //initialize SPI pins
   SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
   digitalWrite(_cs_adc,LOW);
   delayMicroseconds(20);
   SPI.transfer(command); // send the command byte
-  SPI.transfer(Value);   // send the value of register 
+  SPI.transfer(value);   // send the value of register 
   delayMicroseconds(20);
   digitalWrite(_cs_adc,HIGH);
   SPI.endTransaction();
@@ -367,20 +367,20 @@ void adc_register_write(uint8_t REG_address, uint8_t Value){
  * 
  * \@return uint8_t -> value in register
  */
-uint8_t adc_register_read(uint8_t REG_address){
-	uint8_t command = 0x40 | REG_address;
-	uint8_t REG_Value = NULL;
+uint8_t adc_register_read(uint8_t reg_address){
+	uint8_t command = 0x40 | reg_address;
+	uint8_t reg_value = NULL;
 	SPI.begin(); //initialize SPI pins
 	SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
 	digitalWrite(_cs_adc,LOW);
 	delayMicroseconds(20);
 	SPI.transfer(command); // send command
-	REG_Value = SPI.transfer(0x0);   // Read response
+	reg_value = SPI.transfer(0x0);   // Read response
 	delayMicroseconds(20);
 	digitalWrite(_cs_adc,HIGH);
 	SPI.endTransaction();
 	
-	return REG_Value;
+	return reg_value;
 }
 
 /**
@@ -660,10 +660,10 @@ void testing_suite(){
  * 
  * \@return uint8_t -> 8bit value of status byte
  */
-uint8_t adc_return_status_byte(uint32_t RAW_CHANNEL_REGISTER_READ_DATA){
+uint8_t adc_return_status_byte(uint32_t raw_channel_register_read_data){
 	//The input 32bit value contains [31:24] Don't care, [23:16] STATUS byte,[15:8] MSB of measurement, [7:0] LSB of measurement
 	//We return status
-	return (uint8_t)((RAW_CHANNEL_REGISTER_READ_DATA >> 16)& 0x000000FF); //0X000F = 0b0000_0000_0000_0000_0000_0000_1111_1111, this returns the status byte
+	return (uint8_t)((raw_channel_register_read_data >> 16)& 0x000000FF); //0X000F = 0b0000_0000_0000_0000_0000_0000_1111_1111, this returns the status byte
 }
 
 /**
@@ -673,10 +673,10 @@ uint8_t adc_return_status_byte(uint32_t RAW_CHANNEL_REGISTER_READ_DATA){
  * 
  * \@return uint16_t -> 16bit value of Raw ADC data
  */
-uint16_t adc_return_raw_data(uint32_t RAW_CHANNEL_REGISTER_READ_DATA){
+uint16_t adc_return_raw_data(uint32_t raw_channel_register_read_data){
 	//The input 32bit value contains [31:24] Don't care, [23:16] STATUS byte,[15:8] MSB of measurement, [7:0] LSB of measurement
 	//We return MSB and LSB
-	return (uint16_t)((RAW_CHANNEL_REGISTER_READ_DATA )& 0x0000FFFF); //0X0F = 0b0000_0000_0000_0000_1111_1111_1111_1111, this returns the status byte
+	return (uint16_t)((raw_channel_register_read_data )& 0x0000FFFF); //0X0F = 0b0000_0000_0000_0000_1111_1111_1111_1111, this returns the status byte
 }
 
 /**
@@ -1124,8 +1124,8 @@ void tc3_handler(){//TC3 NOT USED
  * 
  * \@return int
  */
-int counter_value (float Clock_FrequencyMHz,float prescaler, float period_ms){
-	return (int) (( (Clock_FrequencyMHz*1000*period_ms) / (prescaler) )-1) ;
+int counter_value (float clock_frequency_MHz,float prescaler, float period_ms){
+	return (int) (( (clock_frequency_MHz*1000*period_ms) / (prescaler) )-1) ;
 	
 }
 
