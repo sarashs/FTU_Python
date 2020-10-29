@@ -1512,18 +1512,7 @@ void heater_fsm_transition(void)
 				
 				break;
 			}
-// 			case heater_fsm_heating: {
-// 				if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
-// 				else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
-// 				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
-// 				break;
-// 			}
-// 			case heater_fsm_cooling: {
-// 				if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
-// 				else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
-// 				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
-// 				break;
-// 			}
+
 			default: heater_fsm_state = heater_fsm_OFF;
 		}
 	}
