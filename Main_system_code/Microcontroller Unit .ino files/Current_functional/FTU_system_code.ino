@@ -1,42 +1,31 @@
 /************************************************************************/
-/*                    FILE DESCRIPTION                                  */
+/* NEW STUFF                                                             */
 /************************************************************************/
-
 /*H**********************************************************************
-* \@filename :        
-* FTU_system_code.ino            
+* FILENAME :        FTU_system_code.ino            DESIGN REF:
 *
-* \@description :
-* This file controls a SAMD21G18A MCU on Arduino MKR1000
-* Used to run a HTOL Test (High-temperature operating life) for Accelerated Life Testing
+* DESCRIPTION :
+*       This file controls a SAMD21G18A MCU on Arduino MKR1000
+*		Used to run a HTOL Test (High-temperature operating life) for Accelerated Life Testing
 *
-* \@notes : 
-* This code connects to a python script
+* NOTES : This code connects to a python script
 *
 *
-* \@authors :    
-* 1. Valentine Ssebuyungo        
+* AUTHOR :    Valentine Ssebuyungo        START DATE :    1st June 2020
 *
-* \@start_date : 1st June 2020
+* CHANGES : TC3 timer removed
 *
-* \@change_log : 
-* tc3 timer removed
 *
-* \@documentation_style :	 
-* 1. "https://developer.lsst.io/cpp/api-docs.html#cpp-doxygen-see-also"
-* 2. "http://www.edparrish.net/common/cppdoc.html#functioncomment"
-*
-* \@future_improvements :
-*Add a header file to contain all data
-*IoT communication
-*RTC timer for time
-*PID control for magnetic and heater system
-*Emergency stop
-*WDT
-*Faster Serial communication - 0.1uS
-*Reset Arduino after test stops
-*Frequency divider functionality
-*
+* FUTURE IMPROVEMENTS:
+*							Add a header file to contain all data
+*							IoT communication
+*							RTC timer for time
+*							PID control for magnetic and heater system
+*							Emergency stop
+*						    WDT
+*							Faster Serial communication - 0.1uS
+*							Reset Arduino after test stops
+*							Frequency divider functionality
 *H*/
 #include "SPI.h"
 #include "ArduinoJson.h"
@@ -52,26 +41,26 @@
 /************************************************************************/
 /* PINS DESCRIPTIONS                                                    */
 /************************************************************************/
-#define ctrl_vstr A0 //A0 the control signal for the voltage stress circuit, labeled CTRL_VSTR in figure 1
-#define heater_pwm A3 //A3 This is the control signal for the Heater board
-#define helmholtz_pwm A4 //A4 This is the control signal for the Helmholtz circuit
-#define _reset_adc 0          //D0 Should be configured as a digital output. Connected to *RESET on the ADC
-#define _pwdn_adc 1           //D1 Should be configured as a digital output. Connected to *PWDN on the ADC
-#define start_adc 2           //D2 Should be configured as a digital output. Connected to START on the ADC.
-#define _drdy_adc 3           //D3 Should be configured as a digital input. Connected to *DRDY on the ADC.
-#define red_led 4             //D4 Should be configured as a digital output. Control signal for the red LED on the heater board.
-#define blue_led 5            //D5 Should be configured as a digital output. Control signal for the Blue LED on the heater board.
-#define clr_freq_divider 6    //D6 Should be configured as a digital output. The clear command for the frequency divider. labeled CLR in figure 1.
-#define _cs_adc 7             //D7 Should be configured as a digital output. This is the *CS line for SPI communication with the ADC
-#define mosi_adc 8            //D8 Should be configured as a digital output. This is the MOSI line on the SPI bus. labeled DIN on the ADC.
-#define sck_adc 9             //D9 Should be configured as a digital output. This is the SCLK line on the SPI bus.
-#define miso_adc 10           //D10 Should be configured as a digital input. This is the MISO line on the SPI bus. labeled DOUT on the ADC.
-#define q11_freq_counter 11   //D11 Should be configured as a digital input. Connected to Q11 on the frequency divider
-#define q12_freq_counter 12   //D12 Should be configured as a digital input. Connected to Q12 on the frequency divider
-#define q13_freq_counter 13   //D13 Should be configured as a digital input. Connected to Q13 on the frequency divider
-#define q14_freq_counter 14   //D14 Should be configured as a digital input. Connected to Q14 on the frequency divider
+#define CTRL_VSTR A0 //A0 the control signal for the voltage stress circuit, labeled CTRL_VSTR in figure 1
+#define HEATER_PWM A3 //A3 This is the control signal for the Heater board
+#define HELMHOLTZ_PWM A4 //A4 This is the control signal for the Helmholtz circuit
+#define _RESET_ADC 0          //D0 Should be configured as a digital output. Connected to *RESET on the ADC
+#define _PWDN_ADC 1           //D1 Should be configured as a digital output. Connected to *PWDN on the ADC
+#define START_ADC 2           //D2 Should be configured as a digital output. Connected to START on the ADC.
+#define _DRDY_ADC 3           //D3 Should be configured as a digital input. Connected to *DRDY on the ADC.
+#define RED_LED 4          //D4 Should be configured as a digital output. Control signal for the red LED on the heater board.
+#define BLUE_LED 5            //D5 Should be configured as a digital output. Control signal for the Blue LED on the heater board.
+#define CLR_FREQ_DIVIDER 6    //D6 Should be configured as a digital output. The clear command for the frequency divider. labeled CLR in figure 1.
+#define _CS_ADC 7             //D7 Should be configured as a digital output. This is the *CS line for SPI communication with the ADC
+#define MOSI_ADC 8            //D8 Should be configured as a digital output. This is the MOSI line on the SPI bus. labeled DIN on the ADC.
+#define SCK_ADC 9             //D9 Should be configured as a digital output. This is the SCLK line on the SPI bus.
+#define MISO_ADC 10           //D10 Should be configured as a digital input. This is the MISO line on the SPI bus. labeled DOUT on the ADC.
+#define Q11_FREQ_COUNTER 11   //D11 Should be configured as a digital input. Connected to Q11 on the frequency divider
+#define Q12_FREQ_COUNTER 12   //D12 Should be configured as a digital input. Connected to Q12 on the frequency divider
+#define Q13_FREQ_COUNTER 13   //D13 Should be configured as a digital input. Connected to Q13 on the frequency divider
+#define Q14_FREQ_COUNTER 14   //D14 Should be configured as a digital input. Connected to Q14 on the frequency divider
 //A1, A2, A5, A6   4 MCU pins that are not used in the design and left disconnected. They will be accessible through the male/female headers mounted on the MCU board.
-#define analog_resolution 1023
+#define ANALOG_RESOLUTION 1023
 
 /************************************************************************/
 /* ADC VARIABLES AND CONSTANTS                                          */
@@ -88,11 +77,11 @@
 #define GPIOD_address 0x08
 
 //ADC constants
-#define number_of_bits_adc 16
-#define adc_register_array_size 9
-#define adc_spi_speed 6000000  //6MHZ -> Must be less than 0.5 adc_clk(15.7MHz)
+#define NUMBER_OF_BITS_ADC 16
+#define ADC_Register_Array_Size 9
+#define ADC_SPI_SPEED 3932250  //3.93225MHZ -> Must be less than 0.5 adc_clk(15.729MHz) and must be on the same domain 1, 1/2, 1/4, 1/8 of the clock
 
-uint8_t adc_register_addresses[adc_register_array_size] = {CONFIG0_address,CONFIG1_address,MUXSCH_address,
+uint8_t ADC_Register_Addresses[ADC_Register_Array_Size] = {CONFIG0_address,CONFIG1_address,MUXSCH_address,
 MUXDIF_address,MUXSG0_address,MUXSG1_address,SYSRED_address,GPIOC_address,GPIOD_address};
 
 //Default ADC values to be programmed
@@ -106,7 +95,7 @@ MUXDIF_address,MUXSG0_address,MUXSG1_address,SYSRED_address,GPIOC_address,GPIOD_
 #define GPIOC_default 0x00
 #define GPIOD_default 0x00
 
-uint8_t adc_register_defaults[adc_register_array_size] = {CONFIG0_default,CONFIG1_default,MUXSCH_default,
+uint8_t ADC_Register_Defaults[ADC_Register_Array_Size] = {CONFIG0_default,CONFIG1_default,MUXSCH_default,
 MUXDIF_default,MUXSG0_default,MUXSG1_default,SYSRED_default,GPIOC_default,GPIOD_default};
 
 uint8_t CONFIG0_value = 0;
@@ -119,8 +108,8 @@ uint8_t SYSRED_value =  0;
 uint8_t GPIOC_value =   0;
 uint8_t GPIOD_value =   0;
 
-volatile uint16_t raw_adc_data [29] = {0}; //initialize the array with zero
-volatile double converted_adc_data[29] = {0}; //this array hold the converted ADC data have to change this to  double
+volatile uint16_t raw_ADC_data [29] = {0}; //initialize the array with zero
+volatile double converted_ADC_data[29] = {0}; //this array hold the converted ADC data have to change this to  double
 //initialize some values to avoid errors in calculations
 
 /*How values are stored in these arrays
@@ -164,39 +153,38 @@ BITS CHID[4:0]          PRIORITY        CHANNEL         DESCRIPTION
 
 
 */
-
 /************************************************************************/
 /* GLOBAL VARIABLES AND CONSTANTS                                       */
 /************************************************************************/
 //volatile is for variables that can always change in the code
 volatile int TCC1_compare_value = 3905;  //compare value for 1sec default rate
 volatile int test_time_count = 0;     //seconds of test time elapsed
-volatile int system_fsm_state = 0;    //initialize System FSM state
+volatile int System_fsm_state = 0;    //initialize System FSM state
 
 //Input data from the MCU
-volatile int test_id = 0;
-volatile bool test_start = false;
-volatile bool test_stop = false;
+volatile int Test_ID = 0;
+volatile bool TEST_START = false;
+volatile bool TEST_STOP = false;
 volatile float desired_temperature = 43;     //in C, Set to a default value but actual value comes from MCU instructions
 volatile float desired_magnetic_field = 0;  //in mT, Set to a default value but actual value comes from MCU instructions
 volatile int desired_time_for_test = 2;	 //time in minutes, Set to a default value but actual value comes from MCU instructions
-volatile float desired_fpga_voltage =3200;     //in mV, Set to a default value but actual value comes from MCU instructions
+volatile float desired_FPGA_voltage =3200;     //in mV, Set to a default value but actual value comes from MCU instructions
 volatile int serial_output_rate=3000;                 //rate to read data in ms, Set to a default value but actual value comes from MCU instructions
 
 //Variables for Magnetic field FSM
 volatile int measured_magnetic_field = 0; // in mT
-volatile int magnetic_pwm_duty = 0; //duty cycle value 0-255
+volatile int magnetic_PWM_duty = 0; //duty cycle value 0-255
 volatile int magnetic_fsm_state = 0; //idle state
 
 //Variables for heater FSM
 volatile float measured_temperature = 0; // in C
-volatile float heater_pwm_duty = 0; //duty cycle value 0-255
+volatile float heater_PWM_duty = 0; //duty cycle value 0-255
 volatile int heater_fsm_state = 0; //idle state
-volatile bool heater_start = false;
+volatile bool HEATER_START = false;
 
 String message;
 String instruction = "instruction";  //This will be a json instruction in string format from the CPU Python script
-volatile bool test_error = false;
+volatile bool TEST_ERROR = false;
 String error_message = ""; //Contains the error message to be sent to python, this catches errors
 volatile float current_test_time = 0; //test time in minutes
 volatile bool serial_signal = false;
@@ -205,7 +193,7 @@ volatile bool serial_signal = false;
 /* USING JSON LIBRARY TO SEND COMMUNICATE WITH PYTHON SCRIPT            */
 /************************************************************************/
 /**
-* @see Original source : "https://arduinojson.org/"
+* @see Original source : https://arduinojson.org/
 * preparing the JSON document to be used in the test
 * Allocate the JSON document
 
@@ -213,15 +201,15 @@ volatile bool serial_signal = false;
 * replaced by DynamicJsonDocument which allocates in the heap.
 *1024 is the RAM dedicated to this document 
 */
-DynamicJsonDocument  doc(700);
+DynamicJsonDocument  doc(1500);
 
 /************************************************************************/
 /* TESTING VARIABLES AND CONSTANTS                                      */
 /************************************************************************/
-#define  red_led A1
-#define  blue_led A2
-#define  yellow_led A5
-#define  analog_pin A6
+#define  REDLED A1
+#define  BLUELED A2
+#define  YELLOWLED A5
+#define  ANALOG_PIN A6
 
 /**
  * This setup function is run before a test starts and sets up the system
@@ -234,21 +222,23 @@ void setup() {
   analogReference(AR_DEFAULT); //sets 3.3V reference
   pin_setup(); //Setup MCU pins
   delay(1000);
-  adc_setup(); //function sets up the ADC
+  ADC_Setup(); //function sets up the ADC
   
   Serial.begin(256000); //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
   while (!Serial) continue;//if not connected stall test until connected
 	
   clock_setup();           //set up 1MHz clock for the timers
   //init_TC3();            //set up TC3 whose interrupt sends serial data
-  init_tc4();              //initialize TC4 timer, TC4 generates the ADC read interrupt
-  init_tc5();              //TC5 is a 1 second counter
+  init_TC4();              //initialize TC4 timer, TC4 generates the ADC read interrupt
+  init_TC5();              //TC5 is a 1 second counter
   __enable_irq();          //enable interrupts
 
 
 
   receive_test_instructions(); //run function for handshaking to receive instructions 
   test_time_count = 0; //reset test time
+
+
 }
 
 /**
@@ -258,8 +248,10 @@ void setup() {
  * @return void
  */
 void loop() {
-	  system_fsm_run();
-	  system_fsm_transition();
+ 	  System_fsm_Run();
+ 	  System_fsm_Transition();
+
+		
 }
 
 
@@ -276,10 +268,10 @@ void loop() {
  * 
  * \@return uint8_t, 8 bit value representing the channel ID from where the data is read
  */
-uint8_t adc_chid_status(uint8_t status_byte){
+uint8_t ADC_CHID_STATUS(uint8_t STATUS_byte){
 		//STATUS_byte BIT
 		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |
-		return (uint8_t) (status_byte & 0b00011111); //return last 5 bits of STATUS_byte byte
+		return (uint8_t) (STATUS_byte & 0b00011111); //return last 5 bits of STATUS_byte byte
 }
 
 /**
@@ -290,10 +282,10 @@ uint8_t adc_chid_status(uint8_t status_byte){
  * 
  * \@return boolean
  */
-boolean adc_new_status_bit(uint8_t status_byte){
+boolean ADC_NEW_STATUS_BIT(uint8_t STATUS_byte){
 		//STATUS_byte BIT
 		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |	
-		uint8_t NEW_bit = (status_byte & 0b10000000)>>7;
+		uint8_t NEW_bit = (STATUS_byte & 0b10000000)>>7;
 		if (NEW_bit == 0){
 			return false;
 		}
@@ -313,10 +305,10 @@ boolean adc_new_status_bit(uint8_t status_byte){
  * 
  * \@return boolean true if bit is set, false if bit is not set 
  */
-boolean adc_ovf_status_bit(uint8_t status_byte){
+boolean ADC_OVF_STATUS_BIT(uint8_t STATUS_byte){
 		//STATUS_byte BIT
 		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |
-		uint8_t OVF_bit = (status_byte & 0b01000000)>>6;
+		uint8_t OVF_bit = (STATUS_byte & 0b01000000)>>6;
 		if (OVF_bit == 0){
 			return false;
 		}
@@ -335,10 +327,10 @@ boolean adc_ovf_status_bit(uint8_t status_byte){
  * 
  * \@return boolean true if bit is set, false if bit is not set 
  */
-boolean adc_supply_status_bit(uint8_t status_byte){
+boolean ADC_SUPPLY_STATUS_BIT(uint8_t STATUS_byte){
 		//STATUS_byte BIT
 		//|  NEW    |  OVF   |  SUPPLY  |  CHID 4  |  CHID 3  |  CHID 2  |  CHID 1  |  CHID 0  |	
-		uint8_t SUPPLY_bit = (status_byte & 0b00100000)>>5;
+		uint8_t SUPPLY_bit = (STATUS_byte & 0b00100000)>>5;
 		if (SUPPLY_bit == 0){
 			return false;
 		}
@@ -355,16 +347,16 @@ boolean adc_supply_status_bit(uint8_t status_byte){
  * 
  * \@return void
  */
-void adc_register_write(uint8_t reg_address, uint8_t value){
-  uint8_t command = 0x60| reg_address; // 8b'0100_0000 | REG_address
+void ADC_RegisterWrite(uint8_t REG_address, uint8_t Value){
+  uint8_t command = 0x60| REG_address; // 8b'0100_0000 | REG_address
   SPI.begin(); //initialize SPI pins
-  SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
-  digitalWrite(_cs_adc,LOW);
+  SPI.beginTransaction (SPISettings (ADC_SPI_SPEED, MSBFIRST, SPI_MODE0));
+  digitalWrite(_CS_ADC,LOW);
   delayMicroseconds(20);
   SPI.transfer(command); // send the command byte
-  SPI.transfer(value);   // send the value of register 
+  SPI.transfer(Value);   // send the value of register 
   delayMicroseconds(20);
-  digitalWrite(_cs_adc,HIGH);
+  digitalWrite(_CS_ADC,HIGH);
   SPI.endTransaction();
     
   }
@@ -377,20 +369,20 @@ void adc_register_write(uint8_t reg_address, uint8_t value){
  * 
  * \@return uint8_t -> value in register
  */
-uint8_t adc_register_read(uint8_t reg_address){
-	uint8_t command = 0x40 | reg_address;
-	uint8_t reg_value = NULL;
+uint8_t ADC_RegisterRead(uint8_t REG_address){
+	uint8_t command = 0x40 | REG_address;
+	uint8_t REG_Value = NULL;
 	SPI.begin(); //initialize SPI pins
-	SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
-	digitalWrite(_cs_adc,LOW);
+	SPI.beginTransaction (SPISettings (ADC_SPI_SPEED, MSBFIRST, SPI_MODE0));
+	digitalWrite(_CS_ADC,LOW);
 	delayMicroseconds(20);
 	SPI.transfer(command); // send command
-	reg_value = SPI.transfer(0x0);   // Read response
+	REG_Value = SPI.transfer(0x0);   // Read response
 	delayMicroseconds(20);
-	digitalWrite(_cs_adc,HIGH);
+	digitalWrite(_CS_ADC,HIGH);
 	SPI.endTransaction();
 	
-	return reg_value;
+	return REG_Value;
 }
 
 /**
@@ -400,8 +392,8 @@ uint8_t adc_register_read(uint8_t reg_address){
  * 
  * \@return uint32_t ->  Converted value in a 32bit data, [31:24] Don't care, [23:16] STATUS byte,[15:8] MSB of measurement, [7:0] LSB of measurement
  */
-uint32_t adc_channel_read_register_format(void){
-	adc_toggle_start_pin(); //Pulse the start pin, this moves ADC the conversion to the next channel to be converted
+uint32_t ADCchannelRead_registerFormat(void){
+	ADC_toggle_start_pin(); //Pulse the start pin, this moves ADC the conversion to the next channel to be converted
 			
 	//Channel data read - register format
 	uint8_t command = 0x30;
@@ -411,8 +403,8 @@ uint32_t adc_channel_read_register_format(void){
 	uint32_t Channel_data = 0;
 			
 	SPI.begin(); //initialize SPI pins
-	SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
-	digitalWrite(_cs_adc,LOW);
+	SPI.beginTransaction (SPISettings (ADC_SPI_SPEED, MSBFIRST, SPI_MODE0));
+	digitalWrite(_CS_ADC,LOW);
 	delayMicroseconds(20);
 			
 	SPI.transfer(command); // send command
@@ -422,7 +414,7 @@ uint32_t adc_channel_read_register_format(void){
 			
 
 	delayMicroseconds(20);
-	digitalWrite(_cs_adc,HIGH);
+	digitalWrite(_CS_ADC,HIGH);
 	SPI.endTransaction();
 	
 	//add STATUS_byte byte to positions [23:16]
@@ -436,50 +428,50 @@ uint32_t adc_channel_read_register_format(void){
 /**
  * \@brief This functions sets up the ADC
  *         STEPS : 1. Reset the SPI Interface, 2.Stop the converter, 3.Reset the Converter, 4.Configure the registers, 5.Verify Register Data, 6.Start the converter, 7.Read Channel Data
- * \@see Page 40 configuration guide. "https://www.ti.com/lit/ds/symlink/ads1158.pdf?ts=1603990103929&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FADS1158"
+ * \@see Page 40 configuration guide.
  * 
  * 
  * \@return void
  */
-void adc_setup(){
+void ADC_Setup(){
 	  //ADC GAIN
-	  converted_adc_data[27] = 1;
+	  converted_ADC_data[27] = 1;
 	  //ADC Vref in mV
-	  converted_adc_data[28] = 3330; //Vref = 3.33V
+	  converted_ADC_data[28] = 3330; //Vref = 3.33V
 	  
 	  delay(50);
 	  //Setting up ADC
-	  digitalWrite(_pwdn_adc,HIGH); //setting it off
+	  digitalWrite(_PWDN_ADC,HIGH); //setting it off
 	  delay(200);
 	  //1. Reset the SPI interface
-	  digitalWrite(_cs_adc,HIGH);
+	  digitalWrite(_CS_ADC,HIGH);
 	  delay(150);
 	  //2.Stop the converter by setting start pin low
-	  digitalWrite(start_adc,LOW);
+	  digitalWrite(START_ADC,LOW);
 	  //3.Reset the converter, Pulse the reset button low
-	  digitalWrite(_reset_adc,LOW);
+	  digitalWrite(_RESET_ADC,LOW);
 	  delay(150);
-	  digitalWrite(_reset_adc,HIGH);
+	  digitalWrite(_RESET_ADC,HIGH);
 	  delay(500); //delay for ADC startup time
 	  //4. Configure registers
-	  for (int i = 0; i < adc_register_array_size; i++){
-		  adc_register_write(adc_register_addresses[i],adc_register_defaults[i]); //write values in registers
+	  for (int i = 0; i < ADC_Register_Array_Size; i++){
+		  ADC_RegisterWrite(ADC_Register_Addresses[i],ADC_Register_Defaults[i]); //write values in registers
 	  }
 	  
 	  //5. Check register values
-	  for (int j = 0; j < adc_register_array_size; j++){
-		  if (adc_register_read(adc_register_addresses[j]) != adc_register_defaults[j]){
+	  for (int j = 0; j < ADC_Register_Array_Size; j++){
+		  if (ADC_RegisterRead(ADC_Register_Addresses[j]) != ADC_Register_Defaults[j]){
 			  //Raise MCU error
 			  String error_text = "Error in register address : ";
-			  error_text.concat(adc_register_addresses[j]);
-			  raise_mcu_error(error_text);
+			  error_text.concat(ADC_Register_Addresses[j]);
+			  raise_MCU_error(error_text);
 		  }
 	  }
 	  //6. Start the converter
 	  //set up ADC conversions
 	  for (int i = 5; i<0 ;i--)
 	  {
-		  adc_auto_scan();
+		  ADC_Auto_Scan();
 		  delay(100);
 	  }
 	  
@@ -494,40 +486,40 @@ void adc_setup(){
   */
  void pin_setup(void){
   // initialize digital pin LED_BUILTIN as an output. 
-  pinMode(red_led,OUTPUT);
-  pinMode(blue_led, OUTPUT);
-  pinMode(yellow_led,OUTPUT);
-  pinMode (analog_pin, INPUT);
+  pinMode(REDLED,OUTPUT);
+  pinMode(BLUELED, OUTPUT);
+  pinMode(YELLOWLED,OUTPUT);
+  pinMode (ANALOG_PIN, INPUT);
   
-  pinMode(ctrl_vstr,OUTPUT);
+  pinMode(CTRL_VSTR,OUTPUT);
   analogWriteResolution(10); //the second point says to apply 0V from the DAC and use the trimmer so that -0.5V is visible on the output. But the DAC should be set to 3.3V because CTRL_VSTR and VSTR are inversely related
-  analogWrite(ctrl_vstr,0); //set to 1023, 3.3V
+  analogWrite(CTRL_VSTR,0); //set to 1023, 3.3V
   
-  pinMode(heater_pwm,OUTPUT);
-  pinMode(helmholtz_pwm,OUTPUT);
-  pinMode(_reset_adc,OUTPUT); //active low
-  digitalWrite(_reset_adc,HIGH); //setting it off
+  pinMode(HEATER_PWM,OUTPUT);
+  pinMode(HELMHOLTZ_PWM,OUTPUT);
+  pinMode(_RESET_ADC,OUTPUT); //active low
+  digitalWrite(_RESET_ADC,HIGH); //setting it off
   
-  pinMode(_pwdn_adc,OUTPUT); //active low
-  digitalWrite(_pwdn_adc,LOW); //setting it off
+  pinMode(_PWDN_ADC,OUTPUT); //active low
+  digitalWrite(_PWDN_ADC,LOW); //setting it off
   
-  pinMode(start_adc,OUTPUT); //active high
-  digitalWrite(start_adc,LOW); //setting it off
+  pinMode(START_ADC,OUTPUT); //active high
+  digitalWrite(START_ADC,LOW); //setting it off
   
-  pinMode(_drdy_adc,INPUT);
-  pinMode(red_led,OUTPUT);
-  pinMode(blue_led,OUTPUT);
-  pinMode(clr_freq_divider,OUTPUT);
-  pinMode(_cs_adc,OUTPUT);
+  pinMode(_DRDY_ADC,INPUT);
+  pinMode(RED_LED,OUTPUT);
+  pinMode(BLUE_LED,OUTPUT);
+  pinMode(CLR_FREQ_DIVIDER,OUTPUT);
+  pinMode(_CS_ADC,OUTPUT);
 
   //SPI pins are already initialized by Arduino
-  pinMode(mosi_adc,OUTPUT);
-  pinMode(sck_adc,OUTPUT);
-  pinMode(miso_adc,INPUT);
-  pinMode(q11_freq_counter,INPUT);
-  pinMode(q12_freq_counter,INPUT);
-  pinMode(q13_freq_counter,INPUT);
-  pinMode(q14_freq_counter,INPUT);
+  pinMode(MOSI_ADC,OUTPUT);
+  pinMode(SCK_ADC,OUTPUT);
+  pinMode(MISO_ADC,INPUT);
+  pinMode(Q11_FREQ_COUNTER,INPUT);
+  pinMode(Q12_FREQ_COUNTER,INPUT);
+  pinMode(Q13_FREQ_COUNTER,INPUT);
+  pinMode(Q14_FREQ_COUNTER,INPUT);
   
   return;
 }
@@ -539,10 +531,10 @@ void adc_setup(){
  * 
  * \return void
  */
-void adc_reset(void){
-	digitalWrite(_reset_adc,LOW);
+void ADC_RESET(void){
+	digitalWrite(_RESET_ADC,LOW);
 	delay(150);
-	digitalWrite(_reset_adc,HIGH);
+	digitalWrite(_RESET_ADC,HIGH);
 	delay(500); //delay for ADC startup time
 }
 
@@ -554,18 +546,18 @@ void adc_reset(void){
  * \@return void
  */
 void testing_suite(){
-	  CONFIG0_value = adc_register_read(0x00);
-	  CONFIG1_value = adc_register_read(0x01);
-	  MUXSCH_value  = adc_register_read(0x02);
-	  MUXDIF_value  = adc_register_read(0x03);
-	  MUXSG0_value  = adc_register_read(0x04);
-	  MUXSG1_value  = adc_register_read(0x05);
-	  SYSRED_value  = adc_register_read(0x06);
-	  GPIOC_value  = adc_register_read(0x07);
-	  GPIOD_value  = adc_register_read(0x08);
+	  CONFIG0_value = ADC_RegisterRead(0x00);
+	  CONFIG1_value = ADC_RegisterRead(0x01);
+	  MUXSCH_value  = ADC_RegisterRead(0x02);
+	  MUXDIF_value  = ADC_RegisterRead(0x03);
+	  MUXSG0_value  = ADC_RegisterRead(0x04);
+	  MUXSG1_value  = ADC_RegisterRead(0x05);
+	  SYSRED_value  = ADC_RegisterRead(0x06);
+	  GPIOC_value  = ADC_RegisterRead(0x07);
+	  GPIOD_value  = ADC_RegisterRead(0x08);
 
 	  //Testing pins
-	  if (digitalRead(_drdy_adc)== HIGH){
+	  if (digitalRead(_DRDY_ADC)== HIGH){
 		  Serial.println("_DRDY_ADC is HIGH");
 	  }
 	  else {
@@ -614,21 +606,21 @@ void testing_suite(){
 	  Serial.println(twos_complement_to_int(0X00,16));
 	  
 	  /*testing one value converting it*/
-	  uint32_t Channel_data = adc_channel_read_register_format();
-	  uint8_t Status_byte = adc_return_status_byte(Channel_data);
-	  int CHID = adc_chid_status(Status_byte);
-	  uint16_t Raw_data = adc_return_raw_data(Channel_data);
-	  int converted_data = adc_mv(twos_complement_to_int(Raw_data,16));
+	  uint32_t Channel_data = ADCchannelRead_registerFormat();
+	  uint8_t Status_byte = ADC_RETURN_STATUSBYTE(Channel_data);
+	  int CHID = ADC_CHID_STATUS(Status_byte);
+	  uint16_t Raw_data = ADC_RETURN_RAWDATA(Channel_data);
+	  int converted_data = ADC_mv(twos_complement_to_int(Raw_data,16));
 	  
 
 	  Serial.print("CHID :");
-	  Serial.println(adc_chid_status(Status_byte));
+	  Serial.println(ADC_CHID_STATUS(Status_byte));
 	  Serial.print("NEW BIT :");
-	  Serial.println(adc_new_status_bit(Status_byte));
+	  Serial.println(ADC_NEW_STATUS_BIT(Status_byte));
 	  Serial.print("OVF :");
-	  Serial.println(adc_ovf_status_bit(Status_byte));
+	  Serial.println(ADC_OVF_STATUS_BIT(Status_byte));
 	  Serial.print("SUPPLY :");
-	  Serial.println(adc_supply_status_bit(Status_byte));
+	  Serial.println(ADC_SUPPLY_STATUS_BIT(Status_byte));
 	  Serial.print("Raw data = ");
 	  Serial.println(Raw_data);
 	  Serial.print("Converted data in mV = ");
@@ -661,6 +653,75 @@ void testing_suite(){
 	  // 	  }
 	  //
 	  // 	  Serial.println();
+	  
+	//Testing
+	analogWriteResolution(8); //normally 10
+	analogReference(AR_INTERNAL2V23);
+
+	for (int j = 0; j < 255; j+=1){
+		//set value to DAC
+		analogWrite(CTRL_VSTR,j);
+		//wait 50ms
+		delay(2000);
+		//read value from ADC
+		ADC_Auto_Scan();
+		ADC_array_convert();
+		//print ADC voltage
+		//print i
+		//print theoretical DAC voltage
+		// 			Serial.print("Duty :");
+		// 			Serial.print(i);
+		// 			Serial.print(" ADC_mv :");
+		// 			Serial.print(converted_ADC_data[10],4);
+		// 			Serial.print(" Theoretical ADC voltage : ");
+		// 			Serial.print((i/1024.00)*converted_ADC_data[28],4);
+		//manually store oscilloscope DAC voltage
+		/*			Serial.println();*/
+
+		//DIFF7 is the DAC value
+		converted_ADC_data[7]=j;
+		
+		
+		//place values in json doc
+		doc.clear(); //clear the document as this frees up the memory
+		// Add values to the document
+		doc["test id"] = Test_ID;
+		//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
+		
+		
+		//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
+		if (TEST_STOP) doc["test stop"] = 1;
+		else doc["test stop"] = 0;
+		//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
+		if (TEST_ERROR) doc["test error"]=1;
+		else doc["test error"]=0;
+		
+		doc["error message"] = error_message;
+		
+		// Add an array.
+		JsonArray ADCdata = doc.createNestedArray("ADC data");
+		for (int i =0; i < 29; i++){
+			ADCdata.add(converted_ADC_data[i]);
+		}
+		//add another array
+		JsonArray TESTdata = doc.createNestedArray("test data");
+
+		TESTdata.add(current_test_time); //current test time
+		TESTdata.add(measured_temperature); //temperature (C)
+		TESTdata.add(measured_magnetic_field); //magnetic field (mT)
+		//out current_test_timer, ADC converted data at intervals
+		
+		
+		
+		
+		send_data_to_serial();
+
+		//delay(250);
+
+	}
+	
+	TEST_STOP = true;
+	send_data_to_serial();
 }
 
 /**
@@ -670,10 +731,10 @@ void testing_suite(){
  * 
  * \@return uint8_t -> 8bit value of status byte
  */
-uint8_t adc_return_status_byte(uint32_t raw_channel_register_read_data){
+uint8_t ADC_RETURN_STATUSBYTE(uint32_t RAW_CHANNEL_REGISTER_READ_DATA){
 	//The input 32bit value contains [31:24] Don't care, [23:16] STATUS byte,[15:8] MSB of measurement, [7:0] LSB of measurement
 	//We return status
-	return (uint8_t)((raw_channel_register_read_data >> 16)& 0x000000FF); //0X000F = 0b0000_0000_0000_0000_0000_0000_1111_1111, this returns the status byte
+	return (uint8_t)((RAW_CHANNEL_REGISTER_READ_DATA >> 16)& 0x000000FF); //0X000F = 0b0000_0000_0000_0000_0000_0000_1111_1111, this returns the status byte
 }
 
 /**
@@ -683,10 +744,10 @@ uint8_t adc_return_status_byte(uint32_t raw_channel_register_read_data){
  * 
  * \@return uint16_t -> 16bit value of Raw ADC data
  */
-uint16_t adc_return_raw_data(uint32_t raw_channel_register_read_data){
+uint16_t ADC_RETURN_RAWDATA(uint32_t RAW_CHANNEL_REGISTER_READ_DATA){
 	//The input 32bit value contains [31:24] Don't care, [23:16] STATUS byte,[15:8] MSB of measurement, [7:0] LSB of measurement
 	//We return MSB and LSB
-	return (uint16_t)((raw_channel_register_read_data )& 0x0000FFFF); //0X0F = 0b0000_0000_0000_0000_1111_1111_1111_1111, this returns the status byte
+	return (uint16_t)((RAW_CHANNEL_REGISTER_READ_DATA )& 0x0000FFFF); //0X0F = 0b0000_0000_0000_0000_1111_1111_1111_1111, this returns the status byte
 }
 
 /**
@@ -705,28 +766,28 @@ uint16_t adc_return_raw_data(uint32_t raw_channel_register_read_data){
  * 
  * \@return void
  */
-void adc_auto_scan(){
+void ADC_Auto_Scan(){
 
-	int count = count_set_bits(MUXDIF_default)+count_set_bits(MUXSG0_default)+count_set_bits(MUXSG1_default); //this is the number of loops to make, by measuring 
+	int count = countSetBits(MUXDIF_default)+countSetBits(MUXSG0_default)+countSetBits(MUXSG1_default); //this is the number of loops to make, by measuring 
 	for (int p = 0; p < count; p++){
-		uint32_t Channel_data = adc_channel_read_register_format();
-		uint8_t Status_byte = adc_return_status_byte(Channel_data);
-		int CHID = adc_chid_status(Status_byte);
-		uint16_t Raw_data = adc_return_raw_data(Channel_data);
+		uint32_t Channel_data = ADCchannelRead_registerFormat();
+		uint8_t Status_byte = ADC_RETURN_STATUSBYTE(Channel_data);
+		int CHID = ADC_CHID_STATUS(Status_byte);
+		uint16_t Raw_data = ADC_RETURN_RAWDATA(Channel_data);
 	
-		if ((adc_new_status_bit(Status_byte) == true) && (adc_supply_status_bit(Status_byte)== false) && (adc_ovf_status_bit(Status_byte) == false)) {
+		if ((ADC_NEW_STATUS_BIT(Status_byte) == true) && (ADC_SUPPLY_STATUS_BIT(Status_byte)== false) && (ADC_OVF_STATUS_BIT(Status_byte) == false)) {
 			//store the data in the array
 			if (CHID > 0x19){ //CHID skips address 0x19h according to data sheet
-				raw_adc_data[CHID-1] = Raw_data; 
+				raw_ADC_data[CHID-1] = Raw_data; 
 			}
 			else {
-				raw_adc_data[CHID] = Raw_data; //store the value
+				raw_ADC_data[CHID] = Raw_data; //store the value
 			}
 		}
 		else {
 			//try to report error
-			if (adc_supply_status_bit(Status_byte)) { }//Serial.println("Error: ADC Status SUPPLY bit set");}
-			else if (adc_ovf_status_bit(Status_byte)) { }//Serial.println("Error: ADC Status OVF bit set");}
+			if (ADC_SUPPLY_STATUS_BIT(Status_byte)) { }//Serial.println("Error: ADC Status SUPPLY bit set");}
+			else if (ADC_OVF_STATUS_BIT(Status_byte)) { }//Serial.println("Error: ADC Status OVF bit set");}
 
 		}
 	}
@@ -739,7 +800,7 @@ void adc_auto_scan(){
  * 
  * \@return unsigned int -> representing the number of set bits in the number
  */
-unsigned int count_set_bits(int n){
+unsigned int countSetBits(int n){
 	unsigned int count = 0;
 	while (n) {
 		n &= (n - 1);
@@ -755,10 +816,10 @@ unsigned int count_set_bits(int n){
  * 
  * \@return void
  */
-void adc_toggle_start_pin(void){
-	digitalWrite(start_adc,HIGH); //starts conversion
+void ADC_toggle_start_pin(void){
+	digitalWrite(START_ADC,HIGH); //starts conversion
 	delayMicroseconds(2); //wait for data to settle
-	digitalWrite(start_adc,LOW); //stops conversion so that we can go to the next Channel ID, Check channel ID in Table 10 of the ADC manual
+	digitalWrite(START_ADC,LOW); //stops conversion so that we can go to the next Channel ID, Check channel ID in Table 10 of the ADC manual
 	delayMicroseconds(600); //Start condition to _DRDY delay, Table 8 -  8836*(1/15.7Mhz) us
 
 }
@@ -791,12 +852,12 @@ int twos_complement_to_int (int value, int num_bits)
  *				----------------
  *				Gain * ADC_Resolution 
  *
- * \@see "http://scientific-solutions.com/products/faq/ssi_faq_adc_equations%20VER2.shtml#:~:text=2%27s%20Complement%20ADC%20Data%20with%208%2Dbit%20resolution"
+ * \@see http://scientific-solutions.com/products/faq/ssi_faq_adc_equations%20VER2.shtml#:~:text=2%27s%20Complement%20ADC%20Data%20with%208%2Dbit%20resolution
  * \@param ADC_reading
  * 
  * \@return int millivolts of ADC value
  */
-int adc_mv(int ADC_reading){
+double ADC_mv(int ADC_reading){
 	#define MAX_POSITIVE_VOLTAGE 0x7FFF
 	#define MAX_NEGATIVE_VOLTAGE 0x8000
 	#define REFERENCE_VOLTAGE_ADC_mV 65536
@@ -807,7 +868,7 @@ int adc_mv(int ADC_reading){
 	//converted_ADC_data[28] == Vref
 	//converted_ADC_data[27] == ADC gain
 	//return ADC_reading*(VREF/(float)0x7800);
-	return (ADC_reading*converted_adc_data[28]*1000) / (double) ((double)30720  * converted_adc_data[27]);
+	return (ADC_reading*converted_ADC_data[28]*1000) / (double) ((double)30720  * converted_ADC_data[27]);
 }
 
 
@@ -818,26 +879,26 @@ int adc_mv(int ADC_reading){
  * 
  * \@return void
  */
-void adc_array_convert(void){
+void ADC_array_convert(void){
 	//0:23 is all in voltage
 	//24 OFFSET, 25-> ADC VCC in mV,26-> ADC TEMP in C, 27-> GAIN V/V, 28-> REF
 	#define ADC_temp_sensor_coefficient 563 //563uV if ADS1158 and test PCB temperatures are forced together,
 	//394uV if ADS1158 temperature is forced and test PCB is in free air
 
 	//for OFFSET conversion
-	converted_adc_data[24] = raw_adc_data[24]; //Ideally, the code from this register function is 0h, but varies because of the noise of the ADC and offsets stemming from the ADC and
+	converted_ADC_data[24] = raw_ADC_data[24]; //Ideally, the code from this register function is 0h, but varies because of the noise of the ADC and offsets stemming from the ADC and
 // 	external signal conditioning. This register can be used to calibrate or track the offset of the ADS1158 and Figure 40. Conversion Control, Auto-Scan Mode external signal conditioning.
 	//for VCC conversion
-	converted_adc_data[25] = ((float) raw_adc_data[25]/(double) 3072);
+	converted_ADC_data[25] = ((float) raw_ADC_data[25]/(double) 3072);
 	//for ADC temp conversion
-	converted_adc_data[26] =( ((double) ( (1000*adc_mv(twos_complement_to_int(raw_adc_data[26],number_of_bits_adc))) - 168000)/(double) ADC_temp_sensor_coefficient)+ 25);
+	converted_ADC_data[26] =( ((double) ( (1000*ADC_mv(twos_complement_to_int(raw_ADC_data[26],NUMBER_OF_BITS_ADC))) - 168000)/(double) ADC_temp_sensor_coefficient)+ 25);
 	//ADC GAIN conversion
-	converted_adc_data[27] = ((float) raw_adc_data[27]/(double) 30720);
+	converted_ADC_data[27] = ((float) raw_ADC_data[27]/(double) 30720);
 	//ADC REF conversion
-	converted_adc_data[28] = ((float) raw_adc_data[28]/(double) 3072);
+	converted_ADC_data[28] = ((float) raw_ADC_data[28]/(double) 3072);
 	for (int i =0; i <= 23; i++) //for loop is at the bottom so that we can first convert useful constants used in these calculations
 	{
-		converted_adc_data[i] = adc_mv(twos_complement_to_int(raw_adc_data[i],number_of_bits_adc)); //converting all the voltages to millivolts
+		converted_ADC_data[i] = ADC_mv( (twos_complement_to_int(raw_ADC_data[i],NUMBER_OF_BITS_ADC) - twos_complement_to_int(raw_ADC_data[24],NUMBER_OF_BITS_ADC)) ); //Vin = (Vref/GainError) * [ (OutputCode - OffsetCode) / 0x7800 ]
 	}
 	
 	return;
@@ -887,21 +948,21 @@ void receive_test_instructions(void){
 	// Test if parsing succeeds.
 	if (error) {
 		//raise error
-		raise_mcu_error(error.c_str());
+		raise_MCU_error(error.c_str());
 		return;
 	}
 
-	test_id = doc["id"]; // 0
+	Test_ID = doc["id"]; // 0
 	const char* description = doc["description"]; // "Apply required stress for 2 hours, etcetera"
 
 	//Setting test parameters
 	JsonObject test_values = doc["test_values"];
 	desired_temperature = test_values["temperature"]; // 120
-	desired_fpga_voltage = test_values["v_stress"]; // -400
+	desired_FPGA_voltage = test_values["v_stress"]; // -400
 	desired_time_for_test = test_values["test_time"]; // 5
 	desired_magnetic_field = test_values["magnetic_field"]; // 5
-	if (test_values["Test_start"] == 1) test_start= true; // 1
-	if (test_values["Test_stop"]==1) test_stop = true; // 0
+	if (test_values["Test_start"] == 1) TEST_START= true; // 1
+	if (test_values["Test_stop"]==1) TEST_STOP = true; // 0
 	serial_output_rate = test_values["serial_rate"]; // 1500
 
 	JsonObject measurement_params = doc["measurement_params"];
@@ -984,9 +1045,9 @@ void clock_setup(){ //setting up the clock speeds
  * 
  * \@return void
  */
-void init_tc4(){ //initialize TC4 timer
+void init_TC4(){ //initialize TC4 timer
 	// Configure TC4 (16 bit counter by default)
-	REG_TC4_COUNT16_CC0 = counter_value(1,256,200);  //set period for timer
+	REG_TC4_COUNT16_CC0 = countervalue(1,256,200);  //set period for timer
 	while (TC4->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
 	
 	//Enabling interrupts
@@ -1011,9 +1072,9 @@ void init_tc4(){ //initialize TC4 timer
  * 
  * \@return void
  */
-void init_tc5(){ //initialize T5 timer
+void init_TC5(){ //initialize T5 timer
 
-	REG_TC5_COUNT16_CC0 =  counter_value(1,64,1000);                     // Set the TC4 CC1 register to  decimal 3905, 1 sec
+	REG_TC5_COUNT16_CC0 =  countervalue(1,64,1000);                     // Set the TC4 CC1 register to  decimal 3905, 1 sec
 	while (TC5->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
 	
 	//Enabling interrupts
@@ -1039,9 +1100,9 @@ void init_tc5(){ //initialize T5 timer
  * 
  * \@return void
  */
-void init_tc3(){ //initialize TC3 timer, this timer controls the rate at which serial data is sent
+void init_TC3(){ //initialize TC3 timer, this timer controls the rate at which serial data is sent
 	
-	REG_TC3_COUNT16_CC0 =  counter_value(1,1024,1000);                     // Set the TC3 CC0 register
+	REG_TC3_COUNT16_CC0 =  countervalue(1,1024,1000);                     // Set the TC3 CC0 register
 	while (TC3->COUNT16.STATUS.bit.SYNCBUSY);        // Wait for synchronization
 	
 	//Enabling interrupts
@@ -1067,7 +1128,7 @@ void init_tc3(){ //initialize TC3 timer, this timer controls the rate at which s
  * 
  * \@return void
  */
-void tc4_handler()// ADC interrupt handler
+void TC4_Handler()// ADC interrupt handler
 {
 	// Check for OVF interrupt
 	if (TC4->COUNT16.INTFLAG.bit.OVF && TC4->COUNT16.INTENSET.bit.OVF)
@@ -1087,7 +1148,7 @@ void tc4_handler()// ADC interrupt handler
  * 
  * \@return void
  */
-void tc5_handler(){ //counter interrupt
+void TC5_Handler(){ //counter interrupt
 	// Check for OVF interrupt
 	if (TC5->COUNT16.INTFLAG.bit.OVF && TC5->COUNT16.INTENSET.bit.OVF)
 	{
@@ -1109,15 +1170,15 @@ void tc5_handler(){ //counter interrupt
  * 
  * \@return void
  */
-void tc3_handler(){//TC3 NOT USED
+void TC3_Handler(){//TC3 NOT USED
 	//If test is completed return test complete
-	if (test_stop){
+	if (TEST_STOP){
 		//Serial.println("Test Completed");
 		return;
 	}
 	
 	// Check for match counter 1 (MC1) interrupt
-	if (TC3->COUNT16.INTFLAG.bit.OVF && TC3->COUNT16.INTENSET.bit.OVF && test_start)
+	if (TC3->COUNT16.INTFLAG.bit.OVF && TC3->COUNT16.INTENSET.bit.OVF && TEST_START)
 	{
 
 		REG_TC3_INTFLAG = TC_INTFLAG_OVF;        // Clear the OVF interrupt flag
@@ -1134,8 +1195,8 @@ void tc3_handler(){//TC3 NOT USED
  * 
  * \@return int
  */
-int counter_value (float clock_frequency_MHz,float prescaler, float period_ms){
-	return (int) (( (clock_frequency_MHz*1000*period_ms) / (prescaler) )-1) ;
+int countervalue (float Clock_FrequencyMHz,float prescaler, float period_ms){
+	return (int) (( (Clock_FrequencyMHz*1000*period_ms) / (prescaler) )-1) ;
 	
 }
 
@@ -1144,13 +1205,13 @@ int counter_value (float clock_frequency_MHz,float prescaler, float period_ms){
  * \@brief   Function converts millivolts from the temperature sensor output to temperature in Celcius
  *			Formula : T = (V_out - V_offset)/Tc) + T_INFL
  * 
- * \@see Data sheet: "https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235"
+ * \@see Data sheet: https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235
  *
  * \@param milli_volts -> Digital Voltage from ADC
  * 
  * \@return float -> Temperature conversion in C from TMP235
  */
-float millivolt_to_celcius(float milli_volts)
+float volt_to_temperature(float milli_volts)
 {
 	#define V_OFFSET_0 500
 	#define V_OFFSET_100 1500
@@ -1175,13 +1236,13 @@ float millivolt_to_celcius(float milli_volts)
 /**
  * \@brief  Converts voltage to corresponding magnetic field (reference is for the  magnetic sensor)
  *
- * \@see Data sheet: "https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjxps3qg8PqAhXBo54KHUn5CvwQFjAAegQIBRAB&url=https%3A%2F%2Fwww.allegromicro.com%2F~%2Fmedia%2FFiles%2FDatasheets%2FA1318-A1319-Datasheet.ashx&usg=AOvVaw39zGCju7QuDLgpcH9PKde_"
+ * \@see Data sheet: https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjxps3qg8PqAhXBo54KHUn5CvwQFjAAegQIBRAB&url=https%3A%2F%2Fwww.allegromicro.com%2F~%2Fmedia%2FFiles%2FDatasheets%2FA1318-A1319-Datasheet.ashx&usg=AOvVaw39zGCju7QuDLgpcH9PKde_
  * 
  * \@param milli_volts
  * 
  * \@return float  -> Magnetic field density in milli_Tesla (1G = 0.1mT)
  */
-float millivolts_to_milliTesla(float milli_volts){
+float magnetic_field_mT(float milli_volts){
 	#define QUIESCENT_VOLTAGE 1650              //1.65V Low->1.638, mean-> 1.65, high-> 1.662 measure this
 	#define MAGNETIC_SENSITIVITY 13.5           //1.35mv/G --> 13.5mV/mT Low->1.289, mean-> 1.3, high-> 1.411
 	#define TEMPERATURE_SENSITIVITY   0.12      //0.12%/C
@@ -1205,7 +1266,7 @@ float millivolts_to_milliTesla(float milli_volts){
  * 
  * \@return void
  */
-void system_fsm_run (void){
+void System_fsm_Run (void){
 	#define IDLE 0 //idle state
 	#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
 	#define SERIAL_UPDATE 2//sending data back to the computer through serial at intervals
@@ -1217,38 +1278,37 @@ void system_fsm_run (void){
 	float starting_test_count = 0;
 	
 	
-	switch (system_fsm_state){
+	switch (System_fsm_state){
 		case IDLE : {
-			if (test_stop){
+			if (TEST_STOP){
 				//clear and turn off all the outputs
 				//turn off heater click
 				//turn off magnetic field
-				digitalWrite(ctrl_vstr,LOW);
-				analogWrite(heater_pwm,LOW);
-				analogWrite(helmholtz_pwm,LOW);
-				digitalWrite(_reset_adc,LOW);
-				digitalWrite(_pwdn_adc,LOW);
-				digitalWrite(start_adc,LOW);
-				digitalWrite(red_led,LOW);
-				digitalWrite(blue_led,LOW);
-				digitalWrite(clr_freq_divider,LOW);
-				digitalWrite(mosi_adc,LOW);
-				digitalWrite(sck_adc,LOW);
-				heater_pwm_duty = 0;
-				magnetic_pwm_duty = 0;
+				digitalWrite(CTRL_VSTR,LOW);
+				analogWrite(HEATER_PWM,LOW);
+				analogWrite(HELMHOLTZ_PWM,LOW);
+				digitalWrite(_RESET_ADC,LOW);
+				digitalWrite(_PWDN_ADC,LOW);
+				digitalWrite(START_ADC,LOW);
+				digitalWrite(RED_LED,LOW);
+				digitalWrite(BLUE_LED,LOW);
+				digitalWrite(CLR_FREQ_DIVIDER,LOW);
+				digitalWrite(MOSI_ADC,LOW);
+				digitalWrite(SCK_ADC,LOW);
+				heater_PWM_duty = 0;
+				magnetic_PWM_duty = 0;
 				
 				//
 				doc.clear(); //clear the document as this frees up the memory
 				// Add values to the document
-				doc["test id"] = test_id;
+				doc["test id"] = Test_ID;
 				//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
 				
-				
 				//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
-				if (test_stop) doc["test stop"] = 1;
+				if (TEST_STOP) doc["test stop"] = 1;
 				else doc["test stop"] = 0;
 				//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
-				if (test_error) doc["test error"]=1;
+				if (TEST_ERROR) doc["test error"]=1;
 				else doc["test error"]=0;
 				
 				doc["error message"] = error_message;
@@ -1256,7 +1316,7 @@ void system_fsm_run (void){
 				// Add an array.
 				JsonArray ADCdata = doc.createNestedArray("ADC data");
 				for (int i =0; i < 29; i++){
-					ADCdata.add(converted_adc_data[i]);
+					ADCdata.add(converted_ADC_data[i]);
 				}
 				//add another array
 				JsonArray TESTdata = doc.createNestedArray("test data");
@@ -1271,9 +1331,9 @@ void system_fsm_run (void){
 					serial_signal = false;
 				}
 			}
-			else if (test_start){
+			else if (TEST_START){
 				//1. Setting voltage for test
-				analogWrite(ctrl_vstr,set_dac(desired_fpga_voltage));
+				analogWrite(CTRL_VSTR,setDAC(desired_FPGA_voltage));
 				
 				//2. Setting total time for test
 				
@@ -1297,14 +1357,14 @@ void system_fsm_run (void){
 
 			//1. Update test timer and if time is hit, stop
 			current_test_time = (test_time_count - starting_test_count); //  /60; testing secs
-			if (current_test_time > desired_time_for_test*60) test_stop=true;
+			if (current_test_time > desired_time_for_test*60) TEST_STOP=true;
 			
 			//2. Convert Raw ADC data to understandable values
-			adc_auto_scan(); //converting ADC data
-			adc_array_convert(); //converts the ADC array data
+			ADC_Auto_Scan(); //converting ADC data
+			ADC_array_convert(); //converts the ADC array data
 			
 			//TESTING this will go into DIFF0
-			converted_adc_data[0] = heater_pwm_duty; 
+			converted_ADC_data[0] = heater_PWM_duty; 
 		}
 		break;
 		case SERIAL_UPDATE:{
@@ -1313,13 +1373,13 @@ void system_fsm_run (void){
 			
 			doc.clear(); //clear the document as this frees up the memory
 			// Add values to the document
-			doc["test id"] = test_id;
+			doc["test id"] = Test_ID;
 			//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
 			//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
-			if (test_stop) doc["test stop"] = 1;
+			if (TEST_STOP) doc["test stop"] = 1;
 			else doc["test stop"] = 0;
 			//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
-			if (test_error) doc["test error"]=1;
+			if (TEST_ERROR) doc["test error"]=1;
 			else doc["test error"]=0;
 			
 			doc["error message"] = error_message;
@@ -1327,7 +1387,7 @@ void system_fsm_run (void){
 			// Add an array.
 			JsonArray ADCdata = doc.createNestedArray("ADC data");
 			for (int i =0; i < 29; i++){
-				ADCdata.add(converted_adc_data[i]);
+				ADCdata.add(converted_ADC_data[i]);
 			}
 			//add another array
 			JsonArray TESTdata = doc.createNestedArray("test data");
@@ -1346,11 +1406,11 @@ void system_fsm_run (void){
 		break;
 		case Heater_Update:{
 			//update actual and desired temperature, run heater click FSM
-			measured_temperature = millivolt_to_celcius((float) converted_adc_data[9]); //AIN1 in ADC converted DATA
-			heater_start = true;  //enable heater
-			heater_fsm_run();
+			measured_temperature = volt_to_temperature((float) converted_ADC_data[9]); //AIN1 in ADC converted DATA
+			HEATER_START = true;  //enable heater
+			heater_fsm_RUN();
 			heater_fsm_transition();
-			heater_start = false; //disable heater
+			HEATER_START = false; //disable heater
 			
 		}
 		break;
@@ -1364,7 +1424,7 @@ void system_fsm_run (void){
 			
 		}
 		break;
-		default :system_fsm_state = IDLE;
+		default :System_fsm_state = IDLE;
 	}
 	return;
 }
@@ -1376,7 +1436,7 @@ void system_fsm_run (void){
  * 
  * \@return void
  */
-void system_fsm_transition(void)
+void System_fsm_Transition(void)
 {
 	#define IDLE 0 //idle state
 	#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
@@ -1384,34 +1444,34 @@ void system_fsm_transition(void)
 	#define Heater_Update 3 //running the heater_FSM and get the updates
 	#define Magnetic_Field_update 4 //running the magnetic field FSM and get the updates
 
-	switch (system_fsm_state){
+	switch (System_fsm_state){
 		case IDLE : {
-			if (test_stop) system_fsm_state = IDLE;	//else state = idle
-			else if (test_start) system_fsm_state =ADC_UPDATE;
+			if (TEST_STOP) System_fsm_state = IDLE;	//else state = idle
+			else if (TEST_START) System_fsm_state =ADC_UPDATE;
 		}
 		break;
 		case ADC_UPDATE: {
-			if (test_stop) system_fsm_state = IDLE;
-			else system_fsm_state = SERIAL_UPDATE;
+			if (TEST_STOP) System_fsm_state = IDLE;
+			else System_fsm_state = SERIAL_UPDATE;
 		}
 		break;
 		case SERIAL_UPDATE:{
-			if (test_stop) system_fsm_state = IDLE;
-			else system_fsm_state = Heater_Update;
+			if (TEST_STOP) System_fsm_state = IDLE;
+			else System_fsm_state = Heater_Update;
 
 		}
 		break;
 		case Heater_Update:{
-			if (test_stop) system_fsm_state = IDLE;
-			else system_fsm_state = Magnetic_Field_update;
+			if (TEST_STOP) System_fsm_state = IDLE;
+			else System_fsm_state = Magnetic_Field_update;
 		}
 		break;
 		case Magnetic_Field_update:{
-			if (test_stop) system_fsm_state = IDLE;
-			else system_fsm_state = ADC_UPDATE;
+			if (TEST_STOP) System_fsm_state = IDLE;
+			else System_fsm_state = ADC_UPDATE;
 		}
 		break;
-		default :system_fsm_state = IDLE;
+		default :System_fsm_state = IDLE;
 	}
 	return;
 }
@@ -1471,16 +1531,16 @@ void magnetic_fsm_run(void)
 	else if (magnetic_fsm_state == magnetic_fsm_increase_state) 
 	{
 		//PWM is increased until desired state
-		if (magnetic_pwm_duty >= analog_resolution) magnetic_pwm_duty=analog_resolution;
-		else magnetic_pwm_duty++;
+		if (magnetic_PWM_duty >= ANALOG_RESOLUTION) magnetic_PWM_duty=ANALOG_RESOLUTION;
+		else magnetic_PWM_duty++;
 	}
 	else if (magnetic_fsm_state == magnetic_fsm_decrease_state) 
 	{
 		//PWM is decreased until desired state
-		if (magnetic_pwm_duty <= 0) magnetic_pwm_duty=0;
-		else magnetic_pwm_duty--;
+		if (magnetic_PWM_duty <= 0) magnetic_PWM_duty=0;
+		else magnetic_PWM_duty--;
 	}
-	analogWrite(helmholtz_pwm, magnetic_pwm_duty); //write to the pin after changing the duty
+	analogWrite(HELMHOLTZ_PWM, magnetic_PWM_duty); //write to the pin after changing the duty
 }
 
 /************************************************************************/
@@ -1505,7 +1565,7 @@ void magnetic_fsm_run(void)
  */
 void heater_fsm_transition(void)
 {	
-	if (heater_start){
+	if (HEATER_START){
 		float temperature_difference =  (float)(measured_temperature - desired_temperature);
 		
 		switch(heater_fsm_state){
@@ -1522,7 +1582,18 @@ void heater_fsm_transition(void)
 				
 				break;
 			}
-
+// 			case heater_fsm_heating: {
+// 				if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
+// 				else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
+// 				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
+// 				break;
+// 			}
+// 			case heater_fsm_cooling: {
+// 				if ( temperature_difference > heater_fsm_margin) heater_fsm_state = heater_fsm_cooling; //cool temp is above desired + threshold
+// 				else if ( abs(temperature_difference) <= heater_fsm_margin) heater_fsm_state = heater_fsm_idle; //maintain heat if it between 0.5C threshold
+// 				else heater_fsm_state = heater_fsm_heating; //heat up if is below the desired+threshold
+// 				break;
+// 			}
 			default: heater_fsm_state = heater_fsm_OFF;
 		}
 	}
@@ -1538,37 +1609,37 @@ void heater_fsm_transition(void)
  * 
  * \@return void
  */
-void heater_fsm_run(void){
-	if (measured_temperature < heater_threshold_temp && digitalRead(blue_led)!=HIGH) digitalWrite(blue_led,HIGH);//turn on safe to touch LED if not high already
-	else digitalWrite(blue_led,LOW);  //turn off safe to touch LED
+void heater_fsm_RUN(void){
+	if (measured_temperature < heater_threshold_temp && digitalRead(BLUE_LED)!=HIGH) digitalWrite(BLUE_LED,HIGH);//turn on safe to touch LED if not high already
+	else digitalWrite(BLUE_LED,LOW);  //turn off safe to touch LED
 	
 	switch(heater_fsm_state){
 		case heater_fsm_OFF: {
 			//all pins off
-			digitalWrite(red_led, LOW); //turn of heating signal
-			heater_pwm_duty =0;
+			digitalWrite(RED_LED, LOW); //turn of heating signal
+			heater_PWM_duty =0;
 			break;
 		}
 		case heater_fsm_idle: {
-			digitalWrite(red_led, LOW); 
+			digitalWrite(RED_LED, LOW); 
 			break;
 		}
 		case heater_fsm_heating: {
-			digitalWrite(red_led,HIGH); //turn on heating signal
-			if (heater_pwm_duty >= analog_resolution) heater_pwm_duty=analog_resolution;
-			else heater_pwm_duty++;	
+			digitalWrite(RED_LED,HIGH); //turn on heating signal
+			if (heater_PWM_duty >= ANALOG_RESOLUTION) heater_PWM_duty=ANALOG_RESOLUTION;
+			else heater_PWM_duty++;	
 			break;
 		}
 		case heater_fsm_cooling: {
-			digitalWrite(red_led, LOW); //turn of heating signal
-			if (heater_pwm_duty <= 0) heater_pwm_duty=0;
-			else heater_pwm_duty--;	
+			digitalWrite(RED_LED, LOW); //turn of heating signal
+			if (heater_PWM_duty <= 0) heater_PWM_duty=0;
+			else heater_PWM_duty--;	
 			break;
 		}
 		default: heater_fsm_state = heater_fsm_OFF;
 	}
 	
-	analogWrite(heater_pwm,heater_pwm_duty);
+	analogWrite(HEATER_PWM,heater_PWM_duty);
 	return;
 }
 
@@ -1583,7 +1654,7 @@ void heater_fsm_run(void){
  * 
  * \@return int -> DAC value
  */
-int set_dac(float volt) {
+int setDAC(float volt) {
 	//formula for calculating DAC output voltage Vdac = (dVal / 1023)*3.3V
 	return (int)((volt*1023)/3300);
 }
@@ -1599,9 +1670,9 @@ int set_dac(float volt) {
  * 
  * \@return void
  */
-void raise_mcu_error(String error_text){
+void raise_MCU_error(String error_text){
 	//This function raises and error
-	test_error = true;
+	TEST_ERROR = true;
 	error_message = error_text;
 	
 	return;
