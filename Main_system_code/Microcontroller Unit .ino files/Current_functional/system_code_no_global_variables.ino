@@ -177,39 +177,48 @@ BITS CHID[4:0]          PRIORITY        CHANNEL         DESCRIPTION
 
 */
 
+
+
 /************************************************************************/
 /* GLOBAL VARIABLES AND CONSTANTS                                       */
 /************************************************************************/
+//system FSM states
+#define IDLE 0 //idle state
+#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
+#define SERIAL_UPDATE 2 //sending data back to the computer through serial at intervals
+#define Heater_Update 3 //running the heater_FSM and get the updates
+#define Magnetic_Field_update 4 //running the magnetic field FSM and get the updates
+
 //volatile is for variables that can always change in the code
 volatile int test_time_count = 0;     //seconds of test time elapsed
-volatile int system_fsm_state = 0;    //initialize System FSM state
+volatile int system_state = IDLE;    //initialize System FSM state
 
 //Input data from the MCU
 volatile int test_id = 0;
 volatile bool test_start = false;
 volatile bool test_stop = false;
+
 volatile float desired_temperature = 43;     //in C, Set to a default value but actual value comes from MCU instructions
 volatile float desired_magnetic_field = 0;  //in mT, Set to a default value but actual value comes from MCU instructions
 volatile int desired_time_for_test = 2;	 //time in minutes, Set to a default value but actual value comes from MCU instructions
 volatile float desired_fpga_voltage =3200;     //in mV, Set to a default value but actual value comes from MCU instructions
 volatile int serial_output_rate=3000;                 //rate to read data in ms, Set to a default value but actual value comes from MCU instructions
 
-//Variables for Magnetic field FSM
-volatile int measured_magnetic_field = 0; // in mT
-volatile int magnetic_pwm_duty = 0; //duty cycle value 0-255
-volatile int magnetic_fsm_state = 0; //idle state
-
-//Variables for heater FSM
-volatile float measured_temperature = 0; // in C
-volatile float heater_pwm_duty = 0; //duty cycle value 0-255
-volatile int heater_fsm_state = 0; //idle state
-
 
 volatile bool test_error = false;
 String error_message = ""; //Contains the error message to be sent to python, this catches errors
-volatile float current_test_time = 0; //test time in minutes
 volatile bool serial_signal = false;
 
+volatile float measured_temperature = 0; // in C
+volatile float measured_magnetic_field = 0; // in mT
+volatile float current_test_time = 0; //test time in minutes
+//Variables for Magnetic field FSM
+volatile int magnetic_pwm_duty; //duty cycle value 0-255
+volatile int magnetic_fsm_state ; //idle state
+//Variables for heater FSM
+volatile float heater_pwm_duty; //duty cycle value 0-255
+volatile int heater_fsm_state; //idle state
+	
 /************************************************************************/
 /* USING JSON LIBRARY TO SEND COMMUNICATE WITH PYTHON SCRIPT            */
 /************************************************************************/
@@ -232,7 +241,7 @@ DynamicJsonDocument  doc(700);
  */
 void setup() {
   analogWriteResolution(10);
-  analogReference(AR_DEFAULT); //sets 3.3V reference
+  analogReference(AR_INTERNAL2V23); //sets 3.3V reference
   pin_setup(); //Setup MCU pins
   delay(1000);
   adc_setup(); //function sets up the ADC
@@ -259,12 +268,17 @@ void setup() {
  * @return void
  */
 void loop() {
-// 	Serial.println("In loop");
+
 // 	delay(1500);
-	  system_fsm_run();
-	  system_fsm_transition();
+
+
+ 	system_state = system_fsm_transition(system_state,test_start,test_stop);
+	system_fsm_run(system_state);
+
+
 	  
 }
+
 
 
 
@@ -499,11 +513,13 @@ void adc_setup(){
  void pin_setup(void){
   
   pinMode(ctrl_vstr,OUTPUT);
-  analogWriteResolution(10); //the second point says to apply 0V from the DAC and use the trimmer so that -0.5V is visible on the output. But the DAC should be set to 3.3V because CTRL_VSTR and VSTR are inversely related
-  analogWrite(ctrl_vstr,0); //set to 1023, 3.3V
+   //the second point says to apply 0V from the DAC and use the trimmer so that -0.5V is visible on the output. But the DAC should be set to 3.3V because CTRL_VSTR and VSTR are inversely related
+  analogWrite(ctrl_vstr,1023); //set to 1023, 2.2V is the max output we can get
   
   pinMode(heater_pwm,OUTPUT);
+  analogWrite(heater_pwm,0);
   pinMode(helmholtz_pwm,OUTPUT);
+  analogWrite(helmholtz_pwm,0);
   pinMode(_reset_adc,OUTPUT); //active low
   digitalWrite(_reset_adc,HIGH); //setting it off
   
@@ -832,7 +848,7 @@ void adc_array_convert(uint16_t raw_data[], double converted_data[]){
 
 	for (int i =0; i <= 23; i++) //for loop is at the bottom so that we can first convert useful constants used in these calculations
 	{
-		converted_data[i] = adc_mv(twos_complement_to_int(raw_data[i],number_of_bits_adc), converted_adc_data[28], converted_adc_data[27]); //converting all the voltages to millivolts
+		converted_data[i] = adc_mv( (twos_complement_to_int(raw_data[i],number_of_bits_adc) - twos_complement_to_int(raw_data[24],number_of_bits_adc)),converted_data[28], converted_data[27]); //Vin = (Vref/GainError) * [ (OutputCode - OffsetCode) / 0x7800 ]
 	}
 	
 	return;
@@ -1107,15 +1123,11 @@ void TC5_Handler(){ //counter interrupt
  * 
  * \@return void
  */
-void TC3_Handler(){//TC3 NOT USED
-	//If test is completed return test complete	
+void TC3_Handler(){//TC3 NOT USED	
 	// Check for match counter 1 (MC1) interrupt
 	if (TC3->COUNT16.INTFLAG.bit.OVF && TC3->COUNT16.INTENSET.bit.OVF)
 	{
-			if (test_stop){
-				//Serial.println("Test Completed");
-				return;
-			}
+		//serial_signal = true;
 		REG_TC3_INTFLAG = TC_INTFLAG_OVF;        // Clear the OVF interrupt flag
 	}
 	return;
@@ -1137,7 +1149,7 @@ int counter_value (float clock_frequency_MHz,float prescaler, float period_ms){
 
 
 /**
- * \@brief   Function converts millivolts from the temperature sensor output to temperature in Celcius
+ * \@brief   Function converts millivolts from the temperature sensor output to temperature in Celsius
  *			Formula : T = (V_out - V_offset)/Tc) + T_INFL
  * 
  * \@see Data sheet: "https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235"
@@ -1177,7 +1189,7 @@ float millivolt_to_celcius(float milli_volts)
  * 
  * \@return float  -> Magnetic field density in milli_Tesla (1G = 0.1mT)
  */
-double millivolts_to_milliTesla(double milli_volts){
+float millivolts_to_milliTesla(double milli_volts){
 	#define QUIESCENT_VOLTAGE 1650              //1.65V Low->1.638, mean-> 1.65, high-> 1.662 measure this
 	#define MAGNETIC_SENSITIVITY 13.5           //1.35mv/G --> 13.5mV/mT Low->1.289, mean-> 1.3, high-> 1.411
 	#define TEMPERATURE_SENSITIVITY   0.12      //0.12%/C
@@ -1201,66 +1213,17 @@ double millivolts_to_milliTesla(double milli_volts){
  * 
  * \@return void
  */
-void system_fsm_run (void){
-	#define IDLE 0 //idle state
-	#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
-	#define SERIAL_UPDATE 2//sending data back to the computer through serial at intervals
-	#define Heater_Update 3 //running the heater_FSM and get the updates
-	#define Magnetic_Field_update 4 //running the magnetic field FSM and get the updates
-	
-	//variables
-	
-	float starting_test_count = 0;
-	
+void system_fsm_run (int system_fsm_state){
+	//initialize variables
+	int starting_test_count;	
+
 	
 	switch (system_fsm_state){
 		case IDLE : {
 			if (test_stop){
 				//clear and turn off all the outputs
-				//turn off heater click
-				//turn off magnetic field
-				digitalWrite(ctrl_vstr,LOW);
-				analogWrite(heater_pwm,LOW);
-				analogWrite(helmholtz_pwm,LOW);
-				digitalWrite(_reset_adc,LOW);
-				digitalWrite(_pwdn_adc,LOW);
-				digitalWrite(start_adc,LOW);
-				digitalWrite(red_led,LOW);
-				digitalWrite(blue_led,LOW);
-				digitalWrite(clr_freq_divider,LOW);
-				digitalWrite(mosi_adc,LOW);
-				digitalWrite(sck_adc,LOW);
-				heater_pwm_duty = 0;
-				magnetic_pwm_duty = 0;
-				
-				//
-				doc.clear(); //clear the document as this frees up the memory
-				// Add values to the document
-				doc["test id"] = test_id;
-				//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
-				
-				
-				//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
-				if (test_stop) doc["test stop"] = 1;
-				else doc["test stop"] = 0;
-				//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
-				if (test_error) doc["test error"]=1;
-				else doc["test error"]=0;
-				
-				doc["error message"] = error_message;
-				
-				// Add an array.
-				JsonArray ADCdata = doc.createNestedArray("ADC data");
-				for (int i =0; i < 29; i++){
-					ADCdata.add(converted_adc_data[i]);
-				}
-				//add another array
-				JsonArray TESTdata = doc.createNestedArray("test data");
-
-				TESTdata.add(current_test_time); //current test time
-				TESTdata.add(measured_temperature); //temperature (C)
-				TESTdata.add(measured_magnetic_field); //magnetic field (mT)
-				//out current_test_timer, ADC converted data at intervals
+				pin_setup(); //this will reset all the pins to their original values;
+				update_json_doc(test_id,test_stop,test_start,test_error,error_message,converted_adc_data,current_test_time,measured_temperature,measured_magnetic_field);
 				
 				if (serial_signal) {
 					send_data_to_serial();
@@ -1268,23 +1231,17 @@ void system_fsm_run (void){
 				}
 			}
 			else if (test_start){
-				//1. Setting voltage for test
+				//1. Setting voltage stress for test
 				analogWrite(ctrl_vstr,set_dac(desired_fpga_voltage));
 				
 				//2. Setting total time for test
-				
 				starting_test_count = test_time_count; //initializing starting point
-				current_test_time = (test_time_count - starting_test_count);//   /60; //current test time in secs
+				current_test_time = (test_time_count - starting_test_count); //current test time in secs
 				
 				//3. Setting time interval for sending data rate
 				//Temporarily changed to counter file
-				//REG_TC3_COUNT16_CC0 =  countervalue(1,1024,serial_output_rate);                     // Set the TC3 CC0 register
-				//while (TC3->COUNT16.STATUS.bit.SYNCBUSY);											// Wait for synchronization
-				
-				//4. Setting desired magnetic field in mT
-				//This is set in "receiving instructions function"
-				//5. Setting desired temperature in C
-				//This is set in "receiving instructions function"
+// 				REG_TC3_COUNT16_CC0 =  counter_value(1,1024,serial_output_rate);                     // Set the TC3 CC0 register
+// 				while (TC3->COUNT16.STATUS.bit.SYNCBUSY);											// Wait for synchronization
 			}
 			
 		}
@@ -1293,45 +1250,17 @@ void system_fsm_run (void){
 
 			//1. Update test timer and if time is hit, stop
 			current_test_time = (test_time_count - starting_test_count); //  /60; testing secs
-			if (current_test_time > desired_time_for_test*60) test_stop=true;
+			if (current_test_time >= desired_time_for_test*60) test_stop=true;
 			
 			//2. Convert Raw ADC data to understandable values
 			adc_auto_scan(raw_adc_data); //converting ADC data
 			adc_array_convert(raw_adc_data,converted_adc_data); //converts the raw_adc_data into converted data
 			
-			//TESTING this will go into DIFF0
-			converted_adc_data[0] = heater_pwm_duty; 
 		}
 		break;
 		case SERIAL_UPDATE:{
 			//1. Set Data to be sent to the user from the ADC update, data is sent in intervals in an Interrupt service routine
-			//Preparing json file
-			
-			doc.clear(); //clear the document as this frees up the memory
-			// Add values to the document
-			doc["test id"] = test_id;
-			//doc["test run"] = TEST_RUN; //0 test is not running, 1 test is running
-			//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
-			if (test_stop) doc["test stop"] = 1;
-			else doc["test stop"] = 0;
-			//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
-			if (test_error) doc["test error"]=1;
-			else doc["test error"]=0;
-			
-			doc["error message"] = error_message;
-			
-			// Add an array.
-			JsonArray ADCdata = doc.createNestedArray("ADC data");
-			for (int i =0; i < 29; i++){
-				ADCdata.add(converted_adc_data[i]);
-			}
-			//add another array
-			JsonArray TESTdata = doc.createNestedArray("test data");
-
-			TESTdata.add(current_test_time); //current test time
-			TESTdata.add(measured_temperature); //temperature (C)
-			TESTdata.add(measured_magnetic_field); //magnetic field (mT)
-			//out current_test_timer, ADC converted data at intervals
+			update_json_doc(test_id,test_stop,test_start,test_error,error_message,converted_adc_data,current_test_time,measured_temperature,measured_magnetic_field);
 			
 			if (serial_signal) {
 				send_data_to_serial(); //function to send json packet to serial port
@@ -1343,9 +1272,8 @@ void system_fsm_run (void){
 		case Heater_Update:{
 			//update actual and desired temperature, run heater click FSM
 			measured_temperature = millivolt_to_celcius((float) converted_adc_data[9]); //AIN1 in ADC converted DATA
-			
-			heater_fsm_state = heater_fsm_transition(heater_fsm_state);
-			heater_pwm_duty = heater_fsm_run(heater_fsm_state, heater_pwm_duty);
+			heater_fsm_state = heater_fsm_transition(heater_fsm_state, measured_temperature, desired_temperature);
+			heater_pwm_duty = heater_fsm_run(heater_fsm_state, heater_pwm_duty, measured_temperature);
 			
 		}
 		break;
@@ -1355,7 +1283,7 @@ void system_fsm_run (void){
 			//1.state_run
 			magnetic_pwm_duty = magnetic_fsm_run(magnetic_fsm_state,magnetic_pwm_duty);
 			//2. update the state
-			magnetic_fsm_state = magnetic_fsm_transition(magnetic_fsm_state);
+			magnetic_fsm_state = magnetic_fsm_transition(magnetic_fsm_state, measured_magnetic_field, measured_magnetic_field);
 			
 		}
 		break;
@@ -1369,46 +1297,41 @@ void system_fsm_run (void){
  * 
  * \@param 
  * 
- * \@return void
+ * \@return new state
  */
-void system_fsm_transition(void)
+int system_fsm_transition(int current_system_fsm_state, int test_start, int test_stop)
 {
-	#define IDLE 0 //idle state
-	#define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
-	#define SERIAL_UPDATE 2 //sending data back to the computer through serial at intervals
-	#define Heater_Update 3 //running the heater_FSM and get the updates
-	#define Magnetic_Field_update 4 //running the magnetic field FSM and get the updates
+	int next_state;
 
-	switch (system_fsm_state){
+	switch (current_system_fsm_state){
 		case IDLE : {
-			if (test_stop) system_fsm_state = IDLE;	//else state = idle
-			else if (test_start) system_fsm_state =ADC_UPDATE;
+			if (test_stop) next_state = IDLE;	//else state = idle
+			else if (test_start) next_state =ADC_UPDATE;
 		}
 		break;
-		case ADC_UPDATE: {
-			if (test_stop) system_fsm_state = IDLE;
-			else system_fsm_state = SERIAL_UPDATE;
+		case ADC_UPDATE:{
+			if (test_stop) next_state = IDLE;
+			else next_state = SERIAL_UPDATE;
 		}
 		break;
 		case SERIAL_UPDATE:{
-			if (test_stop) system_fsm_state = IDLE;
-			else system_fsm_state = Heater_Update;
-
+			if (test_stop) next_state = IDLE;
+			else next_state = Heater_Update;
 		}
 		break;
 		case Heater_Update:{
-			if (test_stop) system_fsm_state = IDLE;
-			else system_fsm_state = Magnetic_Field_update;
+			if (test_stop) next_state = IDLE;
+			else next_state = Magnetic_Field_update;
 		}
 		break;
 		case Magnetic_Field_update:{
-			if (test_stop) system_fsm_state = IDLE;
-			else system_fsm_state = ADC_UPDATE;
+			if (test_stop) next_state = IDLE;
+			else next_state = ADC_UPDATE;
 		}
 		break;
-		default :system_fsm_state = IDLE;
+		default :next_state = IDLE;
 	}
-	return;
+	return next_state;
 }
 
 /************************************************************************/
@@ -1428,7 +1351,7 @@ void system_fsm_transition(void)
  * 
  * \@return int next state
  */
-int magnetic_fsm_transition(int current_state)
+int magnetic_fsm_transition(int current_state, float measured_magnetic_field, float desired_magnetic_field)
 {
 	float magnetic_field_difference = (float) (measured_magnetic_field - desired_magnetic_field); //getting the error
 	int next_state;
@@ -1445,6 +1368,52 @@ int magnetic_fsm_transition(int current_state)
 	 }
 	
 	return next_state;
+}
+
+/**
+ * \@brief This function prepares the JSON document that is to be sent to the serial
+ * 
+ * \@param test_id
+ * \@param test_stop
+ * \@param test_start
+ * \@param test_error
+ * \@param error_message
+ * \@param adc_data
+ * \@param test_time
+ * \@param temperature
+ * \@param measured_magnetic_field
+ * 
+ * \@return void
+ */
+void update_json_doc(int test_id, bool test_stop, bool test_start, bool test_error, String error_message, 
+double adc_data[], float test_time, float temperature, float magnetic_field){
+	//Preparing json file
+				
+	doc.clear(); //clear the document as this frees up the memory
+	// Add values to the document
+	doc["test id"] = test_id;
+	//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
+	if (test_stop) doc["test stop"] = 1;
+	else doc["test stop"] = 0; 
+	//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
+	if (test_error) doc["test error"]=1;
+	else doc["test error"]=0;
+				
+	doc["error message"] = error_message;
+				
+	// Add an array.
+	JsonArray ADCdata = doc.createNestedArray("ADC data");
+	for (int i =0; i < 29; i++){
+		ADCdata.add(adc_data[i]);
+	}
+	//add another array
+	JsonArray TESTdata = doc.createNestedArray("test data");
+
+	TESTdata.add(test_time); //current test time
+	TESTdata.add(temperature); //temperature (C)
+	TESTdata.add(magnetic_field); //magnetic field (mT)
+	//out current_test_timer, ADC converted data at intervals
+	return;
 }
 
 /**
@@ -1495,7 +1464,7 @@ int magnetic_fsm_run(int current_state, int pwm_duty)
  * 
  * \@return int next_state
  */
-int heater_fsm_transition(int current_state)
+int heater_fsm_transition(int current_state, int measured_temperature, int desired_temperature)
 {	
 	int next_state;
 	float temperature_difference =  (float)(measured_temperature - desired_temperature);
@@ -1528,7 +1497,7 @@ int heater_fsm_transition(int current_state)
  * 
  * \@return int pwm_duty_cycle
  */
-int heater_fsm_run(int heater_state, int pwm_duty_cycle ){
+int heater_fsm_run(int heater_state, int pwm_duty_cycle, int measured_temperature ){
 	if (measured_temperature < heater_threshold_temp && digitalRead(blue_led)!=HIGH) digitalWrite(blue_led,HIGH);//turn on safe to touch LED if not high already
 	else digitalWrite(blue_led,LOW);  //turn off safe to touch LED
 	
