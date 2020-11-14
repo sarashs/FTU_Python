@@ -15,3 +15,5 @@
 
 ## Change Log
 - Reorganized the file system - Valentine 27/10/2020
+- Removed non-essenitial global variables - Valentine 13/11/2020
+- Added TC3 timer functionality - Valentine 13/11/2020
