@@ -850,7 +850,7 @@ void adc_toggle_start_pin(void){
 	digitalWrite(start_adc,HIGH); //starts conversion
 	delayMicroseconds(2); //wait for data to settle
 	digitalWrite(start_adc,LOW); //stops conversion so that we can go to the next Channel ID, Check channel ID in Table 10 of the ADC manual
-	delayMicroseconds(772/15.7); //Start condition to _DRDY delay, Table 8 -  8836*(1/15.7Mhz) us
+
 
 }
 
