@@ -72,6 +72,8 @@
 #define q14_freq_counter 14   //D14 Should be configured as a digital input. Connected to Q14 on the frequency divider
 //A1, A2, A5, A6   4 MCU pins that are not used in the design and left disconnected. They will be accessible through the male/female headers mounted on the MCU board.
 #define analog_resolution 1023
+#define BAUD_RATE 256000 //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
+#define number_of_adc_arrays 1
 
 /************************************************************************/
 /* ADC VARIABLES AND CONSTANTS                                          */
@@ -88,9 +90,10 @@
 #define GPIOD_address 0x08
 
 //ADC constants
+#define ADC_CLK_SPEED 15700000
 #define number_of_bits_adc 16
 #define adc_register_array_size 9
-#define adc_spi_speed 6000000  //6MHZ -> Must be less than 0.5 adc_clk(15.7MHz)
+#define adc_spi_speed 3925000  //6MHZ -> Must be less than 0.5 adc_clk(15.7MHz) best if in bunches of 1/2,1/4,1/8 of the ADC clock use (3.925MHz) or (7.85Mhz)
 //24 OFFSET, 25-> ADC VCC in mV,26-> ADC TEMP in C, 27-> GAIN V/V, 28-> REF
 #define ADC_temp_sensor_coefficient 563 //563uV if ADS1158 and test PCB temperatures are forced together,
 //394uV if ADS1158 temperature is forced and test PCB is in free air
@@ -109,7 +112,7 @@ MUXDIF_address,MUXSG0_address,MUXSG1_address,SYSRED_address,GPIOC_address,GPIOD_
 
 //Default ADC values to be programmed
 #define CONFIG0_default 0x02
-#define CONFIG1_default 0x00
+#define CONFIG1_default 0x03 //0x00 default
 #define MUXSCH_default 0x00
 #define MUXDIF_default 0x00
 #define MUXSG0_default 0xFF //0xFF
@@ -117,6 +120,10 @@ MUXDIF_address,MUXSG0_address,MUXSG1_address,SYSRED_address,GPIOC_address,GPIOD_
 #define SYSRED_default 0x3D  //0x3D if you wanna see measurements
 #define GPIOC_default 0x00
 #define GPIOD_default 0x00
+
+//Default ADC commands
+#define Pulse_convert_command 0x80
+#define Reset_command 0xC0
 
 const uint8_t adc_register_defaults[adc_register_array_size] = {CONFIG0_default,CONFIG1_default,MUXSCH_default,
 MUXDIF_default,MUXSG0_default,MUXSG1_default,SYSRED_default,GPIOC_default,GPIOD_default};
@@ -202,7 +209,7 @@ volatile float desired_temperature = 43;     //in C, Set to a default value but 
 volatile float desired_magnetic_field = 0;  //in mT, Set to a default value but actual value comes from MCU instructions
 volatile int desired_time_for_test = 2;	 //time in minutes, Set to a default value but actual value comes from MCU instructions
 volatile float desired_fpga_voltage =3200;     //in mV, Set to a default value but actual value comes from MCU instructions
-volatile int serial_output_rate=3000;                 //rate to read data in ms, Set to a default value but actual value comes from MCU instructions
+volatile float serial_output_rate=3000;                 //rate to read data in ms, Set to a default value but actual value comes from MCU instructions
 
 
 volatile bool test_error = false;
@@ -231,7 +238,7 @@ volatile int starting_test_count;
 * replaced by DynamicJsonDocument which allocates in the heap.
 *1024 is the RAM dedicated to this document 
 */
-DynamicJsonDocument  doc(700);
+DynamicJsonDocument  doc(800*number_of_adc_arrays); //650 per doc
 
 /**
  * This setup function is run before a test starts and sets up the system
@@ -246,11 +253,10 @@ void setup() {
   delay(1000);
   adc_setup(); //function sets up the ADC
   
-  Serial.begin(256000); //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
+  Serial.begin(BAUD_RATE); 
   while (!Serial) continue;//if not connected stall test until connected
-
   receive_test_instructions(); //run function for handshaking to receive instructions
-  
+  Serial.end();
 
   clock_setup();           //set up 1MHz clock for the timers
   init_tc3();            //set up TC3 whose interrupt sends serial data
@@ -268,13 +274,11 @@ void setup() {
  * @return void
  */
 void loop() {
- 	system_state = system_fsm_transition(system_state,test_start,test_stop);
-	system_fsm_run(system_state);
-	  
+ system_state = system_fsm_transition(system_state,test_start,test_stop);
+ system_fsm_run(system_state);
+
+
 }
-
-
-
 
 /************************************************************************/
 /*	ADC FUNCTIONS                                                       */
@@ -372,15 +376,34 @@ void adc_register_write(uint8_t reg_address, uint8_t value){
   SPI.begin(); //initialize SPI pins
   SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
   digitalWrite(_cs_adc,LOW);
-  delayMicroseconds(20);
+  delayMicroseconds(2);
   SPI.transfer(command); // send the command byte
   SPI.transfer(value);   // send the value of register 
-  delayMicroseconds(20);
+  delayMicroseconds(2);
   digitalWrite(_cs_adc,HIGH);
   SPI.endTransaction();
     
   }
   
+ /**
+  * \@brief This function sends a command to the ADC
+  * 
+  * \@param command , 
+  * 
+  * \@return void
+  */
+ void adc_send_command(uint8_t command){
+	 
+	 SPI.begin(); //initialize SPI pins
+	 SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
+	 digitalWrite(_cs_adc,LOW);
+	 delayMicroseconds(2);
+	 SPI.transfer(command); // send the command byte
+	 delayMicroseconds(2);
+	 digitalWrite(_cs_adc,HIGH);
+	 SPI.endTransaction();
+	 
+ }
 
 /**
  * \@brief Reads 8bit value stored in register
@@ -395,10 +418,10 @@ uint8_t adc_register_read(uint8_t reg_address){
 	SPI.begin(); //initialize SPI pins
 	SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
 	digitalWrite(_cs_adc,LOW);
-	delayMicroseconds(20);
+	delayMicroseconds(2);
 	SPI.transfer(command); // send command
 	reg_value = SPI.transfer(0x0);   // Read response
-	delayMicroseconds(20);
+	delayMicroseconds(2);
 	digitalWrite(_cs_adc,HIGH);
 	SPI.endTransaction();
 	
@@ -413,7 +436,8 @@ uint8_t adc_register_read(uint8_t reg_address){
  * \@return uint32_t ->  Converted value in a 32bit data, [31:24] Don't care, [23:16] STATUS byte,[15:8] MSB of measurement, [7:0] LSB of measurement
  */
 uint32_t adc_channel_read_register_format(void){
-	adc_toggle_start_pin(); //Pulse the start pin, this moves ADC the conversion to the next channel to be converted
+	//adc_toggle_start_pin(); //Pulse the start pin, this moves ADC the conversion to the next channel to be converted
+	adc_send_command(Pulse_convert_command); //send pulse convert command
 			
 	//Channel data read - register format
 	uint8_t command = 0x30;
@@ -425,15 +449,14 @@ uint32_t adc_channel_read_register_format(void){
 	SPI.begin(); //initialize SPI pins
 	SPI.beginTransaction (SPISettings (adc_spi_speed, MSBFIRST, SPI_MODE0));
 	digitalWrite(_cs_adc,LOW);
-	delayMicroseconds(20);
+	delayMicroseconds(2); //CS low to first clock is minimum 2.5/15.7Mhz (we need 0.19us) 
 			
 	SPI.transfer(command); // send command
 	STATUS_byte = SPI.transfer(0x0);   // Read STATUS_byte byte
 	MSB_data = SPI.transfer(0x0); // Read MSB byte
 	LSB_data = SPI.transfer(0x0); // Read LSB byte
 			
-
-	delayMicroseconds(20);
+	delayMicroseconds(2);
 	digitalWrite(_cs_adc,HIGH);
 	SPI.endTransaction();
 	
@@ -489,10 +512,11 @@ void adc_setup(){
 	  }
 	  //6. Start the converter
 	  //set up ADC conversions
-	  for (int i = 5; i<0 ;i--)
+	  for (int i = 0; i<5 ; i++)
 	  {
 		  adc_auto_scan(raw_adc_data);
-		  delay(100);
+		  adc_array_convert(raw_adc_data,converted_adc_data);
+		  delay(10);
 	  }
 	  
 }
@@ -563,85 +587,85 @@ void adc_reset(void){
  * \@return void
  */
 void testing_suite(){
-	  CONFIG0_value = adc_register_read(0x00);
-	  CONFIG1_value = adc_register_read(0x01);
-	  MUXSCH_value  = adc_register_read(0x02);
-	  MUXDIF_value  = adc_register_read(0x03);
-	  MUXSG0_value  = adc_register_read(0x04);
-	  MUXSG1_value  = adc_register_read(0x05);
-	  SYSRED_value  = adc_register_read(0x06);
-	  GPIOC_value  = adc_register_read(0x07);
-	  GPIOD_value  = adc_register_read(0x08);
-
-	  //Testing pins
-	  if (digitalRead(_drdy_adc)== HIGH){
-		  Serial.println("_DRDY_ADC is HIGH");
-	  }
-	  else {
-		  Serial.println("_DRDY_ADC is LOW");
-	  }
-	  
-	  Serial.print("CONFIG0 :");
-	  Serial.println(CONFIG0_value );
-
-	  Serial.print("CONFIG1 :");
-	  Serial.println(CONFIG1_value );
-
-	  Serial.print("MUXSCH :");
-	  Serial.println(MUXSCH_value );
-
-	  Serial.print("MUXDIF :");
-	  Serial.println(MUXDIF_value );
-
-	  Serial.print("MUXSG0 :");
-	  Serial.println(MUXSG0_value );
-
-	  Serial.print("MUXSG1 :");
-	  Serial.println(MUXSG1_value );
-
-	  Serial.print("SYSRED :");
-	  Serial.println(SYSRED_value );
-
-	  Serial.print("GPIOC :");
-	  Serial.println(GPIOC_value );
-
-	  Serial.print("GPIOD :");
-	  Serial.println(GPIOD_value );
-	  
-	  //testing two's complement
-	  Serial.println("Should be -1 : ");
-	  Serial.println(twos_complement_to_int(0XFFFF,16));
-	  Serial.println("Should be -345 : ");
-	  Serial.println(twos_complement_to_int(0XFEA7,16));
-	  Serial.println("Should be -139 : ");
-	  Serial.println(twos_complement_to_int(0XFF75,16));
-	  Serial.println("Should be 567 : ");
-	  Serial.println(twos_complement_to_int(0X0237,16));
-	  Serial.println("Should be 120 : ");
-	  Serial.println(twos_complement_to_int(0X0078,16));
-	  Serial.println("Should be 0 : ");
-	  Serial.println(twos_complement_to_int(0X00,16));
-	  
-	  /*testing one value converting it*/
-	  uint32_t Channel_data = adc_channel_read_register_format();
-	  uint8_t Status_byte = adc_return_status_byte(Channel_data);
-	  int CHID = adc_chid_status(Status_byte);
-	  uint16_t Raw_data = adc_return_raw_data(Channel_data);
-	  int converted_data = adc_mv(twos_complement_to_int(Raw_data,16), converted_adc_data[28], converted_adc_data[27]);
-	  
-
-	  Serial.print("CHID :");
-	  Serial.println(adc_chid_status(Status_byte));
-	  Serial.print("NEW BIT :");
-	  Serial.println(adc_new_status_bit(Status_byte));
-	  Serial.print("OVF :");
-	  Serial.println(adc_ovf_status_bit(Status_byte));
-	  Serial.print("SUPPLY :");
-	  Serial.println(adc_supply_status_bit(Status_byte));
-	  Serial.print("Raw data = ");
-	  Serial.println(Raw_data);
-	  Serial.print("Converted data in mV = ");
-	  Serial.println(converted_data);
+// 	  CONFIG0_value = adc_register_read(0x00);
+// 	  CONFIG1_value = adc_register_read(0x01);
+// 	  MUXSCH_value  = adc_register_read(0x02);
+// 	  MUXDIF_value  = adc_register_read(0x03);
+// 	  MUXSG0_value  = adc_register_read(0x04);
+// 	  MUXSG1_value  = adc_register_read(0x05);
+// 	  SYSRED_value  = adc_register_read(0x06);
+// 	  GPIOC_value  = adc_register_read(0x07);
+// 	  GPIOD_value  = adc_register_read(0x08);
+// 
+// 	  //Testing pins
+// 	  if (digitalRead(_drdy_adc)== HIGH){
+// 		  Serial.println("_DRDY_ADC is HIGH");
+// 	  }
+// 	  else {
+// 		  Serial.println("_DRDY_ADC is LOW");
+// 	  }
+// 	  
+// 	  Serial.print("CONFIG0 :");
+// 	  Serial.println(CONFIG0_value );
+// 
+// 	  Serial.print("CONFIG1 :");
+// 	  Serial.println(CONFIG1_value );
+// 
+// 	  Serial.print("MUXSCH :");
+// 	  Serial.println(MUXSCH_value );
+// 
+// 	  Serial.print("MUXDIF :");
+// 	  Serial.println(MUXDIF_value );
+// 
+// 	  Serial.print("MUXSG0 :");
+// 	  Serial.println(MUXSG0_value );
+// 
+// 	  Serial.print("MUXSG1 :");
+// 	  Serial.println(MUXSG1_value );
+// 
+// 	  Serial.print("SYSRED :");
+// 	  Serial.println(SYSRED_value );
+// 
+// 	  Serial.print("GPIOC :");
+// 	  Serial.println(GPIOC_value );
+// 
+// 	  Serial.print("GPIOD :");
+// 	  Serial.println(GPIOD_value );
+// 	  
+// 	  //testing two's complement
+// 	  Serial.println("Should be -1 : ");
+// 	  Serial.println(twos_complement_to_int(0XFFFF,16));
+// 	  Serial.println("Should be -345 : ");
+// 	  Serial.println(twos_complement_to_int(0XFEA7,16));
+// 	  Serial.println("Should be -139 : ");
+// 	  Serial.println(twos_complement_to_int(0XFF75,16));
+// 	  Serial.println("Should be 567 : ");
+// 	  Serial.println(twos_complement_to_int(0X0237,16));
+// 	  Serial.println("Should be 120 : ");
+// 	  Serial.println(twos_complement_to_int(0X0078,16));
+// 	  Serial.println("Should be 0 : ");
+// 	  Serial.println(twos_complement_to_int(0X00,16));
+// 	  
+// 	  /*testing one value converting it*/
+// 	  uint32_t Channel_data = adc_channel_read_register_format();
+// 	  uint8_t Status_byte = adc_return_status_byte(Channel_data);
+// 	  int CHID = adc_chid_status(Status_byte);
+// 	  uint16_t Raw_data = adc_return_raw_data(Channel_data);
+// 	  int converted_data = adc_mv(twos_complement_to_int(Raw_data,16), converted_adc_data[28], converted_adc_data[27]);
+// 	  
+// 
+// 	  Serial.print("CHID :");
+// 	  Serial.println(adc_chid_status(Status_byte));
+// 	  Serial.print("NEW BIT :");
+// 	  Serial.println(adc_new_status_bit(Status_byte));
+// 	  Serial.print("OVF :");
+// 	  Serial.println(adc_ovf_status_bit(Status_byte));
+// 	  Serial.print("SUPPLY :");
+// 	  Serial.println(adc_supply_status_bit(Status_byte));
+// 	  Serial.print("Raw data = ");
+// 	  Serial.println(Raw_data);
+// 	  Serial.print("Converted data in mV = ");
+// 	  Serial.println(converted_data);
 	  
 	  //Testing the DAC
 	  //Heater
@@ -671,9 +695,53 @@ void testing_suite(){
 	  //
 	  // 	  Serial.println();
 	  
-	  analogWriteResolution(10); //the second point says to apply 0V from the DAC and use the trimmer so that -0.5V is visible on the output. But the DAC should be set to 3.3V because CTRL_VSTR and VSTR are inversely related
-	  
-
+// 	  analogWriteResolution(10); //the second point says to apply 0V from the DAC and use the trimmer so that -0.5V is visible on the output. But the DAC should be set to 3.3V because CTRL_VSTR and VSTR are inversely related
+// 	  
+	//testing adc_auto_scan, adc_Drate and adc_initial_delay
+// 	adc_register_write(CONFIG1_address, 0X03);
+// 	Serial.print("For DRATE : ");
+// 	Serial.print( adc_drate() );
+// 	Serial.print(" , delay, uS = ");
+// 	Serial.print( adc_initial_delay_time(),4 );
+// 	Serial.println("_________________\n ");
+// 
+// 	adc_register_write(CONFIG1_address, 0X01);
+// 	Serial.print("For DRATE : ");
+// 	Serial.print( adc_drate() );
+// 	Serial.print(" , delay, uS = ");
+// 	Serial.print( adc_initial_delay_time(),4 );
+// 	Serial.println("_________________\n ");
+// 		
+// 	adc_register_write(CONFIG1_address, 0X02);
+// 	Serial.print("For DRATE : ");
+// 	Serial.print( adc_drate() );
+// 	Serial.print(" , delay, uS = ");
+// 	Serial.print( adc_initial_delay_time(),4 );
+// 	Serial.println("_________________\n ");
+// 		
+// 		
+// 	adc_register_write(CONFIG1_address, 0X00);
+// 	Serial.print("For DRATE : ");
+// 	Serial.print( adc_drate() );
+// 	Serial.print(" , delay, uS = ");
+// 	Serial.print( adc_initial_delay_time(),4 );
+// 	Serial.println("_________________\n ");
+// 
+// 	adc_auto_scan(raw_adc_data);
+// 	adc_array_convert(raw_adc_data,converted_adc_data);
+// 		
+// 	for (int i = 8; i<29; i++)
+// 	{
+// 		Serial.print("ADC priority bit :");
+// 		Serial.print(i+1);
+// 		Serial.print(" = ");
+// 		Serial.println(converted_adc_data[i], 4);
+// 	}
+// 		
+// 	Serial.println("__________________________________  \n");
+// 		
+// 	delay(1000);
+		
 }
 
 /**
@@ -706,6 +774,7 @@ uint16_t adc_return_raw_data(uint32_t raw_channel_register_read_data){
  * \@brief  Reads all the ADC channels selected in configuration settings(Registers MUXDIF,MUXSG0,MUXSG1) and stores the RAW data in the ADC_raw_data_array, the Channel ID is the corresponding index
  *          Methodology
  *			Read all values from the ADC
+ *
  *			Method
  *			Count number of loops
  *			Scan through the channel ID's
@@ -720,7 +789,8 @@ uint16_t adc_return_raw_data(uint32_t raw_channel_register_read_data){
  */
 void adc_auto_scan(uint16_t raw_data_array[]){
 
-	int count = count_set_bits(MUXDIF_default)+count_set_bits(MUXSG0_default)+count_set_bits(MUXSG1_default); //this is the number of loops to make, by measuring 
+	float switch_time_delay = adc_initial_delay_time();
+	int count = count_set_bits(MUXDIF_default) + count_set_bits(MUXSG0_default) + count_set_bits(MUXSG1_default); //this is the number of loops to make, by measuring 
 	for (int p = 0; p < count; p++){
 		uint32_t Channel_data = adc_channel_read_register_format();
 		uint8_t Status_byte = adc_return_status_byte(Channel_data);
@@ -738,10 +808,18 @@ void adc_auto_scan(uint16_t raw_data_array[]){
 		}
 		else {
 			//try to report error
-			if (adc_supply_status_bit(Status_byte)) { }//Serial.println("Error: ADC Status SUPPLY bit set");}
-			else if (adc_ovf_status_bit(Status_byte)) { }//Serial.println("Error: ADC Status OVF bit set");}
-
+			if (adc_supply_status_bit(Status_byte)) {//Serial.println("Error: ADC Status SUPPLY bit set");}
+				//Raise MCU error
+				String error_text = "Error: ADC Status SUPPLY bit set";
+				raise_mcu_error(error_text);
+				}
+			else if (adc_ovf_status_bit(Status_byte)) {//Serial.println("Error: ADC Status OVF bit set");}
+				String error_text = "Error: ADC Status OVF bit set";
+				raise_mcu_error(error_text);
+				}
 		}
+	
+		delayMicroseconds(switch_time_delay);
 	}
 }
 
@@ -772,7 +850,7 @@ void adc_toggle_start_pin(void){
 	digitalWrite(start_adc,HIGH); //starts conversion
 	delayMicroseconds(2); //wait for data to settle
 	digitalWrite(start_adc,LOW); //stops conversion so that we can go to the next Channel ID, Check channel ID in Table 10 of the ADC manual
-	delayMicroseconds(600); //Start condition to _DRDY delay, Table 8 -  8836*(1/15.7Mhz) us
+	delayMicroseconds(772/15.7); //Start condition to _DRDY delay, Table 8 -  8836*(1/15.7Mhz) us
 
 }
 
@@ -847,6 +925,64 @@ void adc_array_convert(uint16_t raw_data[], double converted_data[]){
 	
 	return;
 }
+
+/**
+ * \brief Returns the ADC data rate
+ * 
+ * \param 
+ * 
+ * \return int the DRATE, either 11,10,01,00
+ */
+uint8_t adc_drate(void){
+	
+	return ( 0x03 & adc_register_read(CONFIG1_address));
+}
+
+/**
+ * \brief returns delay time for sleep mode of the ADC with the recommended initial delay time for the ADC, see Table 8 in ADS1158 document
+ * \conditions Chop = 0 and DLY[2:0] = 000
+ *													Table 8. 
+ *								Start Condition to DRDY Delay, Chop = 0, DLY[2:0] = 000
+ *
+ *							INITIAL DELAY (Standby Mode)			INITIAL DELAY (Sleep Mode)
+ *								(fCLK cycles)							(fCLK cycles)
+ *
+ *		DRATE[1:0]		   Fixed-Channel	Auto-Scan					Fixed-Channel		Auto-Scan
+ *			11					802				708							866					772
+ *			10					1186			1092						1250				1156
+ *			01					2722			2628						2786				2692
+ *			00					8866			8772						8930				8836
+ * 
+ * 
+ * \return uint16_t
+ */
+float adc_initial_delay_time(void){
+	
+	float delay_time = 0;
+	
+		switch( adc_drate() ){ // get the adc DRATE
+			case 0b00: {
+				delay_time = ( (8772.00 * 1000000)/ADC_CLK_SPEED );
+				break;
+			}
+			case 0b01: {
+				delay_time = ( (2628.00 * 1000000)/ADC_CLK_SPEED );
+				break;
+			}
+			case 0b10: {
+				delay_time = ( (1092.00 * 1000000)/ADC_CLK_SPEED );
+				break;
+			}
+			case 0b11: {
+				delay_time = ( (708.00 * 1000000)/ADC_CLK_SPEED );
+				break;
+			}
+
+			default: delay_time = ( (8772.00 * 1000000)/ADC_CLK_SPEED );
+		}
+	
+	return delay_time;
+	}
 
 /************************************************************************/
 /* INITIALIZATION FUNCTIONS                                             */
@@ -934,22 +1070,37 @@ void receive_test_instructions(void){
 void send_data_to_serial(){
 
 	char userInput;
-	if(Serial.available()> 0){
-		userInput = Serial.read();               // read user input
-		if(userInput == 'g'){                  // if we get expected value
+// 	if(Serial.available()> 0){
+// 		userInput = Serial.read();               // read user input
+// 		if(userInput == 'g'){                  // if we get expected value
+// 			//printing the document
+// 			serializeJson(doc, Serial);
+// 			Serial.println();
+// 
+// 			while (Serial.available() == 0){
+// 				continue; //wait for confirmation
+// 			}
+// 			while (Serial.read() != 'd'){
+// 				continue;
+// 			}
+// 			Serial.println("done");
+// 		}
+// 	}
+			Serial.begin(BAUD_RATE); //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
 			//printing the document
 			serializeJson(doc, Serial);
-			Serial.println();
+			Serial.flush();
+			Serial.write("\n");
+			Serial.flush();
+			Serial.end();
 
-			while (Serial.available() == 0){
-				continue; //wait for confirmation
-			}
-			while (Serial.read() != 'd'){
-				continue;
-			}
-			Serial.println("done");
-		}
-	}
+// 			while (Serial.available() == 0){
+// 				continue; //wait for confirmation
+// 			}
+// 			while (Serial.read() != 'd'){
+// 				continue;
+// 			}
+// 			Serial.println("done");
 }
 
 
@@ -1380,31 +1531,54 @@ int magnetic_fsm_transition(int current_state, float measured_magnetic_field, fl
 void update_json_doc(int test_id, bool test_stop, bool test_start, bool test_error, String error_message, 
 double adc_data[], float test_time, float temperature, float magnetic_field){
 	//Preparing json file
+	String str_testid = "test id";
+	String str_teststop = "test stop";
+	String str_testeror = "test error";
+	String str_errormessage = "error message";
+	String str_ADCdatastring = "ADC data";
+	String str_testdata = "test data";
 				
 	doc.clear(); //clear the document as this frees up the memory
 	// Add values to the document
-	doc["test id"] = test_id;
-	//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
-	if (test_stop) doc["test stop"] = 1;
-	else doc["test stop"] = 0; 
-	//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
-	if (test_error) doc["test error"]=1;
-	else doc["test error"]=0;
-				
-	doc["error message"] = error_message;
-				
-	// Add an array.
-	JsonArray ADCdata = doc.createNestedArray("ADC data");
-	for (int i =0; i < 29; i++){
-		ADCdata.add(adc_data[i]);
-	}
-	//add another array
-	JsonArray TESTdata = doc.createNestedArray("test data");
 
-	TESTdata.add(test_time); //current test time
-	TESTdata.add(temperature); //temperature (C)
-	TESTdata.add(magnetic_field); //magnetic field (mT)
-	//out current_test_timer, ADC converted data at intervals
+	
+	doc[str_testid] = test_id;
+	//doc["test stop"] = TEST_STOP; //1 test is stopped, 0 test is running
+	if (test_stop) doc[str_teststop] = 1;
+	else doc[str_teststop] = 0;
+	//doc["test error"] = TEST_ERROR; //0 no error, 1 there was an error
+	if (test_error) doc[str_testeror]=1;
+	else doc[str_testeror]=0;
+				
+	doc[str_errormessage] = error_message;
+	doc["number of adc arrays"] = number_of_adc_arrays;
+	
+	for (int i=0;i<number_of_adc_arrays;i++){
+		//send multiple arrays in adc doc
+		str_ADCdatastring.concat(String(i));
+		str_testdata.concat(String(i));
+			
+		// Add an array.
+		JsonArray ADCdata = doc.createNestedArray(str_ADCdatastring);
+		for (int i =8; i < 29; i++){ //starting from index 8 as that is how much we use in the ADC array, this is to save space
+			ADCdata.add(adc_data[i]);
+		}
+		//add another array
+		JsonArray TESTdata = doc.createNestedArray(str_testdata);
+
+		TESTdata.add(test_time); //current test time
+		TESTdata.add(temperature); //temperature (C)
+		TESTdata.add(magnetic_field); //magnetic field (mT)
+		//out current_test_timer, ADC converted data at intervals
+		
+		str_testid.remove(str_testid.lastIndexOf(String(i)));
+		str_teststop.remove(str_teststop.lastIndexOf(String(i)));
+		str_testeror.remove(str_testeror.lastIndexOf(String(i)));
+		str_errormessage.remove(str_errormessage.lastIndexOf(String(i)));
+		str_ADCdatastring.remove(str_ADCdatastring.lastIndexOf(String(i)));
+		str_testdata.remove(str_testdata.lastIndexOf(String(i)));
+	}
+	
 	return;
 }
 
@@ -1535,8 +1709,8 @@ int heater_fsm_run(int heater_state, int pwm_duty_cycle, int measured_temperatur
  * \@return int -> DAC value
  */
 int set_dac(float volt) {
-	//formula for calculating DAC output voltage Vdac = (dVal / 1023)*3.3V
-	return (int)((volt*1023)/3300);
+	//formula for calculating DAC output voltage Vdac = (dVal / 1023)*2.23V
+	return (int)((volt*1023)/2230);
 }
 
 /************************************************************************/
@@ -1553,7 +1727,6 @@ int set_dac(float volt) {
 void raise_mcu_error(String error_text){
 	//This function raises and error
 	test_error = true;
-	error_message = error_text;
-	
+	error_message.concat(error_text + " ");
 	return;
 }
