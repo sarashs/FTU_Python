@@ -98,6 +98,10 @@
 #define ADC_temp_sensor_coefficient 563 //563uV if ADS1158 and test PCB temperatures are forced together,
 //394uV if ADS1158 temperature is forced and test PCB is in free air
 
+//ADC GPIO pins
+#define adc_gpio_blue_led 6
+#define adc_gpio_red_led 7
+
 //For converting ADC raw value to mV
 #define MAX_POSITIVE_VOLTAGE 0x7FFF
 #define MAX_NEGATIVE_VOLTAGE 0x8000
@@ -742,6 +746,45 @@ void testing_suite(){
 // 		
 // 	delay(1000);
 		
+		
+/************************************************************************/
+/* Testing adc_gpio_high and adc_gpio_low functions                     */
+/************************************************************************/
+		
+// 	for (int i=0;i<8;i++)
+// 	{
+// 			Serial.print("Setting GPIO :");
+// 			Serial.print(i);
+// 			Serial.println("HIGH");
+//
+// 			adc_gpio_high(i);
+//
+// 			Serial.print("GPIOC value :");
+// 			Serial.println(adc_register_read(GPIOC_address),BIN);
+//
+// 			Serial.print("GPIOD value :");
+// 			Serial.println(adc_register_read(GPIOD_address),BIN);
+//
+// 			delay(5000);
+// 	}
+//
+// 		for (int i=0;i<8;i++)
+// 		{
+// 			Serial.print("Setting GPIO :");
+// 			Serial.print(i);
+// 			Serial.println(" LOW ");
+//
+// 			adc_gpio_low(i);
+//
+// 			Serial.print("GPIOC value :");
+// 			Serial.println(adc_register_read(GPIOC_address),BIN);
+//
+// 			Serial.print("GPIOD value :");
+// 			Serial.println(adc_register_read(GPIOD_address),BIN);
+//
+// 			delay(5000);
+// 		}
+
 }
 
 /**
@@ -850,8 +893,6 @@ void adc_toggle_start_pin(void){
 	digitalWrite(start_adc,HIGH); //starts conversion
 	delayMicroseconds(2); //wait for data to settle
 	digitalWrite(start_adc,LOW); //stops conversion so that we can go to the next Channel ID, Check channel ID in Table 10 of the ADC manual
-
-
 }
 
 /**
@@ -983,6 +1024,60 @@ float adc_initial_delay_time(void){
 	
 	return delay_time;
 	}
+	
+
+/**
+ * \brief  sets a GPIO on the ADC HIGH
+ * 
+ * \param gpio_number 
+ * 
+ * \return void
+ */
+void adc_gpio_high (int gpio_number){
+	//Make sure it is an output (0) 
+	uint8_t gpioc_current_value = adc_register_read(GPIOC_address);
+	//clear bit at GPIO number position to set as output
+	gpioc_current_value &= (~(1 << gpio_number));
+	
+	adc_register_write(GPIOC_address, gpioc_current_value); //write new value to ADC register
+	
+	//make it high, by setting to one(|) to GPIOD register
+	
+	uint8_t gpiod_current_value = adc_register_read(GPIOD_address);
+	//set bit at GPIO number position
+	gpiod_current_value |= (1 << gpio_number);
+	
+	adc_register_write(GPIOD_address, gpiod_current_value); //write new value to ADC register
+	
+	
+	
+}
+
+/**
+ * \brief  sets a GPIO on the ADC LOW
+ * 
+ * \param gpio_number 
+ * 
+ * \return void
+ */
+void adc_gpio_low (int gpio_number){
+	//ensure it is an output (0)
+	
+	uint8_t gpioc_current_value = adc_register_read(GPIOC_address);
+	//clear bit at GPIO number positioto set as outputn 
+	gpioc_current_value &= (~(1 << gpio_number));
+		
+	adc_register_write(GPIOC_address, gpioc_current_value); //write new value to ADC register
+	
+	//make GPIO low, by setting the corresponding bit to zero(&)
+	uint8_t gpiod_current_value = adc_register_read(GPIOD_address);
+	//clear bit at GPIO number position
+	gpiod_current_value &= (~(1 << gpio_number));
+		
+	adc_register_write(GPIOD_address, gpiod_current_value); //write new value to ADC register
+	
+}
+
 
 /************************************************************************/
 /* INITIALIZATION FUNCTIONS                                             */
