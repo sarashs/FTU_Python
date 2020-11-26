@@ -208,6 +208,7 @@ volatile int system_state = IDLE;    //initialize System FSM state
 volatile int test_id = 0;
 volatile bool test_start = false;
 volatile bool test_stop = false;
+volatile bool high_speed_test = false;
 
 volatile float desired_temperature = 43;     //in C, Set to a default value but actual value comes from MCU instructions
 volatile float desired_magnetic_field = 0;  //in mT, Set to a default value but actual value comes from MCU instructions
@@ -255,7 +256,14 @@ void setup() {
   analogReference(AR_INTERNAL2V23); //sets 3.3V reference
   pin_setup(); //Setup MCU pins
   delay(1000);
+  
+  if (high_speed_test)
+  {
+	  //set the ADC DRATE to 11 for fastest reading
+	  adc_register_defaults[2] |= 0x03; //this sets the ADC DRATE==11 for the highest sampling rate
+  }
   adc_setup(); //function sets up the ADC
+  
   
   Serial.begin(BAUD_RATE); 
   while (!Serial) continue;//if not connected stall test until connected
@@ -283,6 +291,65 @@ void loop() {
 
 
 }
+
+/************************************************************************/
+/*	MEMORY FUNCTIONS                                                    */
+/************************************************************************/
+/**
+ * \brief stores adc_converted array to memory
+ * 
+ * \param 
+ * 
+ * \return void
+ */
+void memory_save_adc_array_to_memory(void){
+	
+}
+
+/**
+ * \brief retrieves adc_converted array from memory
+ * 
+ * \param 
+ * 
+ * \return void
+ */
+void memory_read_adc_array_from_memory(void){
+	
+}
+
+/**
+ * \brief Sends all the memory data to the serial port
+ * 
+ * \param 
+ * 
+ * \return void
+ */
+void memory_dump_to_serial(void){
+	
+}
+
+/**
+ * \brief Erases all the memory
+ * 
+ * \param 
+ * 
+ * \return void
+ */
+void memory_clear(void){
+
+}
+
+/**
+ * \brief Determines if memory is full or empty 
+ * 
+ * \param 
+ * 
+ * \return bool
+ */
+bool memory_full(void){
+	
+}
+
 
 /************************************************************************/
 /*	ADC FUNCTIONS                                                       */
@@ -1142,6 +1209,8 @@ void receive_test_instructions(void){
 	if (test_values["Test_start"] == 1) test_start= true; // 1
 	if (test_values["Test_stop"]==1) test_stop = true; // 0
 	serial_output_rate = test_values["serial_rate"]; // 1500
+	
+	if (test_values["High speed test"]==1) high_speed_test = true; // 0
 
 	JsonObject measurement_params = doc["measurement_params"];
 
@@ -1458,6 +1527,12 @@ void system_fsm_run (int system_fsm_state){
 	switch (system_fsm_state){
 		case IDLE : {
 			if (test_stop){
+				//if high speed test then dump all the data from memory to Serial Port
+				if (high_speed_test)
+				{
+					//send all the current test memory data to serial Port
+				}
+				
 				//clear and turn off all the outputs
 				pin_setup(); //this will reset all the pins to their original values;
 				update_json_doc(test_id,test_stop,test_start,test_error,error_message,converted_adc_data,test_time_count,measured_temperature,measured_magnetic_field);
@@ -1500,7 +1575,11 @@ void system_fsm_run (int system_fsm_state){
 			//1. Set Data to be sent to the user from the ADC update, data is sent in intervals in an Interrupt service routine
 			update_json_doc(test_id,test_stop,test_start,test_error,error_message,converted_adc_data,test_time_count,measured_temperature,measured_magnetic_field);
 			
-			if (serial_signal) {
+			if (high_speed_test)
+			{
+				//save adc array to memory
+			}
+			else if (serial_signal) { //if it is not a high speed test, send the data to serial
 				send_data_to_serial(); //function to send json packet to serial port
 				serial_signal = false; //turn off the serial_signal flag
 			}
