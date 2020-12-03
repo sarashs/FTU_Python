@@ -1,0 +1,21 @@
+/*
+ * memory_w25q32jv_development.cpp
+ *
+ * Created: 12/1/2020 4:23:14 PM
+ * Author : hp
+ */ 
+
+
+#include "sam.h"
+
+
+int main(void)
+{
+    /* Initialize the SAM system */
+    SystemInit();
+
+    /* Replace with your application code */
+    while (1) 
+    {
+    }
+}
