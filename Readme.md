@@ -23,3 +23,5 @@
 - updated set_dac formula
 - Added ADC drate reading and initial delay timing
 - Added usage of pulse conver command
+01/12/2020
+- Added memory startup and diagnostic test
