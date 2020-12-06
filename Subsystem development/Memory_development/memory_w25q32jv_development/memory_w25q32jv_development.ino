@@ -90,6 +90,6 @@ void loop()
 //initialize a linked list
 //check if the memory is full, if full -> erase chip
 //store the arrays into memory as the test runs, save the addresses simultaneously
-//read back the arrays into the serial port
+//read back the arrays into the serial port like a normal test
 //clear the linked lists
 
