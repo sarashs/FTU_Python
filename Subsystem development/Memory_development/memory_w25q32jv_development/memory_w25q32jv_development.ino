@@ -7,23 +7,30 @@
 #include <LinkedListLib.h> //https://github.com/luisllamasbinaburo/Arduino-LinkedList
 #include <SPIMemory.h>    //See https://github.com/Marzogh/SPIMemory
 #include "memory_functions.h"
+#include "memory_functions.h"
 
-//DEFINES
+//DEFINITIONS
 #define DELIMITER ',' //A delimiter is one or more characters that separate text strings.
 #define ARRAY_GAIN 1000.0 //Since double to string can only have 2 decimal places, the array is 
 						  //multiplied by this value before converting it to a string and then divided 
 						  //by this value for restoration
+#define ADDRESS_GAIN 1   //addresses stored in the memory have no gain so use 1
 #define  csPin  0  
-#define MEM_CLUSTER_SIZE 20 //number of addresses in every node of linkedlist pointing to addresses
+#define MEM_CLUSTER_SIZE 20 //number of addresses in every node of linked list pointing to addresses
 
 // Create LinkedList
 LinkedList<uint32_t> memory_addresses_linkedlist;
-LinkedList<uint32_t> linkedlist_of_mem_addresses_of_other_linkedlists;
+LinkedList<uint32_t> linkedlist_of_mem_addresses_of_other_linkedlists; //each value in this linked list points to an address_1 in
+																	// memory that contains an array addresses_2, 
+																	//each address_2 contains an array of data
 
 SPIFlash flash(csPin);
 uint32_t _address;
 // This data type should be changed depending on the type of data being write to the flash memory
 String dataOut = "This is a test String!";
+
+
+
 
 void setup()
 {
@@ -39,7 +46,7 @@ void setup()
 	int gain  = 1000;
 	
 	memory_addresses_linkedlist.Clear();
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 45 ; i++)
 	{
 		//creating array
 		Serial.print("Array to be stored ");
@@ -49,42 +56,42 @@ void setup()
 		for (int i=0; i<size_data; i++)
 		{
 			data_converted[i] = data_converted[i]*0.1 + random_number;
-			Serial.print(data_converted[i]);
+			Serial.print(data_converted[i],5);
 			Serial.print(DELIMITER);
 			Serial.print(" ");
 		}
 		Serial.println();
 		
-		memory_store_array_function(data_converted,size_data, &memory_addresses_linkedlist,ARRAY_GAIN,DELIMITER);
+		memory_store_array_function(&flash,data_converted,size_data, &memory_addresses_linkedlist,ARRAY_GAIN,DELIMITER);
 
-// 
-// 		String linkedList_as_string = double_array_to_string(data_converted,size_data,ARRAY_GAIN,DELIMITER);
-// 		Serial.println(linkedList_as_string);
-// 		Serial.print("String size : ");
-// 		Serial.print(sizeof(linkedList_as_string));
-// 		Serial.println(" Bytes");
-// 		
-// 		Serial.print("Array size : ");
-// 		Serial.print(sizeof(data_converted));
-// 		Serial.println(" Bytes");
-// 		
-// 		Serial.println();
+{
+	// 
+	// 		String linkedList_as_string = double_array_to_string(data_converted,size_data,ARRAY_GAIN,DELIMITER);
+	// 		Serial.println(linkedList_as_string);
+	// 		Serial.print("String size : ");
+	// 		Serial.print(sizeof(linkedList_as_string));
+	// 		Serial.println(" Bytes");
+	// 		
+	// 		Serial.print("Array size : ");
+	// 		Serial.print(sizeof(data_converted));
+	// 		Serial.println(" Bytes");
+	// 		
+	// 		Serial.println();
+}
 		
 		if (memory_addresses_linkedlist.GetSize() == MEM_CLUSTER_SIZE) //above 1500, the micro controller runs out of memory
 		{
 			//save the linked list as an array into memory
 			int linkedlist_size = memory_addresses_linkedlist.GetSize();
 			uint32_t *array = memory_addresses_linkedlist.ToArray();
-			double linkedList_as_array[linkedlist_size] = {0}; //change from uint32 to double
+			uint32_t linkedList_as_array[linkedlist_size] = {0}; //change from uint32 to double
 			
 			 for (int j = 0; j < linkedlist_size ; j++)
 			 {
-				 linkedList_as_array[j] = (double) *(array + j);
+				 linkedList_as_array[j] = *(array + j);
 			 }	 
-			 
-			
 			//convert array to string
-			String linkedList_as_string = double_array_to_string(linkedList_as_array,linkedlist_size,1,DELIMITER);
+			String linkedList_as_string = array_to_string(linkedList_as_array,linkedlist_size,ADDRESS_GAIN,DELIMITER);
 
 			Serial.println(linkedList_as_string);
 			Serial.print("String size : ");
@@ -92,7 +99,7 @@ void setup()
 			Serial.println(" Bytes");
 			
 			//store_list_in_memory
-			memory_store_array_function(linkedList_as_array, linkedlist_size, &linkedlist_of_mem_addresses_of_other_linkedlists, 1, DELIMITER); //gain is one so that addresses are not manipulated
+			memory_store_array_function(&flash, linkedList_as_array, linkedlist_size, &linkedlist_of_mem_addresses_of_other_linkedlists, ADDRESS_GAIN, DELIMITER); //gain is one so that addresses are not manipulated
 			
 			//clear linked list
 			memory_addresses_linkedlist.Clear(); //reset so that memory is not affected
@@ -102,76 +109,77 @@ void setup()
 	}
 	
   // print out all the memory addresses stored
-  for (int i = 0 ; i < linkedlist_of_mem_addresses_of_other_linkedlists.GetSize(); i++)
+  for (int current_index = 0 ; current_index < linkedlist_of_mem_addresses_of_other_linkedlists.GetSize(); current_index++)
   {
+	 Serial.print("Size ");
+	 Serial.println(linkedlist_of_mem_addresses_of_other_linkedlists.GetSize());
+	 Serial.print("Loop ");
+	 Serial.println(current_index);
+
+	 
 	 Serial.print("Address ");
-	 Serial.print(i);
+	 Serial.print(current_index);
 	 Serial.print(" : ");
-	 uint32_t string_address = linkedlist_of_mem_addresses_of_other_linkedlists.GetAt(i);
+	 uint32_t string_address = linkedlist_of_mem_addresses_of_other_linkedlists.GetAt(current_index);
 	 Serial.println( string_address, HEX);
 	 
-	 //retreat the addresses for each value in the array
-	 double address_array[MEM_CLUSTER_SIZE] = {0};
+	 //array the addresses for each value in the array
+	 uint32_t address_array[MEM_CLUSTER_SIZE] = {0};
 		 
-	 memory_retrieve_array_function(address_array,MEM_CLUSTER_SIZE, &linkedlist_of_mem_addresses_of_other_linkedlists);
+	 memory_retrieve_array_function(&flash, address_array, MEM_CLUSTER_SIZE, ADDRESS_GAIN, DELIMITER, &linkedlist_of_mem_addresses_of_other_linkedlists, current_index);
+	 //Memory retrieve function is not useful, it only fills in the last array
+
 	 LinkedList<uint32_t> mem_addresses;
-	
+	 mem_addresses.Clear(); //clear the new linked list
+	 
 	//adding the double values in address_array into unint32
-	 for (int g = 0; g<MEM_CLUSTER_SIZE; g++)
+	 for (int g = 0; g < MEM_CLUSTER_SIZE; g++)
 	 {
-		 mem_addresses.InsertTail( (uint32_t)address_array[g] );
+		 mem_addresses.InsertTail(address_array[g]);
+		 //Serial.println( address_array[g] );
 	 }
 	 
-	 for (int k = 0; k < MEM_CLUSTER_SIZE; k++)
-	 {
-		 //retrieve each of the arrays now
-		 memory_retrieve_array_function(dataOut,size_data, &mem_addresses);
-		 //print data out
-		 Serial.print("Data out ");
-		 Serial.print(k*i);
-		 Serial.print(" : ");
+	for (int g = 0; g < mem_addresses.GetSize() ; g++)
+	{
+		//retrieve each of the arrays now
+		memory_retrieve_array_function(&flash, dataOut,size_data, ARRAY_GAIN, DELIMITER, &mem_addresses, g);
+		//print data out
+		Serial.print("Data out ");
+		Serial.print(g);
+		Serial.print(" : ");
 		 
-		 for (int f = 0; f < size_data; f++)
-		 {
-			 Serial.print(dataOut[f]);
-			 Serial.print(", ");
-		 }
-		 Serial.println();
-		 
-	 }
-	
-  }
+		//print the array out
+		for (int f = 0; f < size_data; f++)
+		{
+			Serial.print(dataOut[f],5);
+			Serial.print(", ");
+		}
+		Serial.println();	
+				
+	}
+}
+//retrieve the rest of the addresses in the original addresses array
+for (int i = 0; i < memory_addresses_linkedlist.GetSize(); i++)
+{
+	memory_retrieve_array_function(&flash, dataOut,size_data, ARRAY_GAIN, DELIMITER, &memory_addresses_linkedlist, i);
+	//print data out
+	Serial.print("Data out ");
+	Serial.print(i);
+	Serial.print(" : ");
+			
+	//print the array out
+	for (int f = 0; f < size_data; f++)
+	{
+		Serial.print(dataOut[f],5);
+		Serial.print(", ");
+	}
+	Serial.println();
+}
   
-  //try to retrieve the addresses
+ Serial.println("Done");
   
-  
-// 	Serial.println("\n Retrieved arrays \n");
-// 	
-// 	//retrieving from memory
-// 	memory_retrieve_array_function(dataOut,size_data, &memory_addresses_linkedlist);
-// 	
-// 	
-// 	Serial.println("\n Done!!!!!");  
+  {
 
-// 
-//   // print out all the memory addresses stored
-//   for (int i = 0 ; i < memory_addresses_linkedlist.GetSize(); i++)
-//   {
-// 	 Serial.print("Address ");
-// 	 Serial.print(i);
-// 	 Serial.print(" : ");
-// 	 uint32_t string_address = memory_addresses_linkedlist.GetAt(i);
-// 	 Serial.println( string_address, HEX);
-// 	 
-// 	 //print the data out
-// 	 String data;
-// 	 flash.readStr(string_address, data);
-// 	 Serial.println(data);
-//   }
-//   
-//   memory_addresses_linkedlist.Clear(); //clear the memory
-//   
-// 
 }
 
 void loop()
@@ -181,173 +189,3 @@ void loop()
  
 
 
-/************************************************************************/
-/*      MEMORY CODE                                                    */
-/************************************************************************/
-//        PART 1 -> STORAGE
-//Build a linked list to store addresses
-//initialize a linked list
-//check if the memory is full, if full -> erase chip and try to get an address again
-//convert the adc double array into a string
-//store the data_String in memory and add the string address to a linked list
-//this is repeated until the ADC has stopped reading data
-
-//       PART 2 -> RETRIEVING FROM MEMORY
-//read back the string from the memory
-//convert the string back to a double array
-//convert the array into a json doc
-//send the read back data to the serial port
-//clear the linked lists
-
-
-/**
- * \brief Sets up memory and checks if we have enough space for test
- * 
- * 
- * \return void
- */
-void memory_setup(SPIFlash *flash_object){
-	delay(1000);
-	flash_object->begin();
-	if (flash_object->getAddress((230*4500*sizeof(byte))) == false) //check if we can store at least 1MB of data otherwise cancel
-	{
-		flash.eraseChip(); //if chip is full,erase it
-		
-		//Testing
-		Serial.println("Memory setup error");
-	}
-}
-
-/**
- * \brief 
- * 
- * \param array_to_store (passed by address so no need to return)
- * \param array_size
- * \param linkedlist_of_addresses (passed by address so no need to return)
- * 
- * \return void
- */
-void memory_store_array_function (double array_to_store[], int array_size, LinkedList<uint32_t> *linkedlist_of_addresses, int gain, char delimiter){
-	//convert array to string
-	String string_to_store = double_array_to_string(array_to_store,array_size,gain,delimiter);
-	//store the data_String in memory and add the string address to a linked list
-		  
-	while(true){
-		uint32_t _address = flash.getAddress(sizeof(string_to_store));
-		// This function should be changed depending on the type of data being written to the flash memory
-		if (flash.writeStr(_address,string_to_store)) {
-				  
-			//Serial.println(F("successful"));
-				  
-			linkedlist_of_addresses->InsertTail(_address); //save the string address at the end of the linked list
-			break; //get out of while loop
-		}
-		else {
-			//raise an error! and try to get the next address
-		}
-	}
-}
-
-
-
-
-
-/**
- * \brief converts an array to string and separates the values using a delimiter
- * 
- * \param array_to_convert
- * \param array_size
- * \param gain ,factor to scale up the number. This is done because this conversion strips off all decimal points so you can scale up the number and scale it down later
- * \param delimeter
- * 
- * \return String
- */
-String double_array_to_string (double array_to_convert[], int array_size,int gain, char delimeter){
-	String string_converted;
-	for (int i = 0; i < array_size; i++)
-	{
-		string_converted = string_converted + array_to_convert[i]*gain + delimeter;
-	}
-	return string_converted;
-}
-
-//______________________________________________RETRIEVING MEMORY_____________________________________________________________________________
-//iterate through the linked list, popping off the top item until the list is done
-//read back the string from the memory
-//convert the string back to a double array
-//convert the array into a json doc
-//send the read back data to the serial port
-//clear the linked lists
-
-/**
- * \brief Reads the arrays stored in memory one by one
- *        The memory addresses are store in the linked list
- *        Reads of the head of the linked list(stack) and pops it off
- * 
- * \param array_to_hold_data (passed by address so no need to return)
- * \param array_size
- * \param linkedlist_of_addresses, passed by address so no need to return
- * 
- * \return void
- */
-void memory_retrieve_array_function(double array_to_hold_data[], int array_size, LinkedList<uint32_t> *linkedlist_of_addresses){
-	
-	for (int i = 0; i <linkedlist_of_addresses->GetSize(); i++)
-	{
-		//get head and read it from memory
-		String adc_array_string;
-		flash.readStr(linkedlist_of_addresses->GetAt(i), adc_array_string);
-		//pop off head as it has already been used
-		//linkedlist_of_addresses->RemoveHead();
-		//convert string back to double array
-		string_to_doublearray(adc_array_string, array_to_hold_data, array_size, ARRAY_GAIN, DELIMITER);
-		//convert the array into a json doc
-		//send json serial data to serial port
-		
-		
-// 		//Testing
-// 		Serial.print("Array read from memory ");
-// 		Serial.print(i);
-// 		Serial.print(" : ");
-// 		for (int i=0; i<array_size; i++)
-// 		{
-// 			Serial.print(array_to_hold_data[i]);
-// 			Serial.print(DELIMITER);
-// 			Serial.print(" ");
-// 		}
-// 		Serial.println();
-		
-	}
-	
-	//clear linked list
-	linkedlist_of_addresses->Clear();
-	
-}
-
-/**
- * \brief converts a string with values separated by a delimeter into a double array
- * example "422344.00,134345.45,445660.00,277870.00," to [422344.00,134345.45,445660.00,277870.00] where "," is the delimeter 
- * 
- * \param string_array
- * \param storage_array
- * \param string_array_size
- * \param gain ,factor to scale down the number. This is done because this conversion strips off all decimal points so you can scale up the number and scale it down later
- * \param delimeter
- * 
- * \return void
- */
-void string_to_doublearray (String string_array, double storage_array[], int string_array_size, int gain, char delimeter){
-	 
-	  for (int i = 0; i < string_array_size ; i++)
-	  {
-		  String string_value = string_array.substring(0,string_array.indexOf(delimeter)); //getting first value in array
-
-		  double value = string_value.toDouble(); //store the double value
-		  storage_array[i] = value/gain; //store the value into the array
-
-
-		  string_array.remove(0, (string_array.indexOf(delimeter) + 1 ) );
-
-	  }
-	
-}
