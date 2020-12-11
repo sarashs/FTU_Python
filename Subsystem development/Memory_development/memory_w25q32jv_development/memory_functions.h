@@ -19,7 +19,7 @@
 void memory_setup(SPIFlash *flash_object){
 	delay(1000);
 	flash_object->begin();
-	if (flash_object->getAddress((230*6000*sizeof(byte))) == false) //check if we can store at least 1.1 MB of data otherwise erase the chip
+	if (flash_object->getAddress((230*15000*sizeof(byte))) == false) //check if we can store at least 1.1 MB of data otherwise erase the chip
 	{
 		flash_object->eraseChip(); //if chip is full,erase it
 	}

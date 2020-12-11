@@ -40,13 +40,17 @@ void setup()
 	Serial.begin(1000000);
 	delay(1000);
 	
-	double data_converted[] = {4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787};
-	int size_data = 8;
+// 	double data_converted[] = {4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787,4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787,
+// 								4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787,1.1,1.1,1.1,1.1,1.1};
+
+	double data_converted[] = {4.22344,1.34345454,4.4566};
+/*	int size_data = 29;*/
+	int size_data = 3;
 	double dataOut[size_data];
 	int gain  = 1000;
 	
 	memory_addresses_linkedlist.Clear();
-	for (int i = 0; i < 45 ; i++)
+	for (int i = 0; i < 20000 ; i++)
 	{
 		//creating array
 		Serial.print("Array to be stored ");
@@ -63,24 +67,29 @@ void setup()
 		Serial.println();
 		
 		memory_store_array_function(&flash,data_converted,size_data, &memory_addresses_linkedlist,ARRAY_GAIN,DELIMITER);
+/*		memory_addresses_linkedlist.InsertTail(15000);*/
 
 {
-	// 
-	// 		String linkedList_as_string = double_array_to_string(data_converted,size_data,ARRAY_GAIN,DELIMITER);
-	// 		Serial.println(linkedList_as_string);
-	// 		Serial.print("String size : ");
-	// 		Serial.print(sizeof(linkedList_as_string));
-	// 		Serial.println(" Bytes");
-	// 		
-	// 		Serial.print("Array size : ");
-	// 		Serial.print(sizeof(data_converted));
-	// 		Serial.println(" Bytes");
-	// 		
-	// 		Serial.println();
+
+// 		String linkedList_as_string = array_to_string(data_converted,size_data,ARRAY_GAIN,DELIMITER);
+// 		Serial.println(linkedList_as_string);
+// 		Serial.print("String size : ");
+// 		Serial.print(sizeof(linkedList_as_string));
+// 		Serial.println(" Bytes");
+// 		
+// 		Serial.print("Array size : ");
+// 		Serial.print(sizeof(data_converted));
+// 		Serial.println(" Bytes");
+// 		
+// 		Serial.println();
 }
 		
 		if (memory_addresses_linkedlist.GetSize() == MEM_CLUSTER_SIZE) //above 1500, the micro controller runs out of memory
 		{
+			if (linkedlist_of_mem_addresses_of_other_linkedlists.GetSize() == 200)
+			{
+				linkedlist_of_mem_addresses_of_other_linkedlists.Clear();
+			}
 			//save the linked list as an array into memory
 			int linkedlist_size = memory_addresses_linkedlist.GetSize();
 			uint32_t *array = memory_addresses_linkedlist.ToArray();
@@ -101,12 +110,14 @@ void setup()
 			//store_list_in_memory
 			memory_store_array_function(&flash, linkedList_as_array, linkedlist_size, &linkedlist_of_mem_addresses_of_other_linkedlists, ADDRESS_GAIN, DELIMITER); //gain is one so that addresses are not manipulated
 			
+
+/*			linkedlist_of_mem_addresses_of_other_linkedlists.InsertTail(17000);*/
 			//clear linked list
 			memory_addresses_linkedlist.Clear(); //reset so that memory is not affected
 			
 		}
+			}
 		
-	}
 	
   // print out all the memory addresses stored
   for (int current_index = 0 ; current_index < linkedlist_of_mem_addresses_of_other_linkedlists.GetSize(); current_index++)
@@ -179,7 +190,7 @@ for (int i = 0; i < memory_addresses_linkedlist.GetSize(); i++)
   
  Serial.println("Done");
   
-  {
+  
 
 }
 
@@ -188,5 +199,6 @@ void loop()
 
 }
  
+ //____________________________________________________SENDING_TO_SERIAL_______________________________________
 
 
