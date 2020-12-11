@@ -3,8 +3,9 @@
 /*      MEMORY CODE                                                    */
 /************************************************************************/
 
-#include <LinkedListLib.h> //https://github.com/luisllamasbinaburo/Arduino-LinkedList
+#include <LinkedList.h> //https://github.com/luisllamasbinaburo/Arduino-LinkedList
 #include <SPIMemory.h>    //See https://github.com/Marzogh/SPIMemory
+
 
 
 
@@ -14,7 +15,6 @@
 //multiplied by this value before converting it to a string and then divided
 //by this value for restoration
 #define ADDRESS_GAIN 1   //addresses stored in the memory have no gain so use 1
-#define  _csPin_memory  A1
 #define MEM_CLUSTER_SIZE 20 //number of addresses in every node of linked list pointing to addresses
 
 // Create LinkedList

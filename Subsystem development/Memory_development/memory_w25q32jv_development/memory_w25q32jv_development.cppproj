@@ -72,10 +72,6 @@
       <Value>../_micro-api/libraries/SPI</Value>
       <Value>../_micro-api/libraries/SPIMemory/src</Value>
       <Value>C:/Users/hp/Documents/Arduino/libraries/LinkedListLib/src</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino/avr</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino/USB</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/variants/mkr1000</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/CMSIS/4583DE~1.0/CMSIS/Include/</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/CMSIS-~1/125586~1.0/CMSIS/Device/ATMEL/</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/ARM-NO~1/7-2017q4/arm-none-eabi/include/c++/4.8.3</Value>
@@ -128,10 +124,6 @@
       <Value>../_micro-api/libraries/SPI</Value>
       <Value>../_micro-api/libraries/SPIMemory/src</Value>
       <Value>C:/Users/hp/Documents/Arduino/libraries/LinkedListLib/src</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino/avr</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino/USB</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/variants/mkr1000</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/CMSIS/4583DE~1.0/CMSIS/Include/</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/CMSIS-~1/125586~1.0/CMSIS/Device/ATMEL/</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/ARM-NO~1/7-2017q4/arm-none-eabi/include/c++/4.8.3</Value>
@@ -230,10 +222,6 @@
       <Value>../_micro-api/libraries/SPI</Value>
       <Value>../_micro-api/libraries/SPIMemory/src</Value>
       <Value>C:/Users/hp/Documents/Arduino/libraries/LinkedListLib/src</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino/avr</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino/USB</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/variants/mkr1000</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/CMSIS/4583DE~1.0/CMSIS/Include/</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/CMSIS-~1/125586~1.0/CMSIS/Device/ATMEL/</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/ARM-NO~1/7-2017q4/arm-none-eabi/include/c++/4.8.3</Value>
@@ -286,10 +274,6 @@
       <Value>../_micro-api/libraries/SPI</Value>
       <Value>../_micro-api/libraries/SPIMemory/src</Value>
       <Value>C:/Users/hp/Documents/Arduino/libraries/LinkedListLib/src</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino/avr</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/cores/arduino/USB</Value>
-      <Value>C:/Users/hp/AppData/Local/arduino15/packages/arduino/hardware/samd/1.8.8/variants/mkr1000</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/CMSIS/4583DE~1.0/CMSIS/Include/</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/CMSIS-~1/125586~1.0/CMSIS/Device/ATMEL/</Value>
       <Value>C:/Users/hp/AppData/Local/ARDUIN~1/packages/arduino/tools/ARM-NO~1/7-2017q4/arm-none-eabi/include/c++/4.8.3</Value>

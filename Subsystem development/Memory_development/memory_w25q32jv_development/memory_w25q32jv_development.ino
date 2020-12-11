@@ -4,32 +4,7 @@
  * Created: 12/1/2020 4:23:14 PM
  * Author: Valentine Ssebuyungo
  */ 
-#include <LinkedListLib.h> //https://github.com/luisllamasbinaburo/Arduino-LinkedList
-#include <SPIMemory.h>    //See https://github.com/Marzogh/SPIMemory
 #include "memory_functions.h"
-#include "memory_functions.h"
-
-//DEFINITIONS
-#define DELIMITER ',' //A delimiter is one or more characters that separate text strings.
-#define ARRAY_GAIN 1000.0 //Since double to string can only have 2 decimal places, the array is 
-						  //multiplied by this value before converting it to a string and then divided 
-						  //by this value for restoration
-#define ADDRESS_GAIN 1   //addresses stored in the memory have no gain so use 1
-#define  csPin  0  
-#define MEM_CLUSTER_SIZE 20 //number of addresses in every node of linked list pointing to addresses
-
-// Create LinkedList
-LinkedList<uint32_t> memory_addresses_linkedlist;
-LinkedList<uint32_t> linkedlist_of_mem_addresses_of_other_linkedlists; //each value in this linked list points to an address_1 in
-																	// memory that contains an array addresses_2, 
-																	//each address_2 contains an array of data
-
-SPIFlash flash(csPin);
-uint32_t _address;
-// This data type should be changed depending on the type of data being write to the flash memory
-String dataOut = "This is a test String!";
-
-
 
 
 void setup()
@@ -40,17 +15,15 @@ void setup()
 	Serial.begin(1000000);
 	delay(1000);
 	
-// 	double data_converted[] = {4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787,4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787,
-// 								4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787,1.1,1.1,1.1,1.1,1.1};
+	double data_converted[] = {4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787,4.22344,1.34345454,4.4566,2.7787,3.22344,5.34345454,7.4566,6.7787,
+								4.22344,1.34345454,4.4566,2.7787};
 
-	double data_converted[] = {4.22344,1.34345454,4.4566};
-/*	int size_data = 29;*/
-	int size_data = 3;
+	int size_data = 21;
 	double dataOut[size_data];
 	int gain  = 1000;
 	
 	memory_addresses_linkedlist.Clear();
-	for (int i = 0; i < 20000 ; i++)
+	for (int i = 0; i < 4000 ; i++)
 	{
 		//creating array
 		Serial.print("Array to be stored ");
@@ -67,29 +40,10 @@ void setup()
 		Serial.println();
 		
 		memory_store_array_function(&flash,data_converted,size_data, &memory_addresses_linkedlist,ARRAY_GAIN,DELIMITER);
-/*		memory_addresses_linkedlist.InsertTail(15000);*/
 
-{
-
-// 		String linkedList_as_string = array_to_string(data_converted,size_data,ARRAY_GAIN,DELIMITER);
-// 		Serial.println(linkedList_as_string);
-// 		Serial.print("String size : ");
-// 		Serial.print(sizeof(linkedList_as_string));
-// 		Serial.println(" Bytes");
-// 		
-// 		Serial.print("Array size : ");
-// 		Serial.print(sizeof(data_converted));
-// 		Serial.println(" Bytes");
-// 		
-// 		Serial.println();
-}
 		
 		if (memory_addresses_linkedlist.GetSize() == MEM_CLUSTER_SIZE) //above 1500, the micro controller runs out of memory
 		{
-			if (linkedlist_of_mem_addresses_of_other_linkedlists.GetSize() == 200)
-			{
-				linkedlist_of_mem_addresses_of_other_linkedlists.Clear();
-			}
 			//save the linked list as an array into memory
 			int linkedlist_size = memory_addresses_linkedlist.GetSize();
 			uint32_t *array = memory_addresses_linkedlist.ToArray();
@@ -109,11 +63,9 @@ void setup()
 			
 			//store_list_in_memory
 			memory_store_array_function(&flash, linkedList_as_array, linkedlist_size, &linkedlist_of_mem_addresses_of_other_linkedlists, ADDRESS_GAIN, DELIMITER); //gain is one so that addresses are not manipulated
-			
 
-/*			linkedlist_of_mem_addresses_of_other_linkedlists.InsertTail(17000);*/
 			//clear linked list
-			memory_addresses_linkedlist.Clear(); //reset so that memory is not affected
+			memory_addresses_linkedlist.Clear(); //reset so that RAM is not affected
 			
 		}
 			}
