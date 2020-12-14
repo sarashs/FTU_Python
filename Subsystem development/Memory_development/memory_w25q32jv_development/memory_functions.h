@@ -5,6 +5,7 @@
 
 #include <LinkedListLib.h> //https://github.com/luisllamasbinaburo/Arduino-LinkedList
 #include <SPIMemory.h>    //See https://github.com/Marzogh/SPIMemory
+#include "Arduino.h"
 
 
 
@@ -13,7 +14,6 @@
 #define ARRAY_GAIN 1000.0 //Since double to string can only have 2 decimal places, the array is
 //multiplied by this value before converting it to a string and then divided
 //by this value for restoration
-#define ADDRESS_GAIN 1   //addresses stored in the memory have no gain so use 1
 #define  _csPin_memory  A1
 #define MEM_CLUSTER_SIZE 20 //number of addresses in every node of linked list pointing to addresses
 
@@ -81,7 +81,7 @@ String array_to_string (uint32_t array_to_convert[], int array_size,int gain, ch
  * 
  * \return void
  */
-void memory_store_array_function (SPIFlash *flash_mem ,double array_to_store[], int array_size, LinkedList<uint32_t> *linkedlist_of_addresses, double gain, char delimiter){
+void __memory_store_array (SPIFlash *flash_mem ,double array_to_store[], int array_size, LinkedList<uint32_t> *linkedlist_of_addresses, double gain, char delimiter){
 	//convert array to string
 	String string_to_store = array_to_string(array_to_store,array_size,gain,delimiter);
 	//store the data_String in memory and add the string address to a linked list
@@ -101,7 +101,7 @@ void memory_store_array_function (SPIFlash *flash_mem ,double array_to_store[], 
 		}
 	}
 }
-void memory_store_array_function (SPIFlash *flash_mem ,uint32_t array_to_store[], int array_size, LinkedList<uint32_t> *linkedlist_of_addresses, int gain, char delimiter){
+void __memory_store_array (SPIFlash *flash_mem ,uint32_t array_to_store[], int array_size, LinkedList<uint32_t> *linkedlist_of_addresses, int gain, char delimiter){
 	//convert array to string
 	String string_to_store = array_to_string(array_to_store,array_size,gain,delimiter);
 	//store the data_String in memory and add the string address to a linked list
@@ -225,6 +225,156 @@ void memory_retrieve_array_function(SPIFlash *flash_mem, uint32_t array_to_hold_
 }
 
 
+/**
+ * \brief Stores and array in memory and saves links to the addresses stored, variables are passed by address so no need to return!
+ * 
+ * \param flash_memory
+ * \param array_to_store
+ * \param array_size
+ * \param gain
+ * \param delimiter
+ * \param mem_cluster_size
+ * \param addresses_linked_list
+ * \param pointer_to_addresses_linkedlist
+ * 
+ * \return void
+ */
+void save_array_in_memory(SPIFlash *flash_memory, double array_to_store[], int array_size, int gain = ARRAY_GAIN,
+char delimiter = DELIMITER, int mem_cluster_size = MEM_CLUSTER_SIZE,
+LinkedList<uint32_t> *addresses_linked_list = &memory_addresses_linkedlist,
+LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addresses_of_other_linkedlists){
+	
+	#define ADDRESS_GAIN 1   //addresses stored in the memory have no gain so use 1
+	__memory_store_array(flash_memory,array_to_store,array_size, addresses_linked_list,gain,delimiter);
+	
+	if (addresses_linked_list->GetSize() == mem_cluster_size){ //above 1500 values in a linked list,
+		//the RAM runs out so the addresses linked lists are divided into
+		//MEM_CLUSTERS of max size 20
+		//
+		//Each memory cluster has addresses of arrays in memory
+		//Each memory cluster is then stored in the memory
+		//Another linked list is used to store the addresses of the memory clusters
+		
+		
+		//save the linked list as an array into memory
+		int linkedlist_size = addresses_linked_list->GetSize();
+		uint32_t *array = addresses_linked_list->ToArray();
+		uint32_t linkedList_as_array[linkedlist_size] = {0}; //change from uint32 to double
+		
+		for (int j = 0; j < linkedlist_size ; j++) //transferring the data into another array
+		{
+			linkedList_as_array[j] = *(array + j);
+		}
 
+		//store_list_in_memory
+		__memory_store_array(flash_memory, linkedList_as_array, linkedlist_size, pointer_to_addresses_linkedlist, ADDRESS_GAIN, delimiter); //gain is one so that addresses are not manipulated
+
+		//clear linked list
+		addresses_linked_list->Clear(); //reset so that RAM is not affected
+		
+	}
+}
+
+/**
+ * \brief This functions prints out all the arrays stored in the flash memory for the current test
+ * 
+ * \param flash_memory ,					flash memory object
+ * \param array_size   ,					sizes of the arrays in memory
+ * \param gain         ,					the gain that was used to store arrays, this has a default value of 100,000
+ * \param delimiter    ,					char used to separate arrays in memory
+ * \param mem_cluster_size,					size of each chunk of memory, max size is about 20
+ * \param addresses_linked_list,			LinkedList object where each value is a memory address, containing an array of data
+ * \param pointer_to_addresses_linkedlist,	Each value in this linked list -> is an address in memory -> This address in memory pointed to is another linkedList_2 data
+ *											Linkedlist2 values of size mem_cluster are addresses in memory that point to an array of data
+ * 
+ * \return void
+ */
+void print_all_arrays_in_memory(SPIFlash *flash_memory, int array_size, int gain = ARRAY_GAIN,
+char delimiter = DELIMITER, int mem_cluster_size = MEM_CLUSTER_SIZE,
+LinkedList<uint32_t> *addresses_linked_list = &memory_addresses_linkedlist,
+LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addresses_of_other_linkedlists ){
+	
+	// print out all the memory addresses stored
+	//1. First we iterate through the linked list which stores the addresses in memory for other linked list
+	//	Each value in this linked list -> is an address in memory -> This address in memory pointed to is another linkedList_2 data
+	//    Linkedlist2 values of size mem_cluster are addresses in memory that point to an array of data
+	
+	// So for each value in pointer_LinkedList, we decipher the Linked list of addresses
+	// For each value in Linked list addresses, we read that value in memory to get the array
+	
+	double dataOut[array_size];
+	
+	for (int current_index = 0 ; current_index < pointer_to_addresses_linkedlist->GetSize(); current_index++)
+	{
+		Serial.print("Size ");
+		Serial.println(pointer_to_addresses_linkedlist->GetSize());
+		Serial.print("Loop ");
+		Serial.println(current_index);
+
+		
+		Serial.print("Address ");
+		Serial.print(current_index);
+		Serial.print(" : ");
+		uint32_t string_address = pointer_to_addresses_linkedlist->GetAt(current_index);
+		Serial.println( string_address, HEX);
+		
+		//array the addresses for each value in the array
+		uint32_t address_array[mem_cluster_size] = {0};
+		
+		memory_retrieve_array_function(flash_memory, address_array, mem_cluster_size, ADDRESS_GAIN, delimiter, pointer_to_addresses_linkedlist, current_index);
+		//Memory retrieve function is not useful, it only fills in the last array
+
+		LinkedList<uint32_t> mem_addresses; //linked list that will contain addresses to arrays in memory
+		mem_addresses.Clear(); //clear the new linked list
+		
+		//storing the values in address_array into linked list because our functions take LinkedLists not arrays
+		for (int i = 0; i < MEM_CLUSTER_SIZE; i++)
+		{
+			mem_addresses.InsertTail(address_array[i]);
+		}
+		
+		
+		for (int mem_address_index = 0; mem_address_index < mem_addresses.GetSize() ; mem_address_index++) //Iterating through every address to read the array
+		{
+			//retrieve each of the arrays now
+			memory_retrieve_array_function(flash_memory, dataOut,array_size, gain, delimiter, &mem_addresses, mem_address_index);
+			//Testing
+			Serial.print("Data out ");
+			Serial.print(mem_address_index);
+			Serial.print(" : ");
+			
+			//PRINTING
+			for (int f = 0; f < array_size; f++)
+			{
+				Serial.print(dataOut[f],5);
+				Serial.print(", ");
+			}
+			Serial.println();
+			
+		}
+	}
+	
+	//If the original addresses array did not get full up to a mem_cluster_size, it still contains some value so we read those out as well
+	
+	//retrieve the rest of the addresses in the original addresses array
+	for (int linkedlist_current_index = 0; linkedlist_current_index < addresses_linked_list->GetSize(); linkedlist_current_index++)
+	{
+		memory_retrieve_array_function(flash_memory, dataOut,array_size, gain, delimiter, addresses_linked_list, linkedlist_current_index);
+		//print data out
+		Serial.print("Data out ");
+		Serial.print(linkedlist_current_index);
+		Serial.print(" : ");
+		//
+		
+		//PRINTING
+		for (int f = 0; f < array_size; f++)
+		{
+			Serial.print(dataOut[f],5);
+			Serial.print(", ");
+		}
+		Serial.println();
+	}
+	
+}
 
 

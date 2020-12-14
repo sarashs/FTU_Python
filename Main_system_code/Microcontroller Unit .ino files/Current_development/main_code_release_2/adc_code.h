@@ -66,8 +66,9 @@ uint8_t SYSRED_value =  0;
 uint8_t GPIOC_value =   0;
 uint8_t GPIOD_value =   0;
 
-uint16_t raw_adc_data [29] = {0}; //initialize the array with zero
-double converted_adc_data[29] = {0}; //this array hold the converted ADC data have to change this to  double
+const int adc_array_size = 29;
+uint16_t raw_adc_data [adc_array_size] = {0}; //initialize the array with zero
+double converted_adc_data[adc_array_size] = {0}; //this array hold the converted ADC data have to change this to  double
 //initialize some values to avoid errors in calculations
 
 /*How values are stored in these arrays

@@ -96,7 +96,7 @@ void receive_test_instructions(void){
  * \@return void
  */
 void update_json_doc(int test_id, bool test_stop, bool test_start, bool test_error, String error_message, 
-double adc_data[], float test_time, float temperature, float magnetic_field, int num_adc_array = number_of_adc_arrays){
+double adc_data[],int array_size = adc_array_size, float test_time, float temperature, float magnetic_field, int num_adc_array = number_of_adc_arrays){
 	//Preparing json file
 	String str_testid = "test id";
 	String str_teststop = "test stop";
@@ -127,7 +127,7 @@ double adc_data[], float test_time, float temperature, float magnetic_field, int
 			
 		// Add an array.
 		JsonArray ADCdata = doc.createNestedArray(str_ADCdatastring);
-		for (int i =8; i < 29; i++){ //starting from index 8 as that is how much we use in the ADC array, this is to save space
+		for (int i =8; i < array_size ; i++){ //starting from index 8 as that is how much we use in the ADC array, this is to save space
 			ADCdata.add(adc_data[i]);
 		}
 		//add another array

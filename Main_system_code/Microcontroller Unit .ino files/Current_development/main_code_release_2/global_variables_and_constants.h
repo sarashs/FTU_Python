@@ -1,5 +1,14 @@
 #pragma once
 
+#include "SPI.h"
+#include "ArduinoJson.h"
+#include "ArduinoJson.hpp"
+#include "Arduino.h"
+#include "math.h"
+#include "strings.h"
+#include "WString.h"
+#include "time.h"
+
 /************************************************************************/
 /* GLOBAL VARIABLES AND CONSTANTS                                       */
 /************************************************************************/

@@ -35,21 +35,11 @@
 *Frequency divider functionality
 *
 *H*/
-#include "SPI.h"
-#include "ArduinoJson.h"
-#include "ArduinoJson.hpp"
-#include "Arduino.h"
-#include "samd21/include/samd21g18a.h"
-#include "math.h"
-#include "strings.h"
-#include "WString.h"
-#include "time.h"
-
 
 #include "global_variables_and_constants.h"
 #include "pins_setup.h"
-#include "serial_communication_code.h"
 #include "adc_code.h"
+#include "serial_communication_code.h"
 #include "timers_and_interrupt_setup.h"
 #include "DAC_code.h"
 #include "heater_magnetic_fsm_code.h"
@@ -126,7 +116,7 @@ void system_fsm_run (int system_fsm_state){
 				
 				//clear and turn off all the outputs
 				pin_setup(); //this will reset all the pins to their original values;
-				update_json_doc(test_id,test_stop,test_start,test_error,error_message,converted_adc_data,test_time_count,measured_temperature,measured_magnetic_field);
+				update_json_doc(test_id,test_stop,test_start,test_error,error_message,converted_adc_data,adc_array_size,test_time_count,measured_temperature,measured_magnetic_field);
 				
 				if (serial_signal) {
 					send_data_to_serial();
@@ -143,10 +133,7 @@ void system_fsm_run (int system_fsm_state){
 				analogWrite(ctrl_vstr,set_dac(desired_fpga_voltage));
 				
 				//2. Setting time interval for sending data rate
-				
-				//Temporarily changed to counter file
-// 				REG_TC3_COUNT16_CC0 =  counter_value(1,1024,serial_output_rate);                     // Set the TC3 CC0 register
-// 				while (TC3->COUNT16.STATUS.bit.SYNCBUSY);											// Wait for synchronization
+			
 			}
 			
 		}
