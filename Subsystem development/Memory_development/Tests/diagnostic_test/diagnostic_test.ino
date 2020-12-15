@@ -37,7 +37,7 @@
 #define TRUE 1
 #define FALSE 0
 
-#define csPin 0
+#define csPin A1
 
 int8_t SPIPins[4] = {-1, -1, -1, 33};
 

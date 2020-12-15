@@ -88,7 +88,7 @@ void __memory_store_array (SPIFlash *flash_mem ,double array_to_store[], int arr
 	while(true){
 		uint32_t _address = flash_mem->getAddress(sizeof(string_to_store));
 		// This function should be changed depending on the type of data being written to the flash memory
-		if (flash_mem->writeStr(_address,string_to_store)) {
+		if (flash_mem->writeStr(_address,string_to_store,false)) { //error check is set to false, this could cause errors but increases reading time because we are trying to get as much data as possible
 				  
 			//Serial.println(F("successful"));
 				  
@@ -108,7 +108,7 @@ void __memory_store_array (SPIFlash *flash_mem ,uint32_t array_to_store[], int a
 	while(true){
 		uint32_t _address = flash_mem->getAddress(sizeof(string_to_store));
 		// This function should be changed depending on the type of data being written to the flash memory
-		if (flash_mem->writeStr(_address,string_to_store)) {
+		if (flash_mem->writeStr(_address,string_to_store,false)) { //error check is set to false, this could cause errors but increases reading time because we are trying to get as much data as possible
 			
 			//Serial.println(F("successful"));
 			
@@ -344,15 +344,16 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 // 			Serial.print(" : ");
 // 			
 			//PRINTING
-			for (int f = 0; f < array_size; f++)
-			{
+// 			for (int f = 0; f < array_size; f++)
+// 			{
 // 				Serial.print(dataOut[f],5);
 // 				Serial.print(", ");
-				//here is where to call update json command
-				update_json_doc(test_id,false,test_start,test_error,error_message,test_time_count,0,0,dataOut,array_size);
-				send_data_to_serial();
-				delay(100);
-			}
+// 				//here is where to call update json command
+// 			}
+			update_json_doc(test_id,false,test_start,test_error,error_message,test_time_count,0,0,dataOut,array_size);
+			send_data_to_serial();
+			delay(2);
+							
 			Serial.println();
 			
 		}
@@ -365,21 +366,23 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 	{
 		memory_retrieve_array_function(flash_memory, dataOut,array_size, gain, delimiter, addresses_linked_list, linkedlist_current_index);
 		//print data out
-		Serial.print("Data out ");
-		Serial.print(linkedlist_current_index);
-		Serial.print(" : ");
+// 		Serial.print("Data out ");
+// 		Serial.print(linkedlist_current_index);
+// 		Serial.print(" : ");
 		//
 		
 		//PRINTING
-		for (int f = 0; f < array_size; f++)
-		{
+// 		for (int f = 0; f < array_size; f++)
+// 		{
 // 			Serial.print(dataOut[f],5);
 // 			Serial.print(", ");
-			//here is where to call update json command
-			update_json_doc(test_id,false,test_start,test_error,error_message,test_time_count,0,0,dataOut,array_size);
-			send_data_to_serial();
-			delay(100);
-		}
+// 			//here is where to call update json command
+// 		}
+		update_json_doc(test_id,false,test_start,test_error,error_message,test_time_count,0,0,dataOut,array_size);
+		send_data_to_serial();
+		delay(2); //delay added to accommodate python script
+
+		
 		Serial.println();
 	}
 	

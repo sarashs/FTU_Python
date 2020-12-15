@@ -1,6 +1,6 @@
 #pragma once
 
-#define BAUD_RATE 256000 //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
+#define BAUD_RATE 2000000 //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000, 1000000, 2000000
 #define number_of_adc_arrays 1
 /************************************************************************/
 /* USING JSON LIBRARY TO SEND COMMUNICATE WITH PYTHON SCRIPT            */

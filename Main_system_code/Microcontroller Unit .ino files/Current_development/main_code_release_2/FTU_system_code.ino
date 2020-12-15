@@ -45,7 +45,11 @@
 #include "heater_magnetic_fsm_code.h"
 #include "memory_functions.h"
 
-
+//testing
+int count = 0;
+unsigned long start_time = 0;
+unsigned long end_time = 0;
+unsigned long delta_time = 0;
 /**
  * This setup function is run before a test starts and sets up the system
  * 
@@ -63,6 +67,9 @@ void setup() {
   {
 	  //set the ADC DRATE to 11 for fastest reading
 	 adc_register_defaults[2] |= 0x03; //this sets the ADC DRATE==11 for the highest sampling rate
+	 memory_addresses_linkedlist.Clear();
+	 linkedlist_of_mem_addresses_of_other_linkedlists.Clear();
+	 flash.setClock(adc_spi_speed);
   }
   adc_setup(); //function sets up the ADC
   memory_setup(&flash);
@@ -79,7 +86,7 @@ void setup() {
   init_tc5();              //TC5 is a 1 second counter
   __enable_irq();          //enable interrupts
   test_time_count = 0; //reset test time
-  
+
 }
 
 /**
@@ -89,8 +96,20 @@ void setup() {
  * @return void
  */
 void loop() {
- system_state = system_fsm_transition(system_state,test_start,test_stop);
- system_fsm_run(system_state);
+
+	 system_state = system_fsm_transition(system_state,test_start,test_stop);
+	 system_fsm_run(system_state);
+	 
+	 //testing
+	 if (!test_stop)
+	 {
+		 	 Serial.print("Count : ");
+		 	 Serial.println(count);
+	 }
+
+	 count++;
+
+
 }
 
 
@@ -118,7 +137,7 @@ void system_fsm_run (int system_fsm_state){
 				if (high_speed_test)
 				{
 					//send all the current test memory data to serial Port
-					Serial.println("Dumping memory to serial");
+					//Serial.println("Dumping memory to serial");
 					print_all_arrays_in_memory(&flash,ADC_ARRAY_SIZE);
 					
 					high_speed_test = false; //Turn off high speed test stop loops
@@ -141,6 +160,8 @@ void system_fsm_run (int system_fsm_state){
 			else if (test_start){
 				//1. Setting voltage stress for test
 				analogWrite(ctrl_vstr,set_dac(desired_fpga_voltage));
+				//reset test time
+				test_time_count = 0;
 
 			
 			}
@@ -150,15 +171,26 @@ void system_fsm_run (int system_fsm_state){
 		case ADC_UPDATE: {
 
 			//1. Update test timer and if time is hit, stop
-			Serial.println("Enter ADC Update");
+			//Serial.println("Enter ADC Update");
 			if (test_time_count >= desired_time_for_test) test_stop=true;
 			
 			pin_setup();
 			//2. Convert Raw ADC data to understandable values
+			Serial.println("Auto scan time (us): ");
+			start_time = micros();
 			adc_auto_scan(raw_adc_data); //converting ADC data
+			end_time = micros();
+			delta_time = end_time - start_time;
+			Serial.println(delta_time);
+			
+			Serial.println("converting adc array time (us): ");
+			start_time = micros();
 			adc_array_convert(raw_adc_data,converted_adc_data); //converts the raw_adc_data into converted data
 			
-			Serial.println("Exit ADC_update");
+			end_time = micros();
+			delta_time = end_time - start_time;
+			Serial.println(delta_time);
+			//Serial.println("Exit ADC_update");
 			
 		}
 		break;
@@ -169,9 +201,13 @@ void system_fsm_run (int system_fsm_state){
 			if (high_speed_test) //if high speed test, save array to memory and 
 			{
 				//save adc array to memory
-				Serial.println("Saving");
+ 				Serial.println("Saving time (us): ");
+				start_time = micros(); 
 				save_array_in_memory(&flash,converted_adc_data,ADC_ARRAY_SIZE); //saves array in memory
-				Serial.println("Done saving");
+				end_time = micros();
+				delta_time = end_time - start_time;
+				Serial.println(delta_time);
+				//Serial.println("Done saving");
 			}
 			else if (serial_signal) { //if it is not a high speed test, send the data to serial
 				update_json_doc(test_id,test_stop,test_start,test_error,error_message,test_time_count,measured_temperature,measured_magnetic_field,converted_adc_data);
@@ -230,7 +266,15 @@ int system_fsm_transition(int current_system_fsm_state, int test_start, int test
 		}
 		break;
 		case SERIAL_UPDATE:{
-			next_state = Heater_Update;
+			//testing
+			if (high_speed_test)
+			{
+				next_state = ADC_UPDATE; //test is only 3 seconds max so avoid extra lines of code
+			}
+			else {
+				next_state = Heater_Update;
+			}
+			
 		}
 		break;
 		case Heater_Update:{

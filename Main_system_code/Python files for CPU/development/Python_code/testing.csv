@@ -1,38 +1,12 @@
 Test id,Time (s),Temperature (C),magnetic field (mT),Test stop,Test error,Error message,AIN0 (mV),AIN1 (mV),AIN2 (mV),AIN3 (mV),AIN4 (mV),AIN5 (mV),AIN6 (mV),AIN7 (mV),AIN8 (mV),AIN9 (mV),AIN10 (mV),AIN11 (mV),AIN12 (mV),AIN13 (mV),AIN14 (mV),AIN15 (mV),ADC OFFSET,ADC VCC (V),ADC Temperature (C),ADC Gain,ADC Reference (V)
-1,0,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,0,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,1,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,1,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,1,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,2,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,2,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,2,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,2,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,3,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,3,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,3,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,4,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,4,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,5,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,5,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,5,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,6,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,6,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,6,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,7,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,7,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,7,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,7,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,8,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,8,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,8,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,9,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,9,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,10,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,10,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,10,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,11,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,11,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,11,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,12,-50,0,0,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
-1,12,-50,0,1,1,Error in register address : 0 Error in register address : 1 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,1,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0

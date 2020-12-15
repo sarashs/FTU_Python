@@ -23,9 +23,9 @@ C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Print.cpp.
 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Reset.cpp.o)
                               C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o) (tickReset)
 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(SERCOM.cpp.o)
-                              C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o (SERCOM::SERCOM(Sercom*))
+                              C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o (SERCOM::SERCOM(Sercom*))
 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
-                              C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o (Uart::Uart(SERCOM*, unsigned char, unsigned char, SercomRXPad, SercomUartTXPad))
+                              C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o (Uart::Uart(SERCOM*, unsigned char, unsigned char, SercomRXPad, SercomUartTXPad))
 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(WMath.cpp.o)
                               C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\diagnostic_test.cpp.o (randomSeed(unsigned long))
 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(WString.cpp.o)
@@ -579,13 +579,13 @@ Discarded input sections
  .text          0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
  .data          0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
  .bss           0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .text          0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
- .data          0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
- .bss           0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .text          0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
+ .data          0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
+ .bss           0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .text.PINCOUNT_fn
-                0x00000000        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                0x00000000        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .data.g_apTCInstances
-                0x00000000       0x18 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                0x00000000       0x18 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .text          0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .data          0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .bss           0x00000000        0x0 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
@@ -1835,7 +1835,7 @@ LOAD C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMe
 LOAD C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFram.cpp.o
 LOAD C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFramIO.cpp.o
 LOAD C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
-LOAD C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+LOAD C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
 START GROUP
 LOAD C:\Users\hp\AppData\Local\ARDUIN~1\packages\arduino\tools\CMSIS\4583DE~1.0/CMSIS/Lib/GCC/\libarm_cortexM0l_math.a
 LOAD C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a
@@ -2165,10 +2165,10 @@ LOAD c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4
  .text.startup._GLOBAL__sub_I_SPIMemory
                 0x00004d24       0x1c C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
  .text.SERCOM5_Handler
-                0x00004d40       0x10 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                0x00004d40       0x10 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x00004d40                SERCOM5_Handler
  .text.startup._GLOBAL__sub_I_g_APinDescription
-                0x00004d50       0x80 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                0x00004d50       0x80 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .text.Dummy_Handler
                 0x00004dd0        0x2 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
                 0x00004dd0                DMAC_Handler
@@ -2954,7 +2954,7 @@ LOAD c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4
                 0x0000adbc       0xc3 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlashIO.cpp.o
  *fill*         0x0000ae7f        0x1 
  .rodata.g_APinDescription
-                0x0000ae80      0x360 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                0x0000ae80      0x360 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x0000ae80                g_APinDescription
  .rodata._ZN5Print10printFloatEdh.str1.1
                 0x0000b1e0        0xc C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Print.cpp.o)
@@ -3063,7 +3063,7 @@ LOAD c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4
  .init_array    0x20000090        0x4 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPI\SPI.cpp.o
  .init_array    0x20000094        0x4 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\diagnostics.cpp.o
  .init_array    0x20000098        0x4 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .init_array    0x2000009c        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .init_array    0x2000009c        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .init_array    0x200000a0        0x4 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(CDC.cpp.o)
  .init_array    0x200000a4        0x4 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(USBCore.cpp.o)
                 0x200000a8                PROVIDE (__init_array_end, .)
@@ -3101,19 +3101,19 @@ LOAD c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4
                 0x20000211        0x1 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
                 0x20000211                SPIMemory
  *fill*         0x20000212        0x2 
- .bss.Serial1   0x20000214      0x23c C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .bss.Serial1   0x20000214      0x23c C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x20000214                Serial1
- .bss.sercom0   0x20000450        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .bss.sercom0   0x20000450        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x20000450                sercom0
- .bss.sercom1   0x20000454        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .bss.sercom1   0x20000454        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x20000454                sercom1
- .bss.sercom2   0x20000458        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .bss.sercom2   0x20000458        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x20000458                sercom2
- .bss.sercom3   0x2000045c        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .bss.sercom3   0x2000045c        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x2000045c                sercom3
- .bss.sercom4   0x20000460        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .bss.sercom4   0x20000460        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x20000460                sercom4
- .bss.sercom5   0x20000464        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .bss.sercom5   0x20000464        0x4 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                 0x20000464                sercom5
  .bss.usb_isr   0x20000468        0x4 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .bss._ulTickCount
@@ -3212,7 +3212,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .ARM.attributes
                 0x00000144       0x32 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
  .ARM.attributes
-                0x00000176       0x32 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                0x00000176       0x32 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .ARM.attributes
                 0x000001a8       0x32 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .ARM.attributes
@@ -3372,7 +3372,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .comment       0x0000007e       0x7f C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
  .comment       0x0000007e       0x7f C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlashIO.cpp.o
  .comment       0x0000007e       0x7f C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .comment       0x0000007e       0x7f C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .comment       0x0000007e       0x7f C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .comment       0x0000007e       0x7f C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .comment       0x0000007e       0x7f C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o)
  .comment       0x0000007e       0x7f C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(hooks.c.o)
@@ -3400,7 +3400,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .debug_info    0x00015087     0xabfd C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
  .debug_info    0x0001fc84     0x84ae C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlashIO.cpp.o
  .debug_info    0x00028132     0x50a0 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .debug_info    0x0002d1d2     0x63ba C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .debug_info    0x0002d1d2     0x63ba C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .debug_info    0x0003358c     0x1101 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .debug_info    0x0003468d     0x1395 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o)
  .debug_info    0x00035a22       0x64 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(hooks.c.o)
@@ -3428,7 +3428,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .debug_abbrev  0x000017f8      0x969 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
  .debug_abbrev  0x00002161      0x82a C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlashIO.cpp.o
  .debug_abbrev  0x0000298b      0x5f2 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .debug_abbrev  0x00002f7d      0x51d C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .debug_abbrev  0x00002f7d      0x51d C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .debug_abbrev  0x0000349a      0x29a C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .debug_abbrev  0x00003734      0x304 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o)
  .debug_abbrev  0x00003a38       0x49 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(hooks.c.o)
@@ -3456,7 +3456,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .debug_loc     0x000019a3     0x26ff C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
  .debug_loc     0x000040a2     0x10a8 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlashIO.cpp.o
  .debug_loc     0x0000514a       0x2a C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .debug_loc     0x00005174       0x2a C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .debug_loc     0x00005174       0x2a C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .debug_loc     0x0000519e       0x3c C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .debug_loc     0x000051da       0xfb C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o)
  .debug_loc     0x000052d5       0x2e C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(startup.c.o)
@@ -3489,7 +3489,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .debug_aranges
                 0x00000448       0x28 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
  .debug_aranges
-                0x00000470       0x30 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                0x00000470       0x30 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .debug_aranges
                 0x000004a0       0x40 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .debug_aranges
@@ -3536,7 +3536,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .debug_ranges  0x000003e0      0x3b8 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
  .debug_ranges  0x00000798      0x138 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlashIO.cpp.o
  .debug_ranges  0x000008d0       0x18 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .debug_ranges  0x000008e8       0x20 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .debug_ranges  0x000008e8       0x20 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .debug_ranges  0x00000908       0x30 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .debug_ranges  0x00000938       0x30 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o)
  .debug_ranges  0x00000968       0x20 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(hooks.c.o)
@@ -3564,7 +3564,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .debug_line    0x00001f22     0x114e C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
  .debug_line    0x00003070      0xc26 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlashIO.cpp.o
  .debug_line    0x00003c96      0x7f9 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .debug_line    0x0000448f      0x5c8 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .debug_line    0x0000448f      0x5c8 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .debug_line    0x00004a57      0x3a0 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .debug_line    0x00004df7      0x59b C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o)
  .debug_line    0x00005392       0xae C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(hooks.c.o)
@@ -3598,7 +3598,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
                                0x575d (size before relaxing)
  .debug_str     0x00005c36       0xb8 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
                                0x3b5c (size before relaxing)
- .debug_str     0x00005cee      0x8c8 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .debug_str     0x00005cee      0x8c8 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                                0x3591 (size before relaxing)
  .debug_str     0x000065b6      0x4bd C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
                                 0xf93 (size before relaxing)
@@ -3646,7 +3646,7 @@ OUTPUT(C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/diagnostic
  .debug_frame   0x00000540      0x4f8 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
  .debug_frame   0x00000a38      0x2fc C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFlashIO.cpp.o
  .debug_frame   0x00000d34       0x38 C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIMemory.cpp.o
- .debug_frame   0x00000d6c       0x54 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+ .debug_frame   0x00000d6c       0x54 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
  .debug_frame   0x00000dc0       0x7c C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
  .debug_frame   0x00000e3c       0x88 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o)
  .debug_frame   0x00000ec4       0x40 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(hooks.c.o)
@@ -3748,7 +3748,7 @@ HardFault_Handler                                 C:\Users\hp\AppData\Local\Temp
 I2S_Handler                                       C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
 NMI_Handler                                       C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
 NVMCTRL_Handler                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
-PINCOUNT_fn                                       C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+PINCOUNT_fn                                       C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
 PM_Handler                                        C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
 PTC_Handler                                       C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
 PendSV_Handler                                    C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
@@ -3831,9 +3831,9 @@ SERCOM1_Handler                                   C:\Users\hp\AppData\Local\Temp
 SERCOM2_Handler                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
 SERCOM3_Handler                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
 SERCOM4_Handler                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
-SERCOM5_Handler                                   C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+SERCOM5_Handler                                   C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
 SERCOM::SERCOM(Sercom*)                           C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(SERCOM.cpp.o)
-                                                  C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                                                  C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
 SERCOM::SERCOM(Sercom*)                           C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(SERCOM.cpp.o)
 SERCOM::acknowledgeUARTError()                    C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(SERCOM.cpp.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
@@ -4180,7 +4180,7 @@ SPIMemory::~SPIMemory()                           C:\Users\hp\AppData\Local\Temp
 SPIPins                                           C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\diagnostic_test.cpp.o
 SVC_Handler                                       C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
 SYSCTRL_Handler                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
-Serial1                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+Serial1                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
 SerialUSB                                         C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(CDC.cpp.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(USBCore.cpp.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPIMemory\SPIFramIO.cpp.o
@@ -4383,10 +4383,10 @@ USB_Handler                                       C:\Users\hp\AppData\Local\Temp
 USB_SetHandler                                    C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(cortex_handlers.c.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(USBCore.cpp.o)
 Uart::IrqHandler()                                C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
-                                                  C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                                                  C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
 Uart::Uart(SERCOM*, unsigned char, unsigned char, SercomRXPad, SercomUartTXPad) C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
 Uart::Uart(SERCOM*, unsigned char, unsigned char, SercomRXPad, SercomUartTXPad) C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
-                                                  C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+                                                  C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
 Uart::Uart(SERCOM*, unsigned char, unsigned char, SercomRXPad, SercomUartTXPad, unsigned char, unsigned char) C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
 Uart::Uart(SERCOM*, unsigned char, unsigned char, SercomRXPad, SercomUartTXPad, unsigned char, unsigned char) C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
 Uart::available()                                 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
@@ -5008,13 +5008,13 @@ free                                              c:/users/hp/appdata/local/ardu
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(new.cpp.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(USBCore.cpp.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(WString.cpp.o)
-g_APinDescription                                 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+g_APinDescription                                 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(Uart.cpp.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(wiring_private.c.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(wiring_digital.c.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(wiring_analog.c.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPI\SPI.cpp.o
-g_apTCInstances                                   C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+g_apTCInstances                                   C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(wiring_analog.c.o)
 getID()                                           C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\diagnostic_test.cpp.o
 hardware_init_hook                                c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/crt0.o
@@ -5137,14 +5137,14 @@ randomSeed(unsigned long)                         C:\Users\hp\AppData\Local\Temp
 realloc                                           c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-realloc.o)
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(WString.cpp.o)
 resetExternalChip                                 C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(delay.c.o)
-sercom0                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
-sercom1                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+sercom0                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
+sercom1                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPI\SPI.cpp.o
-sercom2                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
-sercom3                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
-sercom4                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+sercom2                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
+sercom3                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
+sercom4                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
                                                   C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\SPI\SPI.cpp.o
-sercom5                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\fc2a1f45b04c1623cd450a419185f259\variant\variant.cpp.o
+sercom5                                           C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
 serialEventRun()                                  C:\Users\hp\AppData\Local\Temp\VMBuilds\DIAGNO~1\mkr1000\Debug/core.a(main.cpp.o)
 setlocale                                         c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-locale.o)
 setup                                             C:\Users\hp\AppData\Local\Temp\VMBuilds\diagnostic_test\mkr1000\Debug\diagnostic_test.cpp.o
