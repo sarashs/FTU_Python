@@ -14,7 +14,6 @@
 #define ARRAY_GAIN 1000.0 //Since double to string can only have 2 decimal places, the array is
 //multiplied by this value before converting it to a string and then divided
 //by this value for restoration
-#define  _csPin_memory  A1
 #define MEM_CLUSTER_SIZE 20 //number of addresses in every node of linked list pointing to addresses
 
 // Create LinkedList
@@ -306,17 +305,18 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 	
 	for (int current_index = 0 ; current_index < pointer_to_addresses_linkedlist->GetSize(); current_index++)
 	{
-		Serial.print("Size ");
-		Serial.println(pointer_to_addresses_linkedlist->GetSize());
-		Serial.print("Loop ");
-		Serial.println(current_index);
-
-		
-		Serial.print("Address ");
-		Serial.print(current_index);
-		Serial.print(" : ");
-		uint32_t string_address = pointer_to_addresses_linkedlist->GetAt(current_index);
-		Serial.println( string_address, HEX);
+		//Testing
+// 		Serial.print("Size ");
+// 		Serial.println(pointer_to_addresses_linkedlist->GetSize());
+// 		Serial.print("Loop ");
+// 		Serial.println(current_index);
+// 
+// 		
+// 		Serial.print("Address ");
+// 		Serial.print(current_index);
+// 		Serial.print(" : ");
+// 		uint32_t string_address = pointer_to_addresses_linkedlist->GetAt(current_index);
+// 		Serial.println( string_address, HEX);
 		
 		//array the addresses for each value in the array
 		uint32_t address_array[mem_cluster_size] = {0};
@@ -339,15 +339,19 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 			//retrieve each of the arrays now
 			memory_retrieve_array_function(flash_memory, dataOut,array_size, gain, delimiter, &mem_addresses, mem_address_index);
 			//Testing
-			Serial.print("Data out ");
-			Serial.print(mem_address_index);
-			Serial.print(" : ");
-			
+// 			Serial.print("Data out ");
+// 			Serial.print(mem_address_index);
+// 			Serial.print(" : ");
+// 			
 			//PRINTING
 			for (int f = 0; f < array_size; f++)
 			{
-				Serial.print(dataOut[f],5);
-				Serial.print(", ");
+// 				Serial.print(dataOut[f],5);
+// 				Serial.print(", ");
+				//here is where to call update json command
+				update_json_doc(test_id,false,test_start,test_error,error_message,test_time_count,0,0,dataOut,array_size);
+				send_data_to_serial();
+				delay(100);
 			}
 			Serial.println();
 			
@@ -369,8 +373,12 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 		//PRINTING
 		for (int f = 0; f < array_size; f++)
 		{
-			Serial.print(dataOut[f],5);
-			Serial.print(", ");
+// 			Serial.print(dataOut[f],5);
+// 			Serial.print(", ");
+			//here is where to call update json command
+			update_json_doc(test_id,false,test_start,test_error,error_message,test_time_count,0,0,dataOut,array_size);
+			send_data_to_serial();
+			delay(100);
 		}
 		Serial.println();
 	}

@@ -31,7 +31,7 @@ volatile bool high_speed_test = false;
 
 volatile float desired_temperature = 43;     //in C, Set to a default value but actual value comes from MCU instructions
 volatile float desired_magnetic_field = 0;  //in mT, Set to a default value but actual value comes from MCU instructions
-volatile int desired_time_for_test = 2;	 //time in minutes, Set to a default value but actual value comes from MCU instructions
+volatile int desired_time_for_test = 120;	 //time in seconds, Set to a default value but actual value comes from MCU instructions
 volatile float desired_fpga_voltage =3200;     //in mV, Set to a default value but actual value comes from MCU instructions
 volatile float serial_output_rate=3000;                 //rate to read data in ms, Set to a default value but actual value comes from MCU instructions
 
@@ -50,6 +50,8 @@ volatile int magnetic_fsm_state ; //idle state
 volatile float heater_pwm_duty; //duty cycle value 0-255
 volatile int heater_fsm_state; //idle state
 volatile int starting_test_count;	
+
+
 
 /************************************************************************/
 /* OTHER FUNCTIONS                                                      */

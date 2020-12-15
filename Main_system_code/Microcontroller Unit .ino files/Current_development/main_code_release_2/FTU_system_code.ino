@@ -43,6 +43,7 @@
 #include "timers_and_interrupt_setup.h"
 #include "DAC_code.h"
 #include "heater_magnetic_fsm_code.h"
+#include "memory_functions.h"
 
 
 /**
@@ -54,7 +55,7 @@
 void setup() {
   analogWriteResolution(10);
   analogReadResolution(10);
-  //analogReference(AR_INTERNAL2V23); //sets 3.3V reference
+  analogReference(AR_INTERNAL2V23); //sets 3.3V reference
   pin_setup(); //Setup MCU pins
   delay(1000);
   
@@ -64,6 +65,7 @@ void setup() {
 	 adc_register_defaults[2] |= 0x03; //this sets the ADC DRATE==11 for the highest sampling rate
   }
   adc_setup(); //function sets up the ADC
+  memory_setup(&flash);
   
   
   Serial.begin(BAUD_RATE); 
@@ -107,16 +109,24 @@ void system_fsm_run (int system_fsm_state){
 	//initialize variables	
 	switch (system_fsm_state){
 		case IDLE : {
-			if (test_stop){
+			if (test_stop){ //Test has ended so this is where it is handled
+				//clear and turn off all the outputs
+				pin_setup(); //this will reset all the pins to their original values;
+				
+				
 				//if high speed test then dump all the data from memory to Serial Port
 				if (high_speed_test)
 				{
 					//send all the current test memory data to serial Port
+					Serial.println("Dumping memory to serial");
+					print_all_arrays_in_memory(&flash,ADC_ARRAY_SIZE);
+					
+					high_speed_test = false; //Turn off high speed test stop loops
+										
 				}
 				
-				//clear and turn off all the outputs
-				pin_setup(); //this will reset all the pins to their original values;
-				update_json_doc(test_id,test_stop,test_start,test_error,error_message,converted_adc_data,adc_array_size,test_time_count,measured_temperature,measured_magnetic_field);
+				
+				update_json_doc(test_id,test_stop,test_start,test_error,error_message,test_time_count,measured_temperature,measured_magnetic_field,converted_adc_data);
 				
 				if (serial_signal) {
 					send_data_to_serial();
@@ -131,8 +141,7 @@ void system_fsm_run (int system_fsm_state){
 			else if (test_start){
 				//1. Setting voltage stress for test
 				analogWrite(ctrl_vstr,set_dac(desired_fpga_voltage));
-				
-				//2. Setting time interval for sending data rate
+
 			
 			}
 			
@@ -141,23 +150,31 @@ void system_fsm_run (int system_fsm_state){
 		case ADC_UPDATE: {
 
 			//1. Update test timer and if time is hit, stop
-			if (test_time_count >= desired_time_for_test*60) test_stop=true;
+			Serial.println("Enter ADC Update");
+			if (test_time_count >= desired_time_for_test) test_stop=true;
 			
+			pin_setup();
 			//2. Convert Raw ADC data to understandable values
 			adc_auto_scan(raw_adc_data); //converting ADC data
 			adc_array_convert(raw_adc_data,converted_adc_data); //converts the raw_adc_data into converted data
+			
+			Serial.println("Exit ADC_update");
 			
 		}
 		break;
 		case SERIAL_UPDATE:{
 			//1. Set Data to be sent to the user from the ADC update, data is sent in intervals in an Interrupt service routine
-			update_json_doc(test_id,test_stop,test_start,test_error,error_message,converted_adc_data,test_time_count,measured_temperature,measured_magnetic_field);
 			
-			if (high_speed_test)
+			
+			if (high_speed_test) //if high speed test, save array to memory and 
 			{
 				//save adc array to memory
+				Serial.println("Saving");
+				save_array_in_memory(&flash,converted_adc_data,ADC_ARRAY_SIZE); //saves array in memory
+				Serial.println("Done saving");
 			}
 			else if (serial_signal) { //if it is not a high speed test, send the data to serial
+				update_json_doc(test_id,test_stop,test_start,test_error,error_message,test_time_count,measured_temperature,measured_magnetic_field,converted_adc_data);
 				send_data_to_serial(); //function to send json packet to serial port
 				serial_signal = false; //turn off the serial_signal flag
 			}

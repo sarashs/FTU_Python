@@ -4,7 +4,7 @@
 /* PINS DESCRIPTIONS                                                    */
 /************************************************************************/
 #define ctrl_vstr A0 //A0 the control signal for the voltage stress circuit, labeled CTRL_VSTR in figure 1
-#define  _csPin_memory  A1
+#define  _csPin_memory  A1 //Chip select pin for memory, should be configured as digital output
 #define heater_pwm A3 //A3 This is the control signal for the Heater board
 #define helmholtz_pwm A4 //A4 This is the control signal for the Helmholtz circuit
 #define _reset_adc 0          //D0 Should be configured as a digital output. Connected to *RESET on the ADC
@@ -55,6 +55,8 @@
   pinMode(blue_led,OUTPUT);
   pinMode(clr_freq_divider,OUTPUT);
   pinMode(_cs_adc,OUTPUT);
+  
+  pinMode(_csPin_memory,OUTPUT);
 
   //SPI pins are already initialized by Arduino
   pinMode(mosi_adc,OUTPUT);

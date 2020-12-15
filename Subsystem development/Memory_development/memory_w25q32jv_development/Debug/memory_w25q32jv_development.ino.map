@@ -1660,7 +1660,7 @@ END GROUP
 LOAD c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtend.o
 LOAD c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtn.o
 
-.text           0x00002000     0xa89c
+.text           0x00002000     0xa8dc
                 0x00002000                __text_start__ = .
  *(.sketch_boot)
                 0x00002000                . = ALIGN (0x2000)
@@ -2697,134 +2697,134 @@ LOAD c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4
  *(.dtors)
  *(.rodata*)
  *fill*         0x0000b974        0x4 
- .rodata        0x0000b978       0xa0 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\memory_w25q32jv_development.cpp.o
+ .rodata        0x0000b978       0xe0 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\memory_w25q32jv_development.cpp.o
  .rodata._Z15array_to_stringPdidc.str1.1
-                0x0000ba18        0x0 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\memory_w25q32jv_development.cpp.o
+                0x0000ba58        0x0 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\memory_w25q32jv_development.cpp.o
                                   0x1 (size before relaxing)
  .rodata._Z26print_all_arrays_in_memoryP8SPIFlashiiciP10LinkedListImES3_.str1.1
-                0x0000ba18       0x23 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\memory_w25q32jv_development.cpp.o
+                0x0000ba58       0x23 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\memory_w25q32jv_development.cpp.o
                                  0x26 (size before relaxing)
  .rodata.setup.str1.1
-                0x0000ba3b       0x19 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\memory_w25q32jv_development.cpp.o
+                0x0000ba7b       0x19 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\memory_w25q32jv_development.cpp.o
                                  0x1b (size before relaxing)
  .rodata._ZN11Diagnostics12troubleshootEhb.str1.1
-                0x0000ba54      0x53d C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\SPIMemory\diagnostics.cpp.o
+                0x0000ba94      0x53d C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\SPIMemory\diagnostics.cpp.o
  .rodata._ZN11Diagnostics17_printSupportLinkEv.str1.1
-                0x0000bf91       0xbd C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\SPIMemory\diagnostics.cpp.o
- *fill*         0x0000c04e        0x2 
- .rodata        0x0000c050       0x68 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
+                0x0000bfd1       0xbd C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\SPIMemory\diagnostics.cpp.o
+ *fill*         0x0000c08e        0x2 
+ .rodata        0x0000c090       0x68 C:\Users\hp\AppData\Local\Temp\VMBuilds\memory_w25q32jv_development\mkr1000\Debug\SPIMemory\SPIFlash.cpp.o
  .rodata.g_APinDescription
-                0x0000c0b8      0x360 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
-                0x0000c0b8                g_APinDescription
+                0x0000c0f8      0x360 C:\Users\hp\AppData\Local\Temp\VMBCore\arduino16x\b134bebc6982d6b2989adcccb7b06d2f\variant\variant.cpp.o
+                0x0000c0f8                g_APinDescription
  .rodata._ZN5Print10printFloatEdh.str1.1
-                0x0000c418        0xc C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(Print.cpp.o)
+                0x0000c458        0xc C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(Print.cpp.o)
  .rodata._ZN5Print7printlnEv.str1.1
-                0x0000c424        0x3 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(Print.cpp.o)
- *fill*         0x0000c427        0x1 
+                0x0000c464        0x3 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(Print.cpp.o)
+ *fill*         0x0000c467        0x1 
  .rodata._ZTV4Uart
-                0x0000c428       0x34 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(Uart.cpp.o)
-                0x0000c428                vtable for Uart
+                0x0000c468       0x34 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(Uart.cpp.o)
+                0x0000c468                vtable for Uart
  .rodata._ZNK6String9substringEjj.str1.1
-                0x0000c45c        0x1 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(WString.cpp.o)
+                0x0000c49c        0x1 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(WString.cpp.o)
  .rodata._ZTV7Serial_
-                0x0000c45c       0x58 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(CDC.cpp.o)
-                0x0000c45c                vtable for Serial_
+                0x0000c49c       0x58 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(CDC.cpp.o)
+                0x0000c49c                vtable for Serial_
  .rodata._ZTV26DoubleBufferedEPOutHandler
-                0x0000c4b4       0x24 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
-                0x0000c4b4                vtable for DoubleBufferedEPOutHandler
+                0x0000c4f4       0x24 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
+                0x0000c4f4                vtable for DoubleBufferedEPOutHandler
  .rodata._ZL14STRING_PRODUCT
-                0x0000c4d8       0x10 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
+                0x0000c518       0x10 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
  .rodata._ZL15STRING_LANGUAGE
-                0x0000c4e8        0x4 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
+                0x0000c528        0x4 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
  .rodata._ZL19STRING_MANUFACTURER
-                0x0000c4ec        0xc C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
+                0x0000c52c        0xc C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
  .rodata._ZL21USB_DeviceDescriptorB
-                0x0000c4f8       0x12 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
+                0x0000c538       0x12 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(USBCore.cpp.o)
  .rodata.dtostrf.str1.1
-                0x0000c50a        0x9 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(dtostrf.c.o)
- *fill*         0x0000c513        0x1 
- .rodata        0x0000c514       0x40 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m\libgcc.a(divdf3.o)
- .rodata        0x0000c554       0x40 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m\libgcc.a(muldf3.o)
+                0x0000c54a        0x9 C:\Users\hp\AppData\Local\Temp\VMBuilds\MEMORY~1\mkr1000\Debug/core.a(dtostrf.c.o)
+ *fill*         0x0000c553        0x1 
+ .rodata        0x0000c554       0x40 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m\libgcc.a(divdf3.o)
+ .rodata        0x0000c594       0x40 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m\libgcc.a(muldf3.o)
  .rodata._setlocale_r.str1.1
-                0x0000c594        0x6 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-locale.o)
+                0x0000c5d4        0x6 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-locale.o)
                                   0x9 (size before relaxing)
  .rodata.str1.1
-                0x0000c59a        0x6 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-locale.o)
+                0x0000c5da        0x6 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-locale.o)
                                   0x2 (size before relaxing)
  .rodata._printf_float.str1.1
-                0x0000c59a        0xa c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-vfprintf_float.o)
+                0x0000c5da        0xa c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-vfprintf_float.o)
                                  0x12 (size before relaxing)
  .rodata._printf_i.str1.1
-                0x0000c5a4       0x22 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x0000c5e4       0x22 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-vfprintf_i.o)
  .rodata._strtod_l.str1.1
-                0x0000c5c6       0x22 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-strtod.o)
+                0x0000c606       0x22 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-strtod.o)
                                   0xc (size before relaxing)
- *fill*         0x0000c5c6        0x2 
+ *fill*         0x0000c606        0x2 
  .rodata.fpi.6156
-                0x0000c5c8       0x14 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-strtod.o)
+                0x0000c608       0x14 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-strtod.o)
  .rodata.fpinan.6192
-                0x0000c5dc       0x14 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-strtod.o)
+                0x0000c61c       0x14 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-strtod.o)
  .rodata.tinytens
-                0x0000c5f0       0x28 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-strtod.o)
+                0x0000c630       0x28 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-strtod.o)
  .rodata._ctype_
-                0x0000c618      0x101 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-ctype_.o)
-                0x0000c618                _ctype_
+                0x0000c658      0x101 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-ctype_.o)
+                0x0000c658                _ctype_
  .rodata._dtoa_r.str1.1
-                0x0000c719        0xd c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-dtoa.o)
+                0x0000c759        0xd c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-dtoa.o)
                                   0xf (size before relaxing)
- *fill*         0x0000c726        0x2 
+ *fill*         0x0000c766        0x2 
  .rodata.__sf_fake_stderr
-                0x0000c728       0x20 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-findfp.o)
-                0x0000c728                __sf_fake_stderr
- .rodata.__sf_fake_stdin
-                0x0000c748       0x20 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-findfp.o)
-                0x0000c748                __sf_fake_stdin
- .rodata.__sf_fake_stdout
                 0x0000c768       0x20 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-findfp.o)
-                0x0000c768                __sf_fake_stdout
+                0x0000c768                __sf_fake_stderr
+ .rodata.__sf_fake_stdin
+                0x0000c788       0x20 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-findfp.o)
+                0x0000c788                __sf_fake_stdin
+ .rodata.__sf_fake_stdout
+                0x0000c7a8       0x20 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-findfp.o)
+                0x0000c7a8                __sf_fake_stdout
  .rodata.__mprec_bigtens
-                0x0000c788       0x28 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-mprec.o)
-                0x0000c788                __mprec_bigtens
+                0x0000c7c8       0x28 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-mprec.o)
+                0x0000c7c8                __mprec_bigtens
  .rodata.__mprec_tens
-                0x0000c7b0       0xc8 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-mprec.o)
-                0x0000c7b0                __mprec_tens
+                0x0000c7f0       0xc8 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-mprec.o)
+                0x0000c7f0                __mprec_tens
  .rodata.p05.6084
-                0x0000c878        0xc c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-mprec.o)
+                0x0000c8b8        0xc c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-mprec.o)
  .rodata._svfprintf_r.str1.1
-                0x0000c884       0x11 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-svfprintf.o)
+                0x0000c8c4       0x11 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-svfprintf.o)
  *(.eh_frame*)
- *fill*         0x0000c895        0x3 
- .eh_frame      0x0000c898        0x0 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtbegin.o
- .eh_frame      0x0000c898        0x4 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtend.o
+ *fill*         0x0000c8d5        0x3 
+ .eh_frame      0x0000c8d8        0x0 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtbegin.o
+ .eh_frame      0x0000c8d8        0x4 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtend.o
 
-.glue_7         0x0000c89c        0x0
- .glue_7        0x0000c89c        0x0 linker stubs
+.glue_7         0x0000c8dc        0x0
+ .glue_7        0x0000c8dc        0x0 linker stubs
 
-.glue_7t        0x0000c89c        0x0
- .glue_7t       0x0000c89c        0x0 linker stubs
+.glue_7t        0x0000c8dc        0x0
+ .glue_7t       0x0000c8dc        0x0 linker stubs
 
-.vfp11_veneer   0x0000c89c        0x0
- .vfp11_veneer  0x0000c89c        0x0 linker stubs
+.vfp11_veneer   0x0000c8dc        0x0
+ .vfp11_veneer  0x0000c8dc        0x0 linker stubs
 
-.v4_bx          0x0000c89c        0x0
- .v4_bx         0x0000c89c        0x0 linker stubs
+.v4_bx          0x0000c8dc        0x0
+ .v4_bx         0x0000c8dc        0x0 linker stubs
 
-.iplt           0x0000c89c        0x0
- .iplt          0x0000c89c        0x0 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtbegin.o
+.iplt           0x0000c8dc        0x0
+ .iplt          0x0000c8dc        0x0 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtbegin.o
 
-.rel.dyn        0x0000c89c        0x0
- .rel.iplt      0x0000c89c        0x0 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtbegin.o
+.rel.dyn        0x0000c8dc        0x0
+ .rel.iplt      0x0000c8dc        0x0 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtbegin.o
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x0000c89c                __exidx_start = .
+                0x0000c8dc                __exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                0x0000c89c                __exidx_end = .
-                0x0000c89c                __etext = .
+                0x0000c8dc                __exidx_end = .
+                0x0000c8dc                __etext = .
 
-.data           0x20000000      0x210 load address 0x0000c89c
+.data           0x20000000      0x210 load address 0x0000c8dc
                 0x20000000                __data_start__ = .
  *(vtable)
  *(.data*)
@@ -2877,10 +2877,10 @@ LOAD c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4
                 0x20000210                . = ALIGN (0x10)
                 0x20000210                __data_end__ = .
 
-.igot.plt       0x20000210        0x0 load address 0x0000caac
+.igot.plt       0x20000210        0x0 load address 0x0000caec
  .igot.plt      0x20000210        0x0 c:/users/hp/appdata/local/arduin~1/packages/arduino/tools/arm-no~1/7-2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v6-m/crtbegin.o
 
-.bss            0x20000210      0xa1c load address 0x0000caac
+.bss            0x20000210      0xa1c load address 0x0000caec
                 0x20000210                . = ALIGN (0x4)
                 0x20000210                __bss_start__ = .
  *(.bss*)

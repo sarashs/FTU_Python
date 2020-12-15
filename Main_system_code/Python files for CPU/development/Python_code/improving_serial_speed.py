@@ -75,7 +75,7 @@ plt.style.use('fivethirtyeight')
 plt.ion() 
 
 #instruction string
-original_instruction = '''{"id": 0,"description": "Testing","test_values": {"temperature": 120, "v_stress": -400, "test_time": 2, "magnetic_field": 5, "Test_start": 1, "Test_stop":0, "serial_rate": 200, "High speed test":0},"measurement_params": {"temperature": {"unit": "C"},"v_stress": {"unit": "mV"},"test_time": {"unit": "seconds"},"magnetic_field": {"unit": "mT"},"serial_rate": {"unit": "milliseconds"}}}'''
+original_instruction = '''{"id": 0,"description": "Testing","test_values": {"temperature": 20, "v_stress": 400, "test_time": 30, "magnetic_field": 0, "Test_start": 1, "Test_stop":0, "serial_rate": 1000, "High speed test":0},"measurement_params": {"temperature": {"unit": "C"},"v_stress": {"unit": "mV"},"test_time": {"unit": "seconds"},"magnetic_field": {"unit": "mT"},"serial_rate": {"unit": "milliseconds"}}}'''
 instruction_set =json.loads(original_instruction) #getting the json string from the instruction set
 
 
@@ -119,7 +119,7 @@ testDescription = input("Enter the description: ")
 
 while True:
     try: 
-        high_speed_test = int(input("Enter '1' for a high speed test \n Enter '0' for a normal test"))
+        high_speed_test = int(input("Enter '1' for a high speed test \n Enter '0' for a normal test : "))
     except ValueError:
         print("Please enter an integer")
         #start loop again incase of incorrect data
@@ -153,9 +153,9 @@ while True:
 while True:
     try: 
         if (high_speed_test == 0):
-            test_time = float(input("Enter desired test time in minutes: "))
+            test_time = float(input("Enter desired test time in minutes: "))*60
         else :
-            test_time = float(input("Enter desired test time in minutes: "))/60.00  #for high speed test, we want them to enter duration in seconds
+            test_time = float(input("Enter desired test time in seconds: "))  #for high speed test, we want them to enter duration in seconds
         
     except ValueError:
         print("Please enter a float") 
@@ -198,7 +198,7 @@ instruction_set['test_values']['temperature']=temperature
 instruction_set['test_values']['v_stress']=v_stress
 instruction_set['test_values']['test_time']=test_time
 instruction_set['test_values']['magnetic_field']=magnetic_field
-instruction_set['test_values']['serial_rate']= (int) (1000 / serial_rate) # multiply by 1000 to set to milliseconds
+instruction_set['test_values']['serial_rate']= (int) (1000 / serial_rate) # divide by 1000 to set to milliseconds
 
 
 instruction_str = json.dumps(instruction_set)

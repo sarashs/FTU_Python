@@ -34,6 +34,7 @@ void receive_test_instructions(void){
 	while (Serial.available()==0){ //wait for instruction json at serial
 		if (receieved_instruction.equals(instruction)){
 			Serial.println("ready");
+			delay(20);
 		}
 	}
 	
@@ -95,8 +96,8 @@ void receive_test_instructions(void){
  * 
  * \@return void
  */
-void update_json_doc(int test_id, bool test_stop, bool test_start, bool test_error, String error_message, 
-double adc_data[],int array_size = adc_array_size, float test_time, float temperature, float magnetic_field, int num_adc_array = number_of_adc_arrays){
+void update_json_doc(int test_id, bool test_stop, bool test_start, bool test_error, String error_message, float test_time, float temperature, float magnetic_field,
+double adc_data[],int array_size = ADC_ARRAY_SIZE, int num_adc_array = number_of_adc_arrays){
 	//Preparing json file
 	String str_testid = "test id";
 	String str_teststop = "test stop";

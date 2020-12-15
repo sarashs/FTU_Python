@@ -66,9 +66,11 @@ uint8_t SYSRED_value =  0;
 uint8_t GPIOC_value =   0;
 uint8_t GPIOD_value =   0;
 
-const int adc_array_size = 29;
-uint16_t raw_adc_data [adc_array_size] = {0}; //initialize the array with zero
-double converted_adc_data[adc_array_size] = {0}; //this array hold the converted ADC data have to change this to  double
+#define ADC_ARRAY_SIZE 29
+//ADC global variables
+uint16_t raw_adc_data [ADC_ARRAY_SIZE] = {0}; //initialize the array with zero
+double converted_adc_data[ADC_ARRAY_SIZE] = {0}; //this array hold the converted ADC data have to change this to  double
+
 //initialize some values to avoid errors in calculations
 
 /*How values are stored in these arrays
@@ -147,7 +149,7 @@ uint8_t adc_register_read(uint8_t reg_address){
  * 
  * \return int the DRATE, either 11,10,01,00
  */
-uint8_t adc_drate(void){
+uint8_t adc_read_drate(void){
 	
 	return ( 0x03 & adc_register_read(CONFIG1_address));
 }
@@ -176,7 +178,7 @@ float adc_initial_delay_time(void){
 	
 	float delay_time = 0;
 	
-		switch( adc_drate() ){ // get the adc DRATE
+		switch( adc_read_drate() ){ // get the adc DRATE
 			case 0b00: {
 				delay_time = ( (8772.00 * 1000000)/ADC_CLK_SPEED );
 				break;
@@ -499,21 +501,21 @@ void testing_suite(){
 	//testing adc_auto_scan, adc_Drate and adc_initial_delay
 // 	adc_register_write(CONFIG1_address, 0X03);
 // 	Serial.print("For DRATE : ");
-// 	Serial.print( adc_drate() );
+// 	Serial.print( adc_read_drate() );
 // 	Serial.print(" , delay, uS = ");
 // 	Serial.print( adc_initial_delay_time(),4 );
 // 	Serial.println("_________________\n ");
 // 
 // 	adc_register_write(CONFIG1_address, 0X01);
 // 	Serial.print("For DRATE : ");
-// 	Serial.print( adc_drate() );
+// 	Serial.print( adc_read_drate() );
 // 	Serial.print(" , delay, uS = ");
 // 	Serial.print( adc_initial_delay_time(),4 );
 // 	Serial.println("_________________\n ");
 // 		
 // 	adc_register_write(CONFIG1_address, 0X02);
 // 	Serial.print("For DRATE : ");
-// 	Serial.print( adc_drate() );
+// 	Serial.print( adc_read_drate() );
 // 	Serial.print(" , delay, uS = ");
 // 	Serial.print( adc_initial_delay_time(),4 );
 // 	Serial.println("_________________\n ");
@@ -521,7 +523,7 @@ void testing_suite(){
 // 		
 // 	adc_register_write(CONFIG1_address, 0X00);
 // 	Serial.print("For DRATE : ");
-// 	Serial.print( adc_drate() );
+// 	Serial.print( adc_read_drate() );
 // 	Serial.print(" , delay, uS = ");
 // 	Serial.print( adc_initial_delay_time(),4 );
 // 	Serial.println("_________________\n ");
