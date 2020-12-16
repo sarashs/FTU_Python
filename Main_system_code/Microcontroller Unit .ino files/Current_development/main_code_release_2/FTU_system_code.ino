@@ -66,7 +66,7 @@ void setup() {
   if (high_speed_test)
   {
 	  //set the ADC DRATE to 11 for fastest reading
-	 adc_register_defaults[2] |= 0x03; //this sets the ADC DRATE==11 for the highest sampling rate
+	 adc_register_defaults[1] |= 0x03; //this sets the ADC DRATE==11 for the highest sampling rate
 	 memory_addresses_linkedlist.Clear();
 	 linkedlist_of_mem_addresses_of_other_linkedlists.Clear();
 	 flash.setClock(adc_spi_speed);
