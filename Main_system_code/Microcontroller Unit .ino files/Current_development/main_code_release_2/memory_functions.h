@@ -288,7 +288,7 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
  * 
  * \return void
  */
-void print_all_arrays_in_memory(SPIFlash *flash_memory, int array_size, int gain = ARRAY_GAIN,
+void print_all_arrays_in_memory(SPIFlash *flash_memory, int array_size, int gain = ARRAY_GAIN, //this is for double arrays in memory
 char delimiter = DELIMITER, int mem_cluster_size = MEM_CLUSTER_SIZE,
 LinkedList<uint32_t> *addresses_linked_list = &memory_addresses_linkedlist,
 LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addresses_of_other_linkedlists ){
@@ -305,18 +305,6 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 	
 	for (int current_index = 0 ; current_index < pointer_to_addresses_linkedlist->GetSize(); current_index++)
 	{
-		//Testing
-// 		Serial.print("Size ");
-// 		Serial.println(pointer_to_addresses_linkedlist->GetSize());
-// 		Serial.print("Loop ");
-// 		Serial.println(current_index);
-// 
-// 		
-// 		Serial.print("Address ");
-// 		Serial.print(current_index);
-// 		Serial.print(" : ");
-// 		uint32_t string_address = pointer_to_addresses_linkedlist->GetAt(current_index);
-// 		Serial.println( string_address, HEX);
 		
 		//array the addresses for each value in the array
 		uint32_t address_array[mem_cluster_size] = {0};
@@ -331,30 +319,15 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 		for (int i = 0; i < MEM_CLUSTER_SIZE; i++)
 		{
 			mem_addresses.InsertTail(address_array[i]);
-		}
-		
-		
+		}			
 		for (int mem_address_index = 0; mem_address_index < mem_addresses.GetSize() ; mem_address_index++) //Iterating through every address to read the array
 		{
-			//retrieve each of the arrays now
+			//retrieve each of the arrays now, stored in dataOut
 			memory_retrieve_array_function(flash_memory, dataOut,array_size, gain, delimiter, &mem_addresses, mem_address_index);
-			//Testing
-// 			Serial.print("Data out ");
-// 			Serial.print(mem_address_index);
-// 			Serial.print(" : ");
-// 			
-			//PRINTING
-// 			for (int f = 0; f < array_size; f++)
-// 			{
-// 				Serial.print(dataOut[f],5);
-// 				Serial.print(", ");
-// 				//here is where to call update json command
-// 			}
+			//print out the data out
 			update_json_doc(test_id,false,test_start,test_error,error_message,test_time_count,0,0,dataOut,array_size);
 			send_data_to_serial();
-			delay(2);
-							
-			Serial.println();
+			delay(5);
 			
 		}
 	}
@@ -365,27 +338,11 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 	for (int linkedlist_current_index = 0; linkedlist_current_index < addresses_linked_list->GetSize(); linkedlist_current_index++)
 	{
 		memory_retrieve_array_function(flash_memory, dataOut,array_size, gain, delimiter, addresses_linked_list, linkedlist_current_index);
-		//print data out
-// 		Serial.print("Data out ");
-// 		Serial.print(linkedlist_current_index);
-// 		Serial.print(" : ");
-		//
-		
-		//PRINTING
-// 		for (int f = 0; f < array_size; f++)
-// 		{
-// 			Serial.print(dataOut[f],5);
-// 			Serial.print(", ");
-// 			//here is where to call update json command
-// 		}
+
 		update_json_doc(test_id,false,test_start,test_error,error_message,test_time_count,0,0,dataOut,array_size);
 		send_data_to_serial();
-		delay(2); //delay added to accommodate python script
-
-		
-		Serial.println();
+		delay(5); //delay added to accommodate python script
 	}
 	
 }
-
 

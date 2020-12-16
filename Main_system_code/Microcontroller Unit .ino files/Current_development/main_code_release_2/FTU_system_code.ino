@@ -45,11 +45,6 @@
 #include "heater_magnetic_fsm_code.h"
 #include "memory_functions.h"
 
-//testing
-int count = 0;
-unsigned long start_time = 0;
-unsigned long end_time = 0;
-unsigned long delta_time = 0;
 /**
  * This setup function is run before a test starts and sets up the system
  * 
@@ -99,17 +94,6 @@ void loop() {
 
 	 system_state = system_fsm_transition(system_state,test_start,test_stop);
 	 system_fsm_run(system_state);
-	 
-	 //testing
-	 if (!test_stop)
-	 {
-		 	 Serial.print("Count : ");
-		 	 Serial.println(count);
-	 }
-
-	 count++;
-
-
 }
 
 
@@ -137,9 +121,7 @@ void system_fsm_run (int system_fsm_state){
 				if (high_speed_test)
 				{
 					//send all the current test memory data to serial Port
-					//Serial.println("Dumping memory to serial");
 					print_all_arrays_in_memory(&flash,ADC_ARRAY_SIZE);
-					
 					high_speed_test = false; //Turn off high speed test stop loops
 										
 				}
@@ -154,8 +136,7 @@ void system_fsm_run (int system_fsm_state){
 					//Reset device after communicating with Arduino
 					//NVIC_SystemReset();			
 				}
-				
-				
+							
 			}
 			else if (test_start){
 				//1. Setting voltage stress for test
@@ -176,20 +157,8 @@ void system_fsm_run (int system_fsm_state){
 			
 			pin_setup();
 			//2. Convert Raw ADC data to understandable values
-			Serial.println("Auto scan time (us): ");
-			start_time = micros();
 			adc_auto_scan(raw_adc_data); //converting ADC data
-			end_time = micros();
-			delta_time = end_time - start_time;
-			Serial.println(delta_time);
-			
-			Serial.println("converting adc array time (us): ");
-			start_time = micros();
 			adc_array_convert(raw_adc_data,converted_adc_data); //converts the raw_adc_data into converted data
-			
-			end_time = micros();
-			delta_time = end_time - start_time;
-			Serial.println(delta_time);
 			//Serial.println("Exit ADC_update");
 			
 		}
@@ -200,13 +169,8 @@ void system_fsm_run (int system_fsm_state){
 			
 			if (high_speed_test) //if high speed test, save array to memory and 
 			{
-				//save adc array to memory
- 				Serial.println("Saving time (us): ");
-				start_time = micros(); 
+				//save adc array to memory 
 				save_array_in_memory(&flash,converted_adc_data,ADC_ARRAY_SIZE); //saves array in memory
-				end_time = micros();
-				delta_time = end_time - start_time;
-				Serial.println(delta_time);
 				//Serial.println("Done saving");
 			}
 			else if (serial_signal) { //if it is not a high speed test, send the data to serial
@@ -289,7 +253,3 @@ int system_fsm_transition(int current_system_fsm_state, int test_start, int test
 	}
 	return next_state;
 }
-
-/************************************************************************/
-/*                    Memory addition                                   */
-/************************************************************************/

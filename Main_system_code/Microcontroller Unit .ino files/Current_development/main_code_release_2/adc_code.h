@@ -758,7 +758,7 @@ void adc_array_convert(uint16_t raw_data[], double converted_data[]){
 	//for ADC temp conversion
 	converted_data[26] =( ((double) ( (1000*adc_mv(twos_complement_to_int(raw_data[26],number_of_bits_adc),converted_adc_data[28], converted_adc_data[27])) - 168000)/(double) ADC_temp_sensor_coefficient)+ 25);
 
-	for (int i =8; i <= 23; i++) //for loop is at the bottom so that we can first convert useful constants used in these calculations
+	for (int i =0; i <= 23; i++) //for loop is at the bottom so that we can first convert useful constants used in these calculations
 	{ //started from index 8 because the first indices 0->7 in the array are not used
 		converted_data[i] = adc_mv( (twos_complement_to_int(raw_data[i],number_of_bits_adc) - twos_complement_to_int(raw_data[24],number_of_bits_adc)),converted_data[28], converted_data[27]); //Vin = (Vref/GainError) * [ (OutputCode - OffsetCode) / 0x7800 ]
 	}
