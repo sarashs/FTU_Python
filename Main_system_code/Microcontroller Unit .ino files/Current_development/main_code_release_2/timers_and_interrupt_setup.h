@@ -1,15 +1,37 @@
 #pragma once
+/**
+ * \file timers_and_interrupt_setup.h
+ *
+ * \brief This file contains functions used to initialize timers and interrupts service routines that happen during time interrupts
+ * \details The MCU has Up to five 16-bit Timer/Counters (TC), configurable as either: \n
+ * One 16-bit TC with compare/capture channels\n
+ * One 8-bit TC with compare/capture channels\n
+ * One 32-bit TC with compare/capture channels, by using two TCs\n
+ * Three 24-bit Timer/Counters for Control (TCC), with extended functions: \n\n\n
+ * Up to four compare channels with optional complementary output\n
+ * Generation of synchronized pulse width modulation (PWM) pattern across port pins\n
+ * Deterministic fault protection, fast decay and configurable dead-time between complementary output\n
+ * Dithering that increase resolution with up to 5 bit and reduce quantization error\n
+ * \author Valentine Ssebuyungo 
+ *
+ * \version Revision: 1.0 
+ *
+ * \date  2020/12/16 
+ *
+ * \details
+ */
+
 #include "samd21/include/samd21g18a.h"
 
 
 /**
- * \@brief Returns value for the overflow counter
+ * \brief Returns value for the overflow counter
  * 
- * \@param Clock_FrequencyMHz
- * \@param prescaler
- * \@param period_ms
+ * \param Clock_FrequencyMHz
+ * \param prescaler
+ * \param period_ms
  * 
- * \@return int
+ * \return int
  */
 int counter_value (float clock_frequency_MHz,float prescaler, float period_ms){
 	return (int) (( (clock_frequency_MHz*1000*period_ms) / (prescaler) )-1) ;
@@ -17,10 +39,10 @@ int counter_value (float clock_frequency_MHz,float prescaler, float period_ms){
 }
 
 /**
- * \@brief Sets up 1MHz clock used by TC3,TC4,TCC2,TC5
+ * \brief Sets up 1MHz clock used by TC3,TC4,TCC2,TC5
  * 
  * 
- * \@return void
+ * \return void
  */
 void clock_setup(){ //setting up the clock speeds
 	
@@ -50,10 +72,10 @@ void clock_setup(){ //setting up the clock speeds
 
 
 /**
- * \@brief Sets up TC4 timer
+ * \brief Sets up TC4 timer
  * 
  * 
- * \@return void
+ * \return void
  */
 void init_tc4(){ //initialize TC4 timer
 	// Configure TC4 (16 bit counter by default)
@@ -77,10 +99,10 @@ void init_tc4(){ //initialize TC4 timer
 }
 
 /**
- * \@brief Sets up TC5 timer
+ * \brief Sets up TC5 timer
  * 
  * 
- * \@return void
+ * \return void
  */
 void init_tc5(){ //initialize T5 timer
 
@@ -105,10 +127,10 @@ void init_tc5(){ //initialize T5 timer
 }
 
 /**
- * \@brief Sets up TC3 timer
+ * \brief Sets up TC3 timer
  * 
  * 
- * \@return void
+ * \return void
  */
 void init_tc3(){ //initialize TC3 timer, this timer controls the rate at which serial data is sent
 	
@@ -133,10 +155,10 @@ void init_tc3(){ //initialize TC3 timer, this timer controls the rate at which s
 
 
 /**
- * \@brief Interrupt service routine for TC4, handles the ADC interrupt
+ * \brief Interrupt service routine for TC4, handles the ADC interrupt
  * 
  * 
- * \@return void
+ * \return void
  */
 void TC4_Handler()// ADC interrupt handler
 {
@@ -153,10 +175,10 @@ void TC4_Handler()// ADC interrupt handler
 }
 
 /**
- * \@brief TC5 timer ISR 
+ * \brief TC5 timer ISR 
  * 
  * 
- * \@return void
+ * \return void
  */
 void TC5_Handler(){ //counter interrupt
 	// Check for OVF interrupt
@@ -171,10 +193,10 @@ void TC5_Handler(){ //counter interrupt
 }
 
 /**
- * \@brief TC3 timer ISR
+ * \brief TC3 timer ISR
  * 
  * 
- * \@return void
+ * \return void
  */
 void TC3_Handler(){//TC3 NOT USED	
 	// Check for match counter 1 (MC1) interrupt

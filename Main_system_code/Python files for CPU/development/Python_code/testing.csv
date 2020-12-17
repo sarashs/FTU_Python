@@ -1,12 +1,30 @@
 Test id,Time (s),Temperature (C),magnetic field (mT),Test stop,Test error,Error message,AIN0 (mV),AIN1 (mV),AIN2 (mV),AIN3 (mV),AIN4 (mV),AIN5 (mV),AIN6 (mV),AIN7 (mV),AIN8 (mV),AIN9 (mV),AIN10 (mV),AIN11 (mV),AIN12 (mV),AIN13 (mV),AIN14 (mV),AIN15 (mV),ADC OFFSET,ADC VCC (V),ADC Temperature (C),ADC Gain,ADC Reference (V)
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,0,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-1,1,0,0,1,1,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,0,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1,1,0,0,1,1,Error in register address : 0 Error in register address : 4 Error in register address : 5 Error in register address : 6 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-273.4014,0,0

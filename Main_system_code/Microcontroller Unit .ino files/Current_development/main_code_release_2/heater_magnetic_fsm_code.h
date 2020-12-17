@@ -1,5 +1,18 @@
 #pragma once
-
+/**
+ * \file DAC.h
+ *
+ * \brief This file contains functions used to with the MCU digital to Analog Converter
+ *
+ * \author Valentine Ssebuyungo 
+ *
+ * \version Revision: 1.0 
+ *
+ * \date  2020/12/16 
+ *
+ * \details
+ */
+/// resolution of the MCU ADC and DAC
 #define analog_resolution 1023
 
 /************************************************************************/
@@ -12,15 +25,16 @@
 	#define heater_fsm_idle 1 //state where temperature is maintained
 	#define heater_fsm_heating 2
 	#define heater_fsm_cooling 3
-	#define heater_fsm_margin 2.5 //error is +/- 2.5C as we are using integers
+	/// This is the acceptable temperature margin error, error is +/- 2.5C as we are using integers, any errors less than this cause instability unless a PID is used
+	#define heater_fsm_margin 2.5 
 	#define heater_threshold_temp 50 // above 40C is hot for human touch
 
 /**
- * \@brief Function updates the heater FSM states
+ * \brief Function updates the heater FSM states
  * 
- * \@param current state
+ * \param current state
  * 
- * \@return int next_state
+ * \return int next_state
  */
 int heater_fsm_transition(int current_state, int measured_temperature, int desired_temperature)
 {	
@@ -48,12 +62,12 @@ int heater_fsm_transition(int current_state, int measured_temperature, int desir
 }
 
 /**
- * \@brief Function runs the heating system
+ * \brief Function runs the heating system
  * 
- * \@param int heater_state
- * \@param int pwm_duty_cycle 
+ * \param int heater_state
+ * \param int pwm_duty_cycle 
  * 
- * \@return int pwm_duty_cycle
+ * \return int pwm_duty_cycle
  */
 int heater_fsm_run(int heater_state, int pwm_duty_cycle, int measured_temperature ){
 	if (measured_temperature < heater_threshold_temp && digitalRead(blue_led)!=HIGH) digitalWrite(blue_led,HIGH);//turn on safe to touch LED if not high already
@@ -100,12 +114,12 @@ int heater_fsm_run(int heater_state, int pwm_duty_cycle, int measured_temperatur
 #define magnetic_error 0.015 //error is 1.5% gotten from the magnetic field data sheet in mT
 
 /**
- * \@brief  This function updates the states for the state machine of the Magnetic circuit program--
+ * \brief  This function updates the states for the state machine of the Magnetic circuit program--
  *		   An external function is needed to keep updating the actual and desired Magnetic field values
  * 
- * \@param current_state
+ * \param current_state
  * 
- * \@return int next state
+ * \return int next state
  */
 int magnetic_fsm_transition(int current_state, float measured_magnetic_field, float desired_magnetic_field)
 {
@@ -127,12 +141,12 @@ int magnetic_fsm_transition(int current_state, float measured_magnetic_field, fl
 }
 
 /**
- * \@brief Function runs the magnetic Helmholtz coil
+ * \brief Function runs the magnetic Helmholtz coil FSM
  * 
- * \@param current_state
- * \@param pwm_duty
+ * \param current_state
+ * \param pwm_duty
  * 
- * \@return int magnetic_pwm_duty
+ * \return int magnetic_pwm_duty
  */
 int magnetic_fsm_run(int current_state, int pwm_duty)
 {

@@ -2,39 +2,39 @@
 /*                    FILE DESCRIPTION                                  */
 /************************************************************************/
 
-/*H**********************************************************************
-* \@filename :        
-* FTU_system_code.ino            
+/**
+* \filename :  FTU_system_code.ino         
+*          
 *
-* \@description :
+* \description :
 * This file controls a SAMD21G18A MCU on Arduino MKR1000
 * Used to run a HTOL Test (High-temperature operating life) for Accelerated Life Testing
 *
-* \@notes : 
+* \notes : 
 * This code connects to a python script
 *
 *
-* \@authors :    
+* \authors :    
 * 1. Valentine Ssebuyungo        
 *
-* \@start_date : 1st June 2020
+* \start_date : 1st June 2020
 *
 *
-* \@documentation_style :	 
-* 1. "https://developer.lsst.io/cpp/api-docs.html#cpp-doxygen-see-also"
+* \documentation_style :	 
+* 1. "https://www-numi.fnal.gov/offline_software/srt_public_context/WebDocs/doxygen-howto.html"
 * 2. "http://www.edparrish.net/common/cppdoc.html#functioncomment"
 *
-* \@future_improvements :
-*Add a header file to contain all data
-*IoT communication
-*RTC timer for time
-*PID control for magnetic and heater system
-*Emergency stop
-*WDT
-*Reset Arduino after test stops
-*Frequency divider functionality
+* \future_improvements :
+* Add a header file to contain all data
+* IoT communication
+* RTC timer for time
+* PID control for magnetic and heater system
+* Emergency stop
+* WDT
+* Reset Arduino after test stops
+* Frequency divider functionality
 *
-*H*/
+*/
 
 #include "global_variables_and_constants.h"
 #include "pins_setup.h"
@@ -46,10 +46,10 @@
 #include "memory_functions.h"
 
 /**
- * This setup function is run before a test starts and sets up the system
+ * \brief This setup function is run before a test starts and sets up the system
  * 
- * @param void
- * @return void
+ * 
+ * \return void
  */
 void setup() {
   analogWriteResolution(10);
@@ -85,10 +85,10 @@ void setup() {
 }
 
 /**
- * This function runs for the whole test
+ * \brief This function runs for the whole test
  * 
- * @param void
- * @return void
+ * 
+ * \return void
  */
 void loop() {
 
@@ -102,11 +102,11 @@ void loop() {
 /************************************************************************/
 
 /**
- * \@brief This state_machine runs the system
+ * \brief This functions runs the finite state machine of the system
  * 
- * \@param 
+ * \param 
  * 
- * \@return void
+ * \return void
  */
 void system_fsm_run (int system_fsm_state){
 	//initialize variables	
@@ -205,11 +205,11 @@ void system_fsm_run (int system_fsm_state){
 }
 
 /**
- * \@brief This function updates states for the System FSM
+ * \brief This function updates states for the System Finite state machine
  * 
- * \@param 
+ * \param 
  * 
- * \@return new state
+ * \return new state
  */
 int system_fsm_transition(int current_system_fsm_state, int test_start, int test_stop)
 {

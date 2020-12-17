@@ -1,5 +1,17 @@
 #pragma once
-
+/**
+ * \file global_variables_and_constants.h
+ *
+ * \brief This file contains the global variables used in the system
+ *
+ * \author Valentine Ssebuyungo 
+ *
+ * \version Revision: 1.0 
+ *
+ * \date  2020/12/16 
+ *
+ * \details
+ */
 #include "SPI.h"
 #include "ArduinoJson.h"
 #include "ArduinoJson.hpp"
@@ -12,7 +24,7 @@
 /************************************************************************/
 /* GLOBAL VARIABLES AND CONSTANTS                                       */
 /************************************************************************/
-//system FSM states
+///system FSM states
 #define IDLE 0 //idle state
 #define ADC_UPDATE 1 //reading data from the ADC using SPI at intervals
 #define SERIAL_UPDATE 2 //sending data back to the computer through serial at intervals
@@ -58,11 +70,12 @@ volatile int starting_test_count;
 /************************************************************************/
 
 /**
- * \@brief Function raises MCU error, updates the error message
+ * \brief Function raises MCU error, updates the error message
+ * \details This error is sent to the CPU and this is the method used to catch errors
  * 
- * \@param error_text -> Error message as String
+ * \param error_text -> Error message as String
  * 
- * \@return void
+ * \return void
  */
 void raise_mcu_error(String error_text){
 	//This function raises and error

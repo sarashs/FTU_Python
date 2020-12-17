@@ -1,38 +1,73 @@
 #pragma once
+/**
+ * \file memory_functions.h
+ *
+ * \brief This file contains functions used to communicate with SPI Flash Memory
+ *
+ * \author Valentine Ssebuyungo 
+ *
+ * \version Revision: 1.0 
+ *
+ * \date  2020/12/16 
+ *
+ * \note Linked list library used https://github.com/luisllamasbinaburo/Arduino-LinkedList
+ 
+ * \note SPI Memory Library used https://github.com/Marzogh/SPIMemory
+ *
+ * \details How the memory works \n\n
+ *
+ *PART 1 -> Storing into memory \n
+ *1. Build a linked list to store addresses \n
+ *2. initialize a linked list \n
+ *3. check if the memory is full, if full -> erase chip and try to get an address again \n
+ *4. convert the adc double array into a string \n
+ *5. store the data_String in memory and add the string address to a linked list \n
+ *6.this is repeated until the ADC has stopped reading data \n\n
+ *
+ *Part 2 Retrieving Memory \n
+ *1. iterate through the linked list, popping off the top item until the list is done \n
+ *2. read back the string from the memory \n
+ *3. convert the string back to a double array \n
+ *4. convert the array into a json doc \n
+ *5. send the read back data to the serial port \n
+ *6. clear the linked lists \n
+ *
+ *
+ */
+
 /************************************************************************/
 /*      MEMORY CODE                                                    */
 /************************************************************************/
 
-#include <LinkedListLib.h> //https://github.com/luisllamasbinaburo/Arduino-LinkedList
-#include <SPIMemory.h>    //See https://github.com/Marzogh/SPIMemory
+#include <LinkedListLib.h>  
+#include <SPIMemory.h>    
 #include "Arduino.h"
 
 
 
 //DEFINITIONS
-#define DELIMITER ',' //A delimiter is one or more characters that separate text strings.
-#define ARRAY_GAIN 1000.0 //Since double to string can only have 2 decimal places, the array is
-//multiplied by this value before converting it to a string and then divided
-//by this value for restoration
-#define MEM_CLUSTER_SIZE 20 //number of addresses in every node of linked list pointing to addresses
+///1. A delimiter is one or more characters that separate text strings.
+#define DELIMITER ',' 
+///Since double to string can only have 2 decimal places, the array is
+///multiplied by this value before converting it to a string and then divided
+///by this value for restoration
+#define ARRAY_GAIN 1000.0	
+///number of addresses in every node of linked list pointing to addresses
+#define MEM_CLUSTER_SIZE 20 
+
 
 // Create LinkedList
 LinkedList<uint32_t> memory_addresses_linkedlist;
-LinkedList<uint32_t> linkedlist_of_mem_addresses_of_other_linkedlists; //each value in this linked list points to an address_1 in
-// memory that contains an array addresses_2,
-//each address_2 contains an array of data
+LinkedList<uint32_t> linkedlist_of_mem_addresses_of_other_linkedlists;  ///each value in this linked list points to an address_1 in
+																		/// memory that contains an array addresses_2,
+																		///each address_2 contains an array of data
 SPIFlash flash(_csPin_memory);                                          //Initialize the memory
 
 
-//        PART 1 -> STORAGE
-//Build a linked list to store addresses
-//initialize a linked list
-//check if the memory is full, if full -> erase chip and try to get an address again
-//convert the adc double array into a string
-//store the data_String in memory and add the string address to a linked list
-//this is repeated until the ADC has stopped reading data
+
 /**
- * \brief Sets up memory and checks if we have enough space for test
+ * \brief Sets up memory and ensures that we have at least 2MB enough space for test
+ *		  
  * 
  * 
  * \return void
@@ -46,12 +81,12 @@ void memory_setup(SPIFlash *flash_object){
 	}
 }
 /**
- * \brief converts an array to string and separates the values using a delimiter
+ * \brief Converts a double array to string and separates the values using a delimiter
  * 
- * \param array_to_convert
+ * \param array_to_convert 
  * \param array_size
- * \param gain ,factor to scale up the number. This is done because this conversion strips off all decimal points so you can scale up the number and scale it down later
- * \param delimeter
+ * \param gain factor to scale up the number. This is done because this conversion strips off all decimal points so you can scale up the number and scale it down later
+ * \param delimeter 
  * 
  * \return String
  */
@@ -63,6 +98,16 @@ String array_to_string (double array_to_convert[], int array_size,double gain, c
 	}
 	return string_converted;
 }
+/**
+ * \brief Converts a uint32_t array to string and separates the values using a delimiter
+ * 
+ * \param array_to_convert 
+ * \param array_size
+ * \param gain factor to scale up the number. This is done because this conversion strips off all decimal points so you can scale up the number and scale it down later
+ * \param delimeter 
+ * 
+ * \return String
+ */
 String array_to_string (uint32_t array_to_convert[], int array_size,int gain, char delimeter){
 	String string_converted;
 	for (int i = 0; i < array_size; i++)
@@ -71,12 +116,13 @@ String array_to_string (uint32_t array_to_convert[], int array_size,int gain, ch
 	}
 	return string_converted;
 }
+
 /**
- * \brief Stores an array into memory, adds the array address in memory to the tail of the linked list
+ * \brief Stores a double array into memory, adds the array address in memory as the tail of the linked list
  * 
- * \param array_to_store (passed by address so no need to return)
+ * \param array_to_store passed by address so no need to return
  * \param array_size
- * \param linkedlist_of_addresses (passed by address so no need to return)
+ * \param linkedlist_of_addresses passed by address so no need to return
  * 
  * \return void
  */
@@ -100,6 +146,16 @@ void __memory_store_array (SPIFlash *flash_mem ,double array_to_store[], int arr
 		}
 	}
 }
+
+/**
+ * \brief Stores a uint32_t array into memory, adds the array address in memory as the tail of the linked list
+ * 
+ * \param array_to_store passed by address so no need to return
+ * \param array_size
+ * \param linkedlist_of_addresses passed by address so no need to return
+ * 
+ * \return void
+ */
 void __memory_store_array (SPIFlash *flash_mem ,uint32_t array_to_store[], int array_size, LinkedList<uint32_t> *linkedlist_of_addresses, int gain, char delimiter){
 	//convert array to string
 	String string_to_store = array_to_string(array_to_store,array_size,gain,delimiter);
@@ -122,13 +178,7 @@ void __memory_store_array (SPIFlash *flash_mem ,uint32_t array_to_store[], int a
 }
 
 
-//______________________________________________PART 2 RETRIEVING MEMORY_____________________________________________________________________________
-//iterate through the linked list, popping off the top item until the list is done
-//read back the string from the memory
-//convert the string back to a double array
-//convert the array into a json doc
-//send the read back data to the serial port
-//clear the linked lists
+
 
 /**
  * \brief converts a string with values separated by a delimeter into a double array
@@ -157,7 +207,7 @@ void string_to_array (String string_array, double storage_array[], int string_ar
 	  }
 	
 }
-//function overload to support int array
+///Function overload to support uint32_t array
 void string_to_array (String string_array, uint32_t storage_array[], int string_array_size, int gain, char delimeter){
 	 
 	  for (int i = 0; i < string_array_size ; i++)
@@ -204,7 +254,7 @@ void memory_retrieve_array_function(SPIFlash *flash_mem, double array_to_hold_da
 		//convert the array into a json doc
 		//send json serial data to serial port
 }
-//overloading function
+///Function overload to support uint32_t array
 void memory_retrieve_array_function(SPIFlash *flash_mem, uint32_t array_to_hold_data[], int array_size, int gain, char delimiter, 
 	LinkedList<uint32_t> *linkedlist_of_addresses, int linked_list_index = 0){
 	
@@ -227,7 +277,7 @@ void memory_retrieve_array_function(SPIFlash *flash_mem, uint32_t array_to_hold_
 /**
  * \brief Stores and array in memory and saves links to the addresses stored, variables are passed by address so no need to return!
  * 
- * \param flash_memory
+ * \param flash_memory Flash memory object
  * \param array_to_store
  * \param array_size
  * \param gain
@@ -277,13 +327,13 @@ LinkedList<uint32_t> *pointer_to_addresses_linkedlist = &linkedlist_of_mem_addre
 /**
  * \brief This functions prints out all the arrays stored in the flash memory for the current test
  * 
- * \param flash_memory ,					flash memory object
- * \param array_size   ,					sizes of the arrays in memory
- * \param gain         ,					the gain that was used to store arrays, this has a default value of 100,000
- * \param delimiter    ,					char used to separate arrays in memory
- * \param mem_cluster_size,					size of each chunk of memory, max size is about 20
- * \param addresses_linked_list,			LinkedList object where each value is a memory address, containing an array of data
- * \param pointer_to_addresses_linkedlist,	Each value in this linked list -> is an address in memory -> This address in memory pointed to is another linkedList_2 data
+ * \param flash_memory 						flash memory object
+ * \param array_size   						sizes of the arrays in memory
+ * \param gain         						the gain that was used to store arrays, this has a default value of 100,000
+ * \param delimiter    						char used to separate arrays in memory
+ * \param mem_cluster_size					size of each chunk of memory, max size is about 20
+ * \param addresses_linked_list				LinkedList object where each value is a memory address, containing an array of data
+ * \param pointer_to_addresses_linkedlist	Each value in this linked list -> is an address in memory -> This address in memory pointed to is another linkedList_2 data
  *											Linkedlist2 values of size mem_cluster are addresses in memory that point to an array of data
  * 
  * \return void

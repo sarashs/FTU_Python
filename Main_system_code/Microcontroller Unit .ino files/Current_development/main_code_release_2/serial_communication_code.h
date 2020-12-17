@@ -1,12 +1,30 @@
 #pragma once
-
-#define BAUD_RATE 2000000 //9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000, 1000000, 2000000
+/**
+ * \file serial_communication_code.h
+ *
+ * \brief This file contains functions and constants used for serial communication \n
+ * \note JSON library link "https://arduinojson.org/" \n
+ * Values are organized into a JSON file that is sent over serial \n
+ * The CPU also sends instructions in form of a JSON document
+ *
+ * \author Valentine Ssebuyungo 
+ *
+ * \version Revision: 1.0 
+ *
+ * \date  2020/12/16 
+ *
+ * \details
+ */
+///Standard Baud rates 9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000, 1000000, 2000000
+#define BAUD_RATE 256000 
+/// This specifies how many ADC arrays can be fixed in a single json document, max is about 20
 #define number_of_adc_arrays 1
+
 /************************************************************************/
 /* USING JSON LIBRARY TO SEND COMMUNICATE WITH PYTHON SCRIPT            */
 /************************************************************************/
 /**
-* @see Original source : "https://arduinojson.org/"
+* \note Original source : "https://arduinojson.org/"
 * preparing the JSON document to be used in the test
 * Allocate the JSON document
 
@@ -17,11 +35,12 @@
 DynamicJsonDocument  doc(800*number_of_adc_arrays); 
 
 /**
- * \@brief Function to receive test instructions from CPU 
+ * \brief Function to receive test instructions from CPU 
+ * \details Instructions are sent as a json file which is then parsed to read the information
  * 
- * \@param 
+ * \param 
  * 
- * \@return void
+ * \return void
  */
 void receive_test_instructions(void){
 	String receieved_instruction;
@@ -82,19 +101,19 @@ void receive_test_instructions(void){
 
 
 /**
- * \@brief This function prepares the JSON document that is to be sent to the serial
+ * \brief This function prepares the JSON document that is to be sent to the serial
  * 
- * \@param test_id
- * \@param test_stop
- * \@param test_start
- * \@param test_error
- * \@param error_message
- * \@param adc_data
- * \@param test_time
- * \@param temperature
- * \@param measured_magnetic_field
+ * \param test_id
+ * \param test_stop
+ * \param test_start
+ * \param test_error
+ * \param error_message
+ * \param adc_data
+ * \param test_time
+ * \param temperature
+ * \param measured_magnetic_field
  * 
- * \@return void
+ * \return void
  */
 void update_json_doc(int test_id, bool test_stop, bool test_start, bool test_error, String error_message, float test_time, float temperature, float magnetic_field,
 double adc_data[],int array_size = ADC_ARRAY_SIZE, int num_adc_array = number_of_adc_arrays){
@@ -151,13 +170,10 @@ double adc_data[],int array_size = ADC_ARRAY_SIZE, int num_adc_array = number_of
 }
 
 /**
- * \@brief  Function to send data to Python script
- *			tell python there is ready data
- *			send the data
- *			wait for confirmation
+ * \brief  Function to send data to Python script \n
  * 
  * 
- * \@return void
+ * \return void
  */
 void send_data_to_serial(){
 	char userInput;
