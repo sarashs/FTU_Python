@@ -11,8 +11,8 @@
  * \date  2020/12/16 
  *
  * \note ADC data sheet used https://www.ti.com/lit/ds/symlink/ads1158.pdf?ts=1608162703638&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FADS1158 \n
- *Magnetic sensor Data sheet: "https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjxps3qg8PqAhXBo54KHUn5CvwQFjAAegQIBRAB&url=https%3A%2F%2Fwww.allegromicro.com%2F~%2Fmedia%2FFiles%2FDatasheets%2FA1318-A1319-Datasheet.ashx&usg=AOvVaw39zGCju7QuDLgpcH9PKde_" \n
- *Temperature sensor Data sheet: "https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235"
+ * Magnetic sensor Data sheet: https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjxps3qg8PqAhXBo54KHUn5CvwQFjAAegQIBRAB&url=https%3A%2F%2Fwww.allegromicro.com%2F~%2Fmedia%2FFiles%2FDatasheets%2FA1318-A1319-Datasheet.ashx&usg=AOvVaw39zGCju7QuDLgpcH9PKde \n
+ * Temperature sensor Data sheet: https://www.ti.com/lit/ds/symlink/tmp235.pdf?ts=1594142817615&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTMP235
  *
  * \details
  *How values are stored in these arrays \n\n
@@ -23,36 +23,36 @@
  *Index 28 is CHID 29 -> External reference \n \n
  *
  *From Table 10 in data sheet  \n
- *BITS CHID[4:0]          PRIORITY        CHANNEL         DESCRIPTION \n
- *00h                     1 (highest)     DIFF0 (AIN0–AIN1) Differential 0 \n
- *01h                     2               DIFF1 (AIN2–AIN3) Differential 1 \n
- *02h						3				DIFF2 (AIN4–AIN5) Differential 2 \n
- *03h				        4               DIFF3 (AIN6–AIN7) Differential 3 \n
- *04h						5			    DIFF4 (AIN8– AIN9) Differential 4 \n
- *05h						6				DIFF5 (AIN10–AIN11) Differential 5 \n
- *06h						7				DIFF6 (AIN12–AIN13) Differential 6 \n
- *07h						8				DIFF7 (AIN14–AIN15) Differential 7 \n
- *08h						9				AIN0 Single-ended 0 \n
- *09h						10				AIN1 Single-ended 1 \n
- *0Ah						11				AIN2 Single-ended 2 \n
- *0Bh						12				AIN3 Single-ended 3 \n
- *0Ch						13				AIN4 Single-ended 4 \n
- *0Dh						14				AIN5 Single-ended 5 \n
- *0Eh						15				AIN6 Single-ended 6 \n
- *0Fh						16				AIN7 Single-ended 7 \n
- *10h						17				AIN8 Single-ended 8 \n
- *11h						18				AIN9 Single-ended 9 \n
- *12h						19				AIN10 Single-ended 10 \n
- *13h						20				AIN11 Single-ended 11 \n
- *14h						21				AIN12 Single-ended 12 \n
- *15h						22				AIN13 Single-ended 13 \n
- *16h						23				AIN14 Single-ended 14 \n
- *17h						24			    AIN15 Single-ended 15 \n
- *18h						25				OFFSET Offset \n
- *1Ah						26				VCC AVDD – AVSS supplies \n
- *1Bh						27				TEMP Temperature \n
- *1Ch						28				GAIN Gain \n
- *1Dh						29 (lowest)		REF External reference \n
+ *BITS CHID[4:0]______PRIORITY____________________CHANNEL______________________________DESCRIPTION \n
+ *00h____________________1 (highest)____________________DIFF0 (AIN0–AIN1)_____________ Differential 0 \n
+ *01h____________________2______________________________DIFF1 (AIN2–AIN3)_____________ Differential 1 \n
+ *02h____________________3______________________________DIFF2 (AIN4–AIN5)_____________ Differential 2 \n
+ *03h____________________4______________________________DIFF3 (AIN6–AIN7) _____________Differential 3 \n
+ *04h____________________5______________________________DIFF4 (AIN8– AIN9)_____________Differential 4 \n
+ *05h____________________6______________________________DIFF5 (AIN10–AIN11)____________Differential 5 \n
+ *06h____________________7______________________________DIFF6 (AIN12–AIN13)____________Differential 6 \n
+ *07h____________________8______________________________DIFF7 (AIN14–AIN15)____________Differential 7 \n
+ *08h____________________9______________________________AIN0 __________________________Single-ended 0 \n
+ *09h____________________10______________________________AIN1 __________________________Single-ended 1 \n
+ *0Ah____________________11______________________________AIN2__________________________ Single-ended 2 \n
+ *0Bh____________________12______________________________AIN3 __________________________Single-ended 3 \n
+ *0Ch____________________13______________________________AIN4__________________________ Single-ended 4 \n
+ *0Dh____________________14______________________________AIN5__________________________ Single-ended 5 \n
+ *0Eh____________________15______________________________AIN6__________________________ Single-ended 6 \n
+ *0Fh____________________16______________________________AIN7 __________________________Single-ended 7 \n
+ *10h____________________17______________________________AIN8__________________________ Single-ended 8 \n
+ *11h____________________18______________________________AIN9__________________________ Single-ended 9 \n
+ *12h____________________19______________________________AIN10__________________________ Single-ended 10 \n
+ *13h____________________20______________________________AIN11 __________________________Single-ended 11 \n
+ *14h____________________21______________________________AIN12 __________________________Single-ended 12 \n
+ *15h____________________22______________________________AIN13__________________________ Single-ended 13 \n
+ *16h____________________23______________________________AIN14__________________________ Single-ended 14 \n
+ *17h____________________24______________________________AIN15 __________________________Single-ended 15 \n
+ *18h____________________25______________________________OFFSET__________________________ Offset \n
+ *1Ah____________________26______________________________VCC __________________________AVDD – AVSS supplies \n
+ *1Bh____________________27______________________________TEMP__________________________ Temperature \n
+ *1Ch____________________28______________________________GAIN__________________________ Gain \n
+ *1Dh____________________29 (lowest)____________________REF __________________________External reference \n
  *
  *
 */

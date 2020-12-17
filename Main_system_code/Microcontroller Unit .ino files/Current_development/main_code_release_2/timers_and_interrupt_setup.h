@@ -14,7 +14,7 @@
  * Dithering that increase resolution with up to 5 bit and reduce quantization error\n
  * \author Valentine Ssebuyungo 
  *
- * \version Revision: 1.0 
+ * \version Revision: 1.1 
  *
  * \date  2020/12/16 
  *
