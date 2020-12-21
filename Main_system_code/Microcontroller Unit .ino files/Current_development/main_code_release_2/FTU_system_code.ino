@@ -54,7 +54,7 @@
 void setup() {
   analogWriteResolution(10);
   analogReadResolution(10);
-  analogReference(AR_INTERNAL2V23); //sets 3.3V reference
+  analogReference(AR_INTERNAL2V23); //sets 2.23V reference
   pin_setup(); //Setup MCU pins
   delay(1000);
   
@@ -155,7 +155,6 @@ void system_fsm_run (int system_fsm_state){
 			//Serial.println("Enter ADC Update");
 			if (test_time_count >= desired_time_for_test) test_stop=true;
 			
-			pin_setup();
 			//2. Convert Raw ADC data to understandable values
 			adc_auto_scan(raw_adc_data); //converting ADC data
 			adc_array_convert(raw_adc_data,converted_adc_data); //converts the raw_adc_data into converted data
